@@ -294,7 +294,7 @@ stock CheckRequest(playerid)
 				if(PI[from_player][data_HOUSE] != -1) format(playerhouse,sizeof(playerhouse),PI[from_player][data_HOUSE]);
 				else format(playerhouse,sizeof(playerhouse),"---");
 				new dialog[256];
-				format(dialog,sizeof(dialog),"Имя\t\t\t\t%s\nЛет в области\t\t\t%d\nЗаконнопослушность\t\t%d\nУровень розыска\t\t%d\n{FFFFFF}Номер дома\t\t\t%d\n{FFFFFF}Место работы\t\t%s",PI[from_player][pName],PI[from_player][pLevel],PI[from_player][pRespect],PI[from_player][data_WANTED],playerhouse,PI[from_player][data_JOB]);
+				format(dialog,sizeof(dialog),"Имя\t\t\t\t%s\nЛет в области\t\t\t%d\nЗаконнопослушность\t\t%d\nУровень розыска\t\t%d\n{FFFFFF}Номер дома\t\t\t%d\n{FFFFFF}Место работы\t\t%s",PI[from_player][pName],PI[from_player][pLevel],PI[from_player][pRespect],PI[from_player][pWanted],playerhouse,PI[from_player][data_JOB]);
 				ShowPlayerDialog(playerid,0, DIALOG_STYLE_LIST, "{ee3366}Паспорт", dialog, "Закрыть", "");
 				SetPlayerChatBubble(playerid, "просматривает документы", 0xFF99CCFF, 20.0, 4000);
 			}

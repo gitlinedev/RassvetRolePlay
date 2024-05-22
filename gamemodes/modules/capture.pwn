@@ -812,7 +812,7 @@ stock capture_SecondTimer()
 				}
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
-					if(PI[i][pOnCapture] == 1 || GetPVarInt(i, "DeathOnCapture") == 0 || PI[i][pMember] == Command[1])
+					if(PI[i][pOnCapture] == 1 && GetPVarInt(i, "DeathOnCapture") == 0 && PI[i][pMember] == Command[0])
 					{
 						SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
 						SetPlayerFacingAngle(i, 359.3068);
@@ -847,7 +847,7 @@ stock capture_SecondTimer()
 				}
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
-					if(PI[i][pOnCapture] == 1 || GetPVarInt(i, "DeathOnCapture") == 0 || PI[i][pMember] == Command[0])
+					if(PI[i][pOnCapture] == 1 && GetPVarInt(i, "DeathOnCapture") == 0 && PI[i][pMember] == Command[0])
 					{
 						SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
 						SetPlayerFacingAngle(i, 359.3068);
@@ -1027,7 +1027,7 @@ stock CheckCount(playerid)
 				}
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
-					if(PI[i][pOnCapture] == 1 || GetPVarInt(i, "DeathOnCapture") == 0 || PI[i][pMember] == Command[1])
+					if(PI[i][pOnCapture] == 1 && GetPVarInt(i, "DeathOnCapture") == 0 && PI[i][pMember] == Command[1])
 					{
 						SetPlayerPos(i, 1524.0425,-1212.5947,15.0275);
 						SetPlayerFacingAngle(i, 87.1295);
@@ -1063,7 +1063,7 @@ stock CheckCount(playerid)
 				}
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
-					if(PI[i][pOnCapture] == 1 || GetPVarInt(i, "DeathOnCapture") == 0 || PI[i][pMember] == Command[0])
+					if(PI[i][pOnCapture] == 1 && GetPVarInt(i, "DeathOnCapture") == 0 && PI[i][pMember] == Command[0])
 					{
 						SetPlayerPos(i, 1524.0425,-1212.5947,15.0275);
 						SetPlayerFacingAngle(i, 87.1295);
@@ -1329,7 +1329,7 @@ cmd:capture(playerid)
 	if(gz_info[gz][gzopg] == 6) warname = "'Гопота'";
 	if(gz_info[gz][gzopg] == 7) warname = "'Кавказцы'";
 
-	PI[playerid][pCaptureValue]++;
+	PI[playerid][pPayDayMoney] += 2000;
 	PI[playerid][pProgressCapture]+= 1;
 
 	GangWarStatus = 1;

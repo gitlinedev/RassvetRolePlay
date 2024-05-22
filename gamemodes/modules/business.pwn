@@ -67,6 +67,7 @@ CMD:buybusiness(playerid)
 			BizInfo[b][bMoney] = 0;
 			BizInfo[b][bProduct] = 0;
             BizInfo[b][bOwned] = 1;
+			BizInfo[b][bSealedDays] = -1;
             BizInfo[b][bDays] = 3;
             strmid(BizInfo[b][bOwner], getName(playerid), 0, strlen(getName(playerid)), 24);
 
@@ -149,6 +150,7 @@ stock SetBusinessUpdate()
             {
                 new sDays = RandomEX(2,4);
                 BizInfo[b][bSealedDays] = sDays;
+				SaveBusinessData(b);
                 UpdateBusinessData(b);
             }
         }
@@ -431,21 +433,6 @@ stock business_OnDialogResponse(playerid, dialogid, response, listitem, inputtex
 				}
 			}
         }
-        case 2351:
-        {
-            if(!response) return BusinessMenu(playerid);
-			if(response)
-			{
-			    new b = PI[playerid][pBusiness];
-			    if(strval(inputtext) <= 0) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-				if(strval(inputtext) > BizInfo[b][bMoney]) return SCM(playerid, COLOR_GREY,"Недостаточно средств на балансе бизнеса"),Business_Give_Money(playerid);
-                BizInfo[b][bMoney] -= strval(inputtext);
-				GivePlayerMoneyLog(playerid,strval(inputtext));
-				SCMf(playerid,0xc89522FF, "Вы сняли: %d рублей. Баланс бизнеса: %d рублей",strval(inputtext), BizInfo[b][bMoney]);
-				SavePlayerData(playerid);
-				SaveBusinessData(b);
-			}
-        }
 		case 2354:
         {
 			if(!response) return 1;
@@ -512,11 +499,9 @@ stock Business_Re_Money(playerid)
 	SendClientMessage(playerid, COLOR_ADMINCHAT, !"В разработке");
 	return 1;
 }
-stock Business_Give_Money(playerid) 
+stock BusinessGiveMoney(playerid) 
 {
-	new str_3[185];
-	format(str_3,sizeof(str_3),"Комиссия составит 6%\nВведите требуемую сумму:");
- 	ShowPlayerDialog(playerid, 2351, DIALOG_STYLE_INPUT, "{ee3366}Cнятие средств  со счёта бизнеса", str_3, "Снять", "Назад");
+ 	ShowPlayerDialog(playerid, 2351, DIALOG_STYLE_INPUT, !"{ee3366}Cнятие средств со счёта бизнеса", !"Комиссия составит 6%%\nВведите требуемую сумму:", !"Снять", !"Назад");
 	return 1;
 }
 callback: ShowBussines(playerid)

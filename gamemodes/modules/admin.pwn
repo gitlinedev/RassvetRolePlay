@@ -39,6 +39,48 @@ static const stock Fraction_Name[MAX_FRACTIONS][32] = {
  	"Кавказцы"
 };
 //================================ [CMD] =============================//
+CMD:setsex(playerid, params[])
+{
+    if(CheckAdmin(playerid, 7)) return 1;
+	if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setsex [ID игрока]");
+	switch(PI[params[0]][pSex])
+	{
+		case 1:
+		{
+			SCMf(playerid, COLOR_GREY, "Вы изменили пол игроку %s на женский", getName(params[0]));
+			SCMf(params[0], -1, "Игровой мастер #%d изменил ваш пол на женский", PI[playerid][pAdminNumber]);
+			PI[params[0]][pSex] = 2;
+		}
+		case 2:
+		{
+			SCMf(playerid, COLOR_GREY, "Вы изменили пол игроку %s на мужской",getName(params[0]));
+			SCMf(params[0], -1, "Игровой мастер #%d изменил ваш пол на мужской", PI[playerid][pAdminNumber]);
+			PI[params[0]][pSex] = 1;
+		}
+	}
+	return 1;
+}
+cmd:rasform(playerid) 
+{
+    if(CheckAdmin(playerid, 7)) return 1;
+	rasform[playerid]++;
+	if(rasform[playerid] != 2) return SCM(playerid, COLOR_GREY, !"Если Вы напишите ещё раз данную команду все территории будут расформированы");
+	rasform[playerid] = 0;
+    for(new i = 0; i < totalgz; i++) 
+	{
+		gz_info[i][gzopg] = gz_info[i][standart_opg];
+		SaveGZ(gz_info[i][standart_opg], i);
+		foreach(new pl:Player) 
+		{
+			if(PI[pl][pMember] == 5 || PI[pl][pMember] == 6 || PI[pl][pMember] == 7) 
+			{
+				GangZoneHideForPlayer(pl, i);
+				GangZoneShowForPlayer(pl, i, GetGZFrac(i));
+			}
+		}
+    }
+    return ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Расформ территорий", "Вы успешно распустили все территории ОПГ!", "Закрыть", "");
+}
 CMD:admins(playerid)
 {
  	if(CheckAdmin(playerid, 1)) return 0;
@@ -398,6 +440,7 @@ cmd:setmember(playerid, params[])
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setmember [ID игрока]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	if(PI[params[0]][pOnCapture])return  SCM(playerid, COLOR_GREY, !"Игрок участвует в захвате территории");
 	SetPVarInt(playerid, "setMember", params[0]);
 	ShowPlayerDialog(playerid, 2150, DIALOG_STYLE_LIST, "{ee3366}Выберете организацию", "\
 	1. Правительство\n\
@@ -548,6 +591,7 @@ CMD:setleader(playerid,params[])
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setleader [ID игрока]");
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
     if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	if(PI[params[0]][pOnCapture])return  SCM(playerid, COLOR_GREY, !"Игрок участвует в захвате территории");
     if(PI[params[0]][pLeader] >= 1) return SCM(playerid, COLOR_LIGHTGREY, !"Игрок уже лидер, его нужно снять чтобы поставить {ff6633}(/luninvite)");
     SetPVarInt(playerid, "setLeader", params[0]);
     return ShowPlayerDialog(playerid, 2149, DIALOG_STYLE_LIST, "{ee3366}Выберете организацию", "\
@@ -598,7 +642,7 @@ CMD:auninvite(playerid, params[])
 	INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`)\
 		VALUES\
 	('%d','%d','%s','Увольнение игровым мастером','%d','%d','%d','%d')",\
-		PI[params[0]][data_ID], PI[params[0]][pMember], getName(params[0]), PI[params[0]][pRang], day, month, year);
+		PI[params[0]][pID], PI[params[0]][pMember], getName(params[0]), PI[params[0]][pRang], day, month, year);
 
 	if(PI[params[0]][pOnCapture] == 1)
 	{
@@ -649,7 +693,7 @@ CMD:luninvite(playerid, params[])
 	INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`)\
 		VALUES\
 	('%d','%d','%s','Снятие с поста лидера','%d','%d','%d','%d')",\
-		PI[params[0]][data_ID], PI[params[0]][pMember], getName(params[0]), PI[params[0]][pRang], day, month, year );
+		PI[params[0]][pID], PI[params[0]][pMember], getName(params[0]), PI[params[0]][pRang], day, month, year );
 
 	if(PI[params[0]][pOnCapture] == 1)
 	{

@@ -18,7 +18,7 @@ callback: OnCefBrowserCreated(player_id, browser_id, status_code)
 	{
 		SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}Произошла ошибка загрузки. Повторная попытка..");
 		SendAdminsMessagef(COLOR_GREEN, "CEF: У игрока %s[%d] возникла ошибка [code: 0], возможное решение (/reload или переустановка сборки)", getName(player_id), player_id);
-		cef_load_url(player_id, CEF_INTERFACE_BROWSER_ID, "https://s806841.ha010.t.mydomain.zone/cef_update/");
+		cef_load_url(player_id, CEF_INTERFACE_BROWSER_ID, "http://wh16200.web3.maze-host.ru/cef/index.html");
 	}
 	else if(status_code == 404)
 	{
@@ -43,4 +43,14 @@ callback: OnCefInitialize(player_id, success)
 	}
 	else SCM(player_id, COLOR_HINT, "[CEF-client] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (OCI)");
 	return;
+}
+CMD:reload(playerid) 
+{
+	cef_load_url(playerid, CEF_INTERFACE_BROWSER_ID, "http://wh16200.web3.maze-host.ru/cef/index.html");
+	return 1;
+}
+stock ReloadCef(playerid) 
+{
+	CheckGangWar(playerid);
+	cef_emit_event(playerid, "update-player-info", CEFINT(19), CEFINT(playerid), CEFINT(PI[playerid][data_ID]));
 }
