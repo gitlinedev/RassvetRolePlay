@@ -7,6 +7,8 @@ new OrePrice = 105;
 new InvPrice = 20;
 
 new MineClothes;
+new MineLift_down;
+new MineLift_up;
 new MinePoint_1;
 new MinePoint_2;
 new MinePoint_3;
@@ -110,6 +112,20 @@ stock mine_OnDialogResponse(playerid, dialogid, response)
 }
 stock mineOnPlayerPickUpDynamicPickup(playerid, pickupid)
 {
+    if(pickupid == MineLift_down)
+    {
+        SetPlayerPos(playerid, -354.3391,-1885.2427,16.9119);
+        SetPlayerFacingAngle(playerid, 267.2022);
+        SetCameraBehindPlayer(playerid);
+    }
+    if(pickupid == MineLift_up)
+    {
+        if(PI[playerid][pTempJob] != 2) return SendClientMessage(playerid, COLOR_GREY, !"Начните рабочий день шахтера чтобы спуститься на лифте");
+        SetPlayerPos(playerid, -286.4547,-1883.4045,18.3447);
+        SetPlayerFacingAngle(playerid, 89.2320);
+        SetCameraBehindPlayer(playerid);
+    }
+
     if(AntiFloodMine[playerid] > gettime()) return 1;
 
     if(pickupid == MineClothes)
@@ -168,7 +184,7 @@ stock mineOnPlayerPickUpDynamicPickup(playerid, pickupid)
             return 1;
         }
     }
-    AntiFloodMine[playerid] = gettime() + 5;
+    AntiFloodMine[playerid] = gettime() + 3;
     return 1;
 }
 stock mine_OnPlayerKeyStateChange(playerid, newkeys, oldkeys)

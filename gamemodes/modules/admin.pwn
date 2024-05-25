@@ -828,7 +828,7 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
                     case 2: SetPlayerPos(playerid, 2254.5574,-1727.5728,61.1377);
                     case 3: SetPlayerPos(playerid, 1880.3647,1180.8679,38.8619);
                     case 4: SetPlayerPos(playerid, 2386.1399,-938.3940,14.3443);
-                    case 5: SetPlayerPos(playerid, 1402.7463,2371.0381,23.2061+2);
+                    case 5: SetPlayerPos(playerid, 2306.2070,1757.4645,9.9055+2); // скин
                     case 6: SetPlayerPos(playerid, 2224.7097,-2611.0547,31.8857+2);
                     case 7: SetPlayerPos(playerid, -367.4405,-1198.3756,50.2112+2);
                     case 8: SetPlayerPos(playerid, 1907.1965,-2226.8005,43.2401+2);
@@ -845,6 +845,7 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
                 }
 				SetPlayerVirtualWorld(playerid,0);
 				SetPlayerInterior(playerid,0);
+				SetPlayerHealthAC(playerid, 200);
 				SendClientMessage(playerid, COLOR_LIGHTGREY, !"Вы были телепортированы {ff6633}(/tp)");
             }
         }
@@ -1041,5 +1042,27 @@ callback: UnbanAccount(playerid,name[])
 		SendAdminsMessagef(COLOR_YELLOW, "[%s #%d] %s[%d] разбанил аккаунт %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid,name);
 	}
 	else SCM(playerid, COLOR_GREY, !"Данный аккаунт не найден в базе данных");
+	return 1;
+}
+public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
+{
+	if(PI[playerid][pAdmin] >= 1)
+	{
+		new vehicleid = GetPlayerVehicleID(playerid);
+		if(vehicleid != INVALID_VEHICLE_ID)
+		{
+			SetVehiclePos(vehicleid, fX, fY, fZ);
+		}
+		else
+		{
+			SetPlayerPosAC(playerid, fX, fY, fZ);
+		}
+		SendClientMessage(playerid, -1, !"Вы были успешно телепортированы");
+	}
+	else 
+	{
+		SCM(playerid, COLOR_GREEN, "Пункт назначения отмечен у Вас на мини-карте!");
+		cef_emit_event(playerid, "show-notify", CEFINT(17), CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), CEFSTR("4ea650"));
+	}
 	return 1;
 }

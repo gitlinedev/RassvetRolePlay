@@ -64,9 +64,6 @@ main() {
 	cef_subscribe("callback_dialog_response", "CallbackDialogResponse");
 }
 
-new SV_GSTREAM:gstream = SV_NULL;
-new SV_LSTREAM:lstream[MAX_PLAYERS] = { SV_NULL, ... };
-
 //======================[ клиент - настройки ]======================//
 new console_Debbug = 1;
 new capturetime = 1;
@@ -269,22 +266,22 @@ new StopWar_cfg[][StopWar] = {
 	{7,"Кавказцы"}
 };
 static const stock VehicleNames[][] = {
-	"BMW X5","Audi A6 C8","Mersedec Akula","Lexus GX460","BMW M5 F90 2021","Mercedes-Benz E63","Камаз-ММЗ","Камаз Мусорный","Audi A6 2019","Mercedes GL63","Audi R8","Lada Kalina",
+	"BMW X5", "Lincoln Continental ", "Mercedes-Benz Е63","Mercedes-Benz Actros", "ВАЗ 2101", "Mitsubishi Lancer X", "Dumper", "КаМАЗ", "Зил 130","Mercedes GL63","Audi R8","Lada Kalina",
 	"Lexus GSF","Nissan Titan 2017","BMW M5","Porsche 911","Ambulance","Скорая помощь","Volkswagen Multivan","ВАЗ 2107","Nissan GTR","Washington","Infiniti JX 35 2013","Mr Whoopee","BF Injection",
 	"Hunter","Audi A6","Газель","Инкасатор","ГАЗ-М22","Predator","ЛиАЗ-677М","Rhino","ЗИЛ 131","Hotknife","Trailer","Toyota MarkII","Ikarus 260","ГАЗ-2402",
 	"ИЖ-412","Rumpo","RC Bandit","Romero","Packer","Monster","ЗИЗ-45","Squalo","Seasparrow","Pizzaboy","Tram","Trailer","Turismo","Speeder",
 	"Reefer","Tropic","Flatbed","ГАЗ-3309","Caddy","Audi A6","Berkley's RC Van","Skimmer","PCJ-600","Faggio","Freeway","RC Baron","RC Raider",
 	"BMW 535i","Mercedes GLE","Sanchez","Sparrow","Patriot","Audi A7","Coastguard","Dinghy","ГАЗ-21И","Toyota Land Cruiser","Rustler","ZR3 50","ИЖ-27151","ВАЗ-2114",
 	"Toyota Supra","Велосипед","Burrito","ПАЗ-3205","Marquis","ГАЗ 2402","Dozer","Maverick","News Chopper","Chevrolet Niva","FBI Rancher","Virgo","ВАЗ 2109",
-	"Jetmax","Hotring","Sandking","ЗАЗ-1102","Police Maverick","Boxville","ГАЗ-53","УАЗ-69","RC Goblin","Hotring A","Mersedes Benz E200",
-	"Bloodring Banger","Rancher","Super GT","ГАЗ-2401"," УАЗ-452","Велик","Горный велик","Beagle","Cropdust","Stunt","КАМАЗ-54115","КАЗ-608В",
+	"Jetmax","Hotring","Sandking","ЗАЗ-1102","Police Maverick","Boxville","ГАЗ-53","УАЗ-69","RC Goblin","Hotring A","Mercedes-Benz GLE 63 AMG",
+	"Bloodring Banger","Mercedes-Benz GLE 63 AMG","Super GT","ГАЗ-2401"," УАЗ-452","Велик","Горный велик","Beagle","Cropdust","Stunt","КАМАЗ-54115","КАЗ-608В",
 	"ВАЗ-21099","РАФ-2203"," ЕРАЗ-672","Shamal","Hydra","ИЖ Планета 5","NRG-500","Урал","Cement Truck","Эвакуатор","Fortune","Cadrona","FBI Truck",
-	"Willard","Forklift","Tractor","Combine","Feltzer","Remington","Slamvan","Blade","Freight","Streak","Vortex","М5 F90","Bugatti Chiron","ВАЗ 2424",
+	"Willard","Forklift","Tractor","Combine","Feltzer","Remington","Slamvan","Blade","Freight","Streak","Vortex","М5 F90","Lamborghini Aventador","ВАЗ 2424",
 	"Москвич-434","Firetruck","Москвич-400","Москвич-2125","Москвич-2140","Cargobob","ЗАЗ-968А","Sunrise","ГАЗ 31105","Utility","Nevada","УАЗ-3303","ЗАЗ-968М","Monster A",
 	"Monster B","Lamborghini Huracan Devo","Acura NSX GT3","Orange Porshe","ИЖ Москвич-427","Elegy","Raindance","RC Tiger","ВАЗ 2108","ВАЗ 2104","Savanna","Bandito","Freight","Trailer",
-	"Kart","Mower","Duneride","Sweeper","ГАЗ-М20","Москвич-408","AT-400","ЗИЛ-157","Mersedes G65","BMW X5M","BF-400","Newsvan","Tug","Trailer A","Emperor",
+	"Kart","Mower","Duneride","Sweeper","ГАЗ-М20","Москвич-408","AT-400","ЗИЛ-157","Mercedes-Benz G63 AMG 2019","BMW X5M","BF-400","Newsvan","Tug","Trailer A","Emperor",
 	"Восход 3М","Euros","ЛиАЗ-677","Club","Trailer B","Trailer C","Andromada","Dodo","RC Cam","Launch","ГАЗ-2401","ВАЗ 21099",
-	"ВАЗ 2114","УАЗ 469","ИЖ-2717","S.W.A.T.","Alpha","Phoenix","Glendale","Sadler","L Trailer A","L Trailer B",
+	"ВАЗ 2114","УАЗ 469","ИЖ-2717","S.W.A.T.","Rolls Royce Phantom 2018","Phoenix","Glendale","Sadler","L Trailer A","L Trailer B",
 	"Stair Trailer","ЛАЗ-699Р","Farm Plow","U Trailer"
 };
 enum gangzone {
@@ -898,8 +895,8 @@ new NPC_ALL[30],
 	vch_givegun_pickup,
 	palata_vhod,
 	palata_vihod,
-	shahtavhod,
-	shahtavihod,
+	MineEnter,
+	MineExit,
 	ordinatorskaya_vhod,
     ordinatorskaya_vihod,
 	ac_gun[MAX_PLAYERS][13],
@@ -1192,62 +1189,17 @@ enum P_DATA
 	pTempBankName[MAX_PLAYER_NAME]
 };
 new PI[MAX_PLAYERS][P_DATA];
-enum kvInfo {
-	data_ID,
-	data_OWNER_1[MAX_PLAYER_NAME],
-	data_OWNER_2[MAX_PLAYER_NAME],
-	data_OWNER_3[MAX_PLAYER_NAME],
-	data_OWNER_4[MAX_PLAYER_NAME],
-	data_OWNER_5[MAX_PLAYER_NAME],
-	data_OWNER_6[MAX_PLAYER_NAME],
-	data_OWNED[6],
-	data_PRICE[6],
-	data_CLASS[6],
-	data_DAY[6],
-	data_LOCK[6],
-	Float:data_CAR_POSX,
-	Float:data_CAR_POSY,
-	Float:data_CAR_POSZ,
-	Float:data_CAR_POSA,
-	Float:data_ENTER_POSX[6],
-	Float:data_ENTER_POSY[6],
-	Float:data_ENTER_POSZ[6],
-	Float:data_EXIT_POSX[6],
-	Float:data_EXIT_POSY[6],
-	Float:data_EXIT_POSZ[6],
-	Float:data_ENTER_X,
-	Float:data_ENTER_Y,
-	Float:data_ENTER_Z,
-	Float:data_EXIT_X,
-	Float:data_EXIT_Y,
-	Float:data_EXIT_Z,
-	data_PICK_ENTER,
-	data_PICK_EXIT,
-	data_PICKKV_ENTER[6],
-	data_PICKKV_EXIT[6],
-	Text3D:data_INFO[6],
-	Text3D:data_INF_ENTER,
-	Text3D:data_INF_EXIT,
-	data_MAPICON
-}
-new KV_DATA[MAX_KV][kvInfo];
-new TotalKV;
 enum B_DATA {
 	data_ID,
 	data_DAY
 }
 new BANS_DATA[MAX_BANS][B_DATA];
-enum BLACK_LIST {
+enum BG_DATA 
+{
 	data_ID,
 	data_DAY
 }
-new BL_DATA[256][BLACK_LIST];
 new TotalBans;
-new TotalBlackList;
-enum BG_DATA {
-	data_ID,
-	data_DAY
-}
 new G_DATA[MAX_G][BG_DATA];
 new TotalG;
 enum 
@@ -1292,11 +1244,8 @@ enum
 	dialog_SPAWNLAST,
 	dialog_SETSKIN,
 	dialog_SETSKINDEV,
-	dialog_ADD_KV,
 	dialog_HOUSE,
 	dialog_SELL_HOUSE,
-	dialog_KV,
-	dialog_SELL_KV,
 	dialog_ENTER_HOUSE,
 	dialog_EXIT_HOUSE,
 	dialog_ASH_TEST,
@@ -1398,6 +1347,10 @@ static PedFeMale[6] = {10,12,13,31,38,39};
 #include "modules/cef.pwn"
 #include "modules/capture.pwn"
 #include "modules/bank_system.pwn"
+//#include "modules/apartments.pwn"
+#include "modules/floats.pwn"
+#include "modules/voicechat.pwn"
+#include "modules/admin_fly.pwn"
 //#include "modules/stamina.pwn"
 //=========================================================================================//
 forward Float:GetDistanceBetweenPlayers(p1,p2);
@@ -2172,7 +2125,7 @@ public OnGameModeInit()
 	Iter_Clear(Admin);
 	SetGameModeText(GAMEMODENAME);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	gstream = SvCreateGStream(COLOR_GREEN, "GVC");
+	gstream = SvCreateGStream(COLOR_GREEN, "");
 	SvDebug(SV_FALSE);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	ClearCapture();
@@ -2181,6 +2134,7 @@ public OnGameModeInit()
 	SetTimer("SecondTimer",1000,true);
 	SetTimer("MinutTimer",1000*60,true);
 	SetTimer("ChangeServer0", 500, false);
+	SetTimer("FlyTimer", 100, 1);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	SetNameTagDrawDistance(30.0);
 	LimitPlayerMarkerRadius(70.0);
@@ -2243,6 +2197,7 @@ public OnGameModeInit()
 
 	//NEW MAPPING
 	#include <Mapping/vch> // база вч лытка
+	#include <Mapping/new_int> // БЦРБ/Шахта 
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	SelectSkin = CreateMenu("Victim", 1, 50.0, 160.0, 90.0);
 	SetMenuColumnHeader(SelectSkin, 0, "Choose skin");
@@ -2269,13 +2224,6 @@ public OnGameModeInit()
 
 	capture_OnGameModeInit();
 	//stamina_OnGameModeInit();
-	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=[ РАБОТЫ ]-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-	MineClothes = CreatePickup(1275, 23, 2330.7954, -1453.4937, 1137.4415, -1); // шахта закончить/начать 
-	MinePoint_1 = CreatePickup(19133, 23, 2383.3367,-1440.9891,1137.3475, -1); // шахта место добычи
-	MinePoint_2 = CreatePickup(19133, 23, 2364.8472,-1438.0321,1137.3826, -1); // шахта место добычи
-	MinePoint_3 = CreatePickup(19133, 23, 2382.2844,-1432.3588,1137.5203, -1); // шахта место добычи
-	MinePoint_4 = CreatePickup(19133, 23, 2372.6978,-1423.6947,1137.5745, -1); // шахта место добычи
-	MineDropOre = CreatePickup(19135, 23, 2318.4268,-1450.5154,1137.4485, -1); // шахта место сдачи
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	army_sklad_text = CreateDynamic3DTextLabel("Loading..", -1, 1567.5477,1823.2529,15.6548, 20,INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, 0);
 	Create3DTextLabel("{FFFFFF}Помощь для новичков", -1, 2748.1580,-2458.2456,21.6890, 10.0, 0);
@@ -2296,7 +2244,7 @@ public OnGameModeInit()
 	CreateDynamicMapIcon(2325.5154,-1803.9813,22.4540, 55, -1, 0, -1, -1, 400.0);// автосалон
 	CreateDynamicMapIcon(2313.8247,-1924.8029,22.4338, 25, -1, 0, -1, -1, 400.0);// казино
 	CreateDynamicMapIcon(2379.2959,-932.5500,2.0722, 14, -1, 0, -1, -1, 400.0);// ферма
-	CreateDynamicMapIcon(1434.416992,2371.655273,13.341032, 59, -1, 0, -1, -1, 400.0);// скинхеды
+	CreateDynamicMapIcon(2312.9937,1758.6670,1.1716, 59, -1, 0, -1, -1, 400.0);// скинхеды
 	CreateDynamicMapIcon(2215.5708,-2597.6665,21.9600, 58, -1, 0, -1, -1, 400.0);// гопота
 	CreateDynamicMapIcon(-370.1530,-1214.1766,41.0700, 60, -1, 0, -1, -1, 400.0);// кавказ
 	CreateDynamicMapIcon(1966.9902,-2604.1121,10.8149, 51, -1, 0, -1, -1, 400.0);// дальнобой
@@ -2313,7 +2261,7 @@ public OnGameModeInit()
 public OnGameModeExit()
 {
 	SaveServer();
-    if (gstream) SvDeleteStream(gstream);
+	if (gstream) SvDeleteStream(gstream);
 	KillTimer(CheckCarHP);
 	DisconnectMySQL();
 	return 1;
@@ -2340,21 +2288,13 @@ public OnPlayerConnect(playerid)
 	PI[playerid][data_PLAYER_TIMER_ID] = SetTimerEx("PlayerUpdate", 1000, true, "d", playerid);
 	
     SetPlayerColor(playerid, 0xB5BBBA00);
-
-	if (SvGetVersion(playerid) == SV_NULL) SCM(playerid, COLOR_HINT, "[Голосовой чат]: {FFFFFF}у Вас отсутствует голосовой чат, проверьте целостность файлов игры");
-    else if (SvHasMicro(playerid) == SV_FALSE) SCM(playerid, COLOR_HINT, "[Голосовой чат]: {FFFFFF}микрофон не обноружен, установите его в настройках {FFFF33}(F11)");
-    else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, SV_INFINITY, playerid, 0xff0000ff, "Local")))
-    {
-		if (gstream) SvAttachListenerToStream(gstream, playerid);
-        SvAddKey(playerid, 0x58);
-        SvAddKey(playerid, 0x5A);
-    }
 	//
 	PreloadAnimLib(playerid,"CARRY");
 	PreloadAnimLib(playerid,"BASEBALL");
 	//
 	ArmyStorageZone = CreateDynamicCircle(1567.5477,1823.2529, 3.0, 0, 0, -1);
 
+	AdminFly[playerid] = 0;
 	ClearPlayerData(playerid);
 
 	mysql_string[0] = EOS, f(mysql_string, 150, "SELECT `ID`, `Password`, `VkontakteID` FROM accounts WHERE Name = '%s' LIMIT 1;", getName(playerid));
@@ -2387,7 +2327,7 @@ callback: GetPlayerDataMysql(playerid)
 
 	printf("Player %s (ID: %d, ADMIN: %d)", PI[playerid][pName], PI[playerid][pID], PI[playerid][pAdmin]);
 
-	CheckStatus(playerid);
+	return LoadVoiceChat(playerid);
 }
 public OnPlayerEnterDynamicArea(playerid, areaid) 
 {
@@ -2439,11 +2379,6 @@ public OnPlayerDisconnect(playerid, reason)
         DestroyVehicle(dalnoboy_car[playerid]);
         return KillTimer(dalnaboy_check_pricep[playerid]);
     }
-    if(lstream[playerid]) 
-	{
-		SvDeleteStream(lstream[playerid]);
-		lstream[playerid] = SV_NULL;
-    }
 	PI[playerid][data_schooltestlevel] = 0;
     if(GetPVarInt(playerid,"PlayerCuffed") == 1) 
 	{
@@ -2480,6 +2415,7 @@ public OnPlayerDisconnect(playerid, reason)
 }
 public OnPlayerDeath(playerid, killerid, reason)
 {
+	AdminFly[playerid] = 0;
 
     PI[playerid][data_MASK_M] = 0;
 
@@ -3013,6 +2949,8 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
     if(!IsValidDynamicPickup(pickupid) || pPickupID[playerid]) return 0;
     pPickupID[playerid] = pickupid;
     SetPVarInt(playerid,"pickup",pickupid);
+
+	kv_OnPlayerPickUpDynamicPickup(playerid, pickupid);
 	
 	for(new g = 0; g < TotalBusiness; g++) 
 	{
@@ -3057,30 +2995,6 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 			DeletePVar(playerid, "business");
 		}
     }
-	for(new kv = 0; kv < TotalKV; kv++) 
-	{
-		if(pickupid == KV_DATA[kv][data_PICK_ENTER])
-		{
-	        SetPVarInt(playerid, "padik", kv);
-			SetPlayerPosAC(playerid, 36.0538,1923.8887,1113.7346);
-			SetPlayerFacingAngle(playerid, 179.8331);
-			SetPlayerInterior(playerid, 1);
-			SetPlayerVirtualWorld(playerid, KV_DATA[kv][data_ID]);
-			SetCameraBehindPlayer(playerid);
-			FreezePlayer(playerid);
-			SetTimerEx("UnfreezePlayer", 4000, false, "d", playerid);
-		}
-		if(pickupid == KV_DATA[kv][data_PICK_EXIT]) 
-		{
-            SetPlayerPosAC(playerid, KV_DATA[kv][data_CAR_POSX], KV_DATA[kv][data_CAR_POSY], KV_DATA[kv][data_CAR_POSZ]);
-			SetPlayerFacingAngle(playerid, KV_DATA[kv][data_CAR_POSA]);
-			SetPlayerInterior(playerid, 0);
-			SetPlayerVirtualWorld(playerid, 0);
-			SetCameraBehindPlayer(playerid);
-			FreezePlayer(playerid);
-			SetTimerEx("UnfreezePlayer", 4000, false, "d", playerid);
-		}
-	}
 	if(pickupid == metall_buy) ShowPlayerDialog(playerid, 9189, DIALOG_STYLE_INPUT, "{ee3366}Покупка металла", "{FFFFFF}Введите колличество металла, которое Вы хотите купить:\n{ffff99}Стоимость 1 кг: 30 руб", "Купить", "Закрыть");
 	if(pickupid == drugs_buy) ShowPlayerDialog(playerid, dialog_DRUGBUY, DIALOG_STYLE_INPUT, "{ee3366}Покупка веществ", "{FFFFFF}Введите колличество веществ, которое Вы хотите купить:\n{ffff99}Стоимость 1 г: 50 руб", "Купить", "Закрыть");
 	//информационные пикапы
@@ -3602,18 +3516,18 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 		Freeze(playerid);
 		return true;
     }
-    if(pickupid == shahtavhod)
+    if(pickupid == MineEnter)
     {
 	    SetPlayerVirtualWorld(playerid, 1);
 	    SetPlayerInterior(playerid, 1);
 
-  		SetPlayerPos(playerid, 2341.5740,-1457.6053,1137.4415);
-		SetPlayerFacingAngle(playerid, 92.2597);
+  		SetPlayerPos(playerid, -346.5360,-1874.5011,16.9119);
+		SetPlayerFacingAngle(playerid, 179.3512);
 		SetCameraBehindPlayer(playerid);
 		Freeze(playerid);
 		return true;
     }
-   	if(pickupid == shahtavihod)
+   	if(pickupid == MineExit)
     {
 		if(PI[playerid][pTempJob] == 2) return SendClientMessage(playerid, COLOR_GREY, !"Для начала закончите рабочий день");
 	    SetPlayerVirtualWorld(playerid, 0);
@@ -3988,6 +3902,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
 	mine_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 	nosov_OnPlayerKeyStateChange(playerid, newkeys);
+	kv_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 
 	if(PRESSED(KEY_WALK)) 
 	{
@@ -4014,33 +3929,6 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	            ShowPlayerDialog(playerid, dialog_EXIT_HOUSE, DIALOG_STYLE_MSGBOX, !"{ee3366}Дом", "{FFFFFF}Вы желаете покинуть дом?", "Выйти", "Отмена");
 	            return 1;
 	        }
-		}
-		for(new k = 0; k < 6; k++)
-		{
-		    new kv = GetPVarInt(playerid, "padik");
-		    if(PlayerToPoint(1.0, playerid, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k]) && GetPlayerVirtualWorld(playerid) == KV_DATA[kv][data_ID])
-			{
-			    if(KV_DATA[kv][data_LOCK][k] == 1) return cef_emit_event(playerid, "show-center-notify", CEFINT(2), CEFSTR("Эта квартира закрыта"));
-	            SetPlayerPosAC(playerid, KV_DATA[kv][data_EXIT_POSX][k], KV_DATA[kv][data_EXIT_POSY][k], KV_DATA[kv][data_EXIT_POSZ][k]);
-				SetPlayerFacingAngle(playerid, 0.0);
-				SetPlayerInterior(playerid, k+1);
-				SetPlayerVirtualWorld(playerid, KV_DATA[kv][data_ID]+k);
-				SetCameraBehindPlayer(playerid);
-				FreezePlayer(playerid);
-				SetTimerEx("UnfreezePlayer", 4000, false, "d", playerid);
-	            return true;
-			}
-			else if(PlayerToPoint(1.0, playerid, KV_DATA[kv][data_EXIT_POSX][k], KV_DATA[kv][data_EXIT_POSY][k], KV_DATA[kv][data_EXIT_POSZ][k]) && GetPlayerVirtualWorld(playerid) == KV_DATA[kv][data_ID]+k)
-			{
-				SetPlayerPosAC(playerid, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k]);
-				SetPlayerFacingAngle(playerid, 0.0);
-				SetPlayerInterior(playerid, 1);
-				SetPlayerVirtualWorld(playerid, KV_DATA[kv][data_ID]);
-				SetCameraBehindPlayer(playerid);
-				FreezePlayer(playerid);
-				SetTimerEx("UnfreezePlayer", 4000, false, "d", playerid);
-				return true;
-			}
 		}
 	}
  	if ((newkeys & KEY_AIM) && (newkeys & KEY_WALK))
@@ -4696,6 +4584,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext);
 	capture_OnDialogResponse(playerid, dialogid, response, listitem);
 	bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext);
+	kv_OnDialogResponse(playerid, dialogid, response, listitem);
 
 	switch(dialogid) 
 	{
@@ -5374,12 +5263,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if(!response) ShowTakeAks(playerid); 
 		    if(response) ShowTakeAks(playerid);  
 		}
-		case dialog_ADD_KV: 
+		case 3988: 
 		{
          	if(!response) return 1;
-    		if(response) {
-                SetPVarInt(playerid,"addkv",1);
-				SCM(playerid, COLOR_YELLOW, !"Встанте на место, где будет появляться игрок после выхода из подъезда {3366cc}(/tpc)");
+    		if(response) 
+			{
+                SetPVarInt(playerid, "AddKV", 1);
+				SCM(playerid, COLOR_YELLOW, !"Встанте на место, где будет появляться игрок после выхода из подъезда {3366cc}(/tpplayer)");
 			}
 		}
         case 8000: 
@@ -6101,7 +5991,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 								{FFFFFF}Номер квартиры: %d\n\
 								{FFFFFF}Статус оплаты: %d / 30 дн\n\
 								{FFFF99}Квартплата - 1299 руб / день\n\n\
-								{FFFFFF}Введите количество дней для оплаты", KV_DATA[kv][data_ID],KV_DATA[kv][data_DAY][k]);
+								{FFFFFF}Введите количество дней для оплаты", kvData[kv][kvID],kvData[kv][kvDays][k]);
 				        }
 					}
 					case 6: 
@@ -6317,10 +6207,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				new kv = PI[playerid][data_PADIK],k = PI[playerid][data_KV];
                 h_class = strval(inputtext)*1299;
 				if(h_class > GetPlayerMoneyID(playerid)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
-				if(KV_DATA[kv][data_DAY][k]+strval(inputtext) > 30) return SCM(playerid, COLOR_GREY, !"Нельзя оплатить квартиру на более 30 суток");
+				if(kvData[kv][kvDays][k]+strval(inputtext) > 30) return SCM(playerid, COLOR_GREY, !"Нельзя оплатить квартиру на более 30 суток");
 				GivePlayerMoneyLog(playerid,-h_class);
-				KV_DATA[kv][data_DAY][k] += strval(inputtext);
-				SCMf(playerid,0x138642FF, "{138642}Вы оплатили квартиру на {f1a88b}%d/30 дней{138642} за {f1a88b}%d руб",KV_DATA[kv][data_DAY][k], h_class);
+				kvData[kv][kvDays][k] += strval(inputtext);
+				SCMf(playerid,0x138642FF, "{138642}Вы оплатили квартиру на {f1a88b}%d/30 дней{138642} за {f1a88b}%d руб", kvData[kv][kvDays][k], h_class);
 			}
         }
 		/*case 6002: {
@@ -7832,86 +7722,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			  	SavePlayerData(playerid);
    			}
 		}
-		case dialog_KV: {
-			if(!response) return 1;
-			if(response) {
-			    new kv = PI[playerid][data_PADIK];
-				new k = PI[playerid][data_KV];
-			    switch(listitem) {
-			        case 0: {
-						new class_kv[10],status[18],color[8];
-						switch(KV_DATA[kv][data_CLASS][k]) {
-							case 0: class_kv = "Хрущёвка";
-							case 1: class_kv = "Простая";
-							case 2: class_kv = "Элитный";
-						}
-						switch(KV_DATA[kv][data_LOCK][k]) {
-							case 0: status = "Квартира откыта";
-							case 1: status = "Квартира закрыта";
-						}
-						switch(KV_DATA[kv][data_LOCK][k]) {
-							case 0: color = "45c068";
-							case 1: color = "ee2121";
-						}
-						new owner[24];
-						switch(k) {
-							case 0: strmid(owner, KV_DATA[kv][data_OWNER_1], 0, strlen(KV_DATA[kv][data_OWNER_1]), MAX_PLAYER_NAME);
-							case 1: strmid(owner, KV_DATA[kv][data_OWNER_2], 0, strlen(KV_DATA[kv][data_OWNER_2]), MAX_PLAYER_NAME);
-							case 2: strmid(owner, KV_DATA[kv][data_OWNER_3], 0, strlen(KV_DATA[kv][data_OWNER_3]), MAX_PLAYER_NAME);
-							case 3: strmid(owner, KV_DATA[kv][data_OWNER_4], 0, strlen(KV_DATA[kv][data_OWNER_4]), MAX_PLAYER_NAME);
-							case 4: strmid(owner, KV_DATA[kv][data_OWNER_5], 0, strlen(KV_DATA[kv][data_OWNER_5]), MAX_PLAYER_NAME);
-							case 5: strmid(owner, KV_DATA[kv][data_OWNER_6], 0, strlen(KV_DATA[kv][data_OWNER_6]), MAX_PLAYER_NAME);
-						}
-                        ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Информация о квартире", !"Закрыть", !"", "\
-						{FFFFFF}Название:\t\t{3377cc}%s\n\
-						{FFFFFF}Номер квартиры:\t%d\n\
-						{FFFFFF}Номер подъезда:\t%d\n\
-						{FFFFFF}Владелец:\t\t%s\n\
-						{FFFFFF}Стоимость:\t\t%d руб\n\
-						{FFFFFF}Статус оплаты:\t\t%d дн\n\
-						{FFFFFF}Статус:\t\t\t{%s}%s",class_kv,k+1,kv+1,owner,KV_DATA[kv][data_PRICE][k],KV_DATA[kv][data_DAY][k],color,status);
-			        }
-			        case 1: {
-	 				    if(PlayerToPoint(3.0, playerid, KV_DATA[kv][data_EXIT_POSX][k], KV_DATA[kv][data_EXIT_POSY][k], KV_DATA[kv][data_EXIT_POSZ][k]) || PlayerToPoint(3.0, playerid, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k]))
-						switch(KV_DATA[kv][data_LOCK][k]) {
-	        				case 0: KV_DATA[kv][data_LOCK][k] = 1, cef_emit_event(playerid, "show-notify", CEFINT(2), CEFSTR("Вы закрыли свою квартиру"), CEFSTR("c13537"));
-       						case 1: KV_DATA[kv][data_LOCK][k] = 0, cef_emit_event(playerid, "show-notify", CEFINT(3), CEFSTR("Вы открыли свою квартиру"), CEFSTR("487f5f"));
-				        }
-				        else SCM(playerid, COLOR_GREY, !"Необходимо находиться возле выхода/входа");
-			        }
-			        case 2:
-					{
-			            ShowPlayerDialogf(playerid, dialog_SELL_KV, DIALOG_STYLE_MSGBOX, !"{ee3366}Продажа квартиры", "Продать", "Отмена", "{FFFFFF}Вы желаете продать свою квартиру за {FFFF99}%d рублей{FFFFFF}?", KV_DATA[kv][data_PRICE][k]/2);
-			        }
-			    }
-			}
-  		}
-  		case dialog_SELL_KV: 
-		{
-			if(!response) return 1;
-			if(response) 
-			{
-		    	new kv = PI[playerid][data_PADIK];
-				new k = PI[playerid][data_KV];
-		      	KV_DATA[kv][data_OWNED][k] = 0;
-		      	KV_DATA[kv][data_DAY][k] = 0;
-		      	PI[playerid][data_KV] = INVALID_KV_ID;
-		      	PI[playerid][data_PADIK] = INVALID_KV_ID;
-		      	switch(k) {
-					case 0: strmid(KV_DATA[kv][data_OWNER_1], "None", 0, strlen(KV_DATA[kv][data_OWNER_1]), MAX_PLAYER_NAME);
-					case 1: strmid(KV_DATA[kv][data_OWNER_2], "None", 0, strlen(KV_DATA[kv][data_OWNER_2]), MAX_PLAYER_NAME);
-					case 2: strmid(KV_DATA[kv][data_OWNER_3], "None", 0, strlen(KV_DATA[kv][data_OWNER_3]), MAX_PLAYER_NAME);
-					case 3: strmid(KV_DATA[kv][data_OWNER_4], "None", 0, strlen(KV_DATA[kv][data_OWNER_4]), MAX_PLAYER_NAME);
-					case 4: strmid(KV_DATA[kv][data_OWNER_5], "None", 0, strlen(KV_DATA[kv][data_OWNER_5]), MAX_PLAYER_NAME);
-					case 5: strmid(KV_DATA[kv][data_OWNER_6], "None", 0, strlen(KV_DATA[kv][data_OWNER_6]), MAX_PLAYER_NAME);
-				}
-				GivePlayerMoneyLog(playerid,KV_DATA[kv][data_PRICE][k]/2);
-			 	SCMf(playerid, 0xFFCC00AA, "Вы продали свою квартиру государству за %d рублей", KV_DATA[kv][data_PRICE][k]/2);
-				UpdateKVData(kv,k);
-				SaveKVData(kv);
-			  	SavePlayerData(playerid);
-   			}
-		}
 		case dialog_DONATE_VIP: 
 		{
 			if(!response) return 1;
@@ -8660,7 +8470,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
   				if(strlen(inputtext) < 1 || strlen(inputtext) > 100) return SCM(playerid, COLOR_GREY,"Не менее 1 и не более 100 символов"),ReportDialog(playerid);
 	   			SendAdminsMessagef(0xFF8877FF, "Жалоба от %s[%d]:{FFFFFF} %s",PI[playerid][pName],playerid,inputtext);
 				SCMf(playerid,0xFF8877FF, "Жалоба от %s[%d]:{FFFFFF} %s",PI[playerid][pName],playerid,inputtext);
-				SCM(playerid, 0xFF8877FF, "Вы можете заблокировать голосовой чат игрока {FFFF99}F11 {FF8877}");
+				SCM(playerid, 0xFF8877FF, "Вы можете заблокировать голосовой чат игрока {FFFF99}O{FF8877}");
 			}
     	}
 		case dialog_REPORT: {
@@ -10498,13 +10308,18 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			    }
 			}
 		}
-        case 8997: {
+        case 8997: 
+		{
             if(!response) return 1;
-			if(response) {
-			    switch(listitem) {
-			        case 0: {
+			if(response) 
+			{
+			    switch(listitem)
+				{
+			        case 0: 
+					{
 					    if(PI[playerid][data_HOUSE] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
-						if(PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) {
+						if(PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) 
+						{
 							new h = PI[playerid][data_HOUSE];
 							new str_1[256];
 							format(str_1,sizeof(str_1),"\
@@ -10514,14 +10329,15 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 							{FFFFFF}Введите количество дней для оплаты", HOUSE_DATA[h][data_ID], HOUSE_DATA[h][data_DAY]);
 						 	ShowPlayerDialog(playerid, 7950, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", str_1, "Выполнить", "Назад");
 				        }
-				        else if(PI[playerid][data_KV] != INVALID_KV_ID) {
+				        else if(PI[playerid][data_KV] != INVALID_KV_ID) 
+						{
 							new kv = PI[playerid][data_PADIK],k = PI[playerid][data_KV];
 							new str_1[256];
 							format(str_1,sizeof(str_1),"\
 							{FFFFFF}Номер квартиры: %d\n\
 							{FFFFFF}Статус оплаты: %d / 30 дн\n\
 							{FFFF99}Квартплата - 1299 руб / день\n\n\
-							{FFFFFF}Введите количество дней для оплаты",KV_DATA[kv][data_ID],KV_DATA[kv][data_DAY][k]);
+							{FFFFFF}Введите количество дней для оплаты", kvData[kv][kvID], kvData[kv][kvDays][k]);
 						 	ShowPlayerDialog(playerid, 7951, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", str_1, "Выполнить", "Назад");
 				        }
 					}
@@ -10579,7 +10395,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 							Номер квартиры: %d\n\
 							{FFFFFF}Статус оплаты: %d / 30 дн\n\
 							{FFFF99}Квартплата - 1299 руб / день\n\n\
-							{FFFFFF}Введите количество дней для оплаты",KV_DATA[kv][data_ID],KV_DATA[kv][data_DAY][k]);
+							{FFFFFF}Введите количество дней для оплаты",kvData[kv][kvID],kvData[kv][kvDays][k]);
 						 	ShowPlayerDialog(playerid, 7951, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", str_1, "Выполнить", "Назад");
 				        }
 					}
@@ -10961,7 +10777,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		case 7501:
 		{
 		    if(!response) return 1;
-		    if(response) {
+		    if(response)
+			{
 			    switch(listitem) 
 				{
       				case 0: 
@@ -10984,9 +10801,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
       				case 10: ShowPlayerDialog(playerid, 7508, DIALOG_STYLE_INPUT, "{ee3366}Снять выговор в оффлайн", "{FFFFFF}Введите имя игрока в поле ниже\nПример: Ivan_Bober", "Снять", "Отмена");
       				case 11: ShowPlayerDialog(playerid, 7510, DIALOG_STYLE_INPUT, "{ee3366}Изменить внешность", "{FFFFFF}Введите ID игрока:", "Изменить", "Отмена");
       				case 12: ShowPlayerDialog(playerid, 7511, DIALOG_STYLE_INPUT, "{ee3366}Изменить группу", "{FFFFFF}Введите ID игрока:", "Изменить", "Отмена");
-					case 13: ShowPlayerDialog(playerid, 8416, DIALOG_STYLE_INPUT, "{ee3366}Назначить смотрящего", "{FFFFFF}Введите ID игрока:", "Выдать", "Отмена");
-			  		case 14: ShowPlayerDialog(playerid, 8417, DIALOG_STYLE_INPUT, "{ee3366}Снять смотрящего", "{FFFFFF}Введите ID игрока:", "Снять", "Отмена");
-			  		case 15: ShowPlayerDialog(playerid, 7503, DIALOG_STYLE_MSGBOX, !"{ee3366}Расформировать организацию", "{FFFFFF}Вы подтверждаете расормирование организации?\nДействие нельзя будет отменить.", "Продолжить", "Отмена");
+			  		case 13: ShowPlayerDialog(playerid, 7503, DIALOG_STYLE_MSGBOX, !"{ee3366}Расформировать организацию", "{FFFFFF}Вы подтверждаете расормирование организации?\nДействие нельзя будет отменить.", "Продолжить", "Отмена");
 			    }
 			}
       	}
@@ -11299,81 +11114,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if(!response) return 1;
 			if(response) callcmd::setskin(playerid,inputtext);
 		}
-		/*case 8416: 
-		{
-		    if(!response) return 1;
-			if(response) callcmd::giveantivar(playerid,inputtext);
-		}
-	  	case 8417: 
-	  	{
-		    if(!response) return 1;
-			if(response) callcmd::ungiveantivar(playerid,inputtext);
-		}*/
-		case 8416:
-		{
-			if(!response) return 1;
-			if(response)
-			{
-				new id = strval(inputtext);
-				if(!IsPlayerConnected(id))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-				if(!IsPlayerLogged{id})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-				if(PI[playerid][pMember] != PI[id][pMember]) return SCM(playerid, COLOR_GREY, !"Данный игрок не состоит в Вашей организации");
-				if(PI[id][pCaptureManager] == 1) return SCM(playerid, COLOR_GREY, !"Данный игрок уже занимает должность смотрящего за стрелами");
-
-
-				new Cache: result, query[68];
-
-				mysql_format(mysql, query, sizeof query, "SELECT * FROM accounts WHERE member='%d' AND CaptureManager = '1'", PI[playerid][pMember]);
-				result = mysql_query(mysql, query, true);
-
-				if(cache_num_rows() >= 3)
-				{	
-					SendClientMessage(playerid, COLOR_GREY, !"Максимум можно иметь 3 смотрящих за захватом территории");
-				}
-				cache_delete(result);
-
-
-				static name[24], name_player[24];
-				SetString(name, NameRang(playerid));
-				name = NameRang(playerid);
-
-				SetString(name_player, NameRang(id));
-				name_player = NameRang(id);
-				
-				SendFractionMessagef(PI[playerid][pMember], 0x69b867FF, "[R] %s %s[%d] назначил смотрящим за стрелой %s %s[%d]",\
-					name, getName(playerid), playerid,\
-					name_player, getName(id), id);
-				
-				PI[id][pCaptureManager] = 1;
-
-			}
-		}
-		case 8417:
-		{
-			if(!response) return 1;
-			if(response)
-			{
-				new id = strval(inputtext);
-				if(!IsPlayerConnected(id))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-				if(!IsPlayerLogged{id})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-				if(PI[playerid][pMember] != PI[id][pMember]) return SCM(playerid, COLOR_GREY, !"Данный игрок не состоит в Вашей организации");
-				if(PI[id][pCaptureManager] == 0) return SCM(playerid, COLOR_GREY, !"Данный игрок не занимает должность смотрящего за стрелами");
-
-				static name[24], name_player[24];
-				SetString(name, NameRang(playerid));
-				name = NameRang(playerid);
-
-				SetString(name_player, NameRang(id));
-				name_player = NameRang(id);
-				
-				SendFractionMessagef(PI[playerid][pMember], 0x69b867FF, "[R] %s %s[%d] назнал смотрящим за стрелой %s %s[%d]",\
-					name, getName(playerid), playerid,\
-					name_player, getName(id), id);
-				
-				PI[id][pCaptureManager] = 0;
-
-			}
-		}
 		case 7509: 
 		{
 		    if(!response) return 1;
@@ -11494,81 +11234,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					GetPlayerPos(playerid,x,y,z);
 					SetPlayerPosAC(playerid,x,y,z+2);
 				}
-			}
-		}
-		case 7216: 
-		{
-		    if(!response) return 1;
-			if(response) 
-			{
-			    if(!IsPlayerLogged{playerid}) return 1;
-			    if(PI[playerid][pLevel] < 2) return SCM(playerid, COLOR_GREY, !"Для преобретения имущества Вы должны иметь как минимум 2 уровень");
-				for(new k = 0; k < TotalKV; k++) {
-			        new kv;
-			        if(PlayerToPoint(3.0, playerid, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k])) {
-			            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
-			            if(KV_DATA[kv][data_OWNED][k] == 1) return SCM(playerid, COLOR_GREY, !"У данной квартиры уже есть владелец");
-						if(GetPlayerMoneyID(playerid) < KV_DATA[kv][data_PRICE][k]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
-						PI[playerid][data_PADIK] = kv;
-						PI[playerid][data_KV] = k;
-			            KV_DATA[kv][data_OWNED][k] = 1;
-			            KV_DATA[kv][data_DAY][k] = 3;
-			            switch(k)
-						{
-							case 0: strmid(KV_DATA[kv][data_OWNER_1], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 1: strmid(KV_DATA[kv][data_OWNER_2], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 2: strmid(KV_DATA[kv][data_OWNER_3], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 3: strmid(KV_DATA[kv][data_OWNER_4], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 4: strmid(KV_DATA[kv][data_OWNER_5], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 5: strmid(KV_DATA[kv][data_OWNER_6], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-						}
-			            GivePlayerMoneyLog(playerid,-KV_DATA[kv][data_PRICE][k]);
-			            SCM(playerid,0xFFCC33FF, "Поздравляем Вас с покупкой квартиры! Она была оплачена на 3 дня");
-			            SCM(playerid,0xFFCC33FF, "Для управления квартирой используйте: /home");
-			            SCM(playerid, 0x9F81F7FF, "Используйте: /setspawn, чтобы изменить место появления");
-			            UpdateKVData(kv,k);
-			            SaveKVData(kv);
-			           	SavePlayerData(playerid);
-			           	return 1;
-			        }
-			    }
-			    return 1;
-			}
-		}
-		case 7217: 
-		{
-		    if(!response) return 1;
-			if(response) 
-			{
-			    if(PI[playerid][pLevel] < 2) return SCM(playerid, COLOR_GREY, "Для преобретения имущества Вы должны иметь как минимум 2 уровень");
-				for(new k = 0; k < TotalKV; k++) {
-			        new kv;
-			        if(PlayerToPoint(3.0, playerid, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k])) {
-			            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY,"У Вас уже есть недвижимость");
-			            if(KV_DATA[kv][data_OWNED][k] == 1) return SCM(playerid, COLOR_GREY,"У данной квартиры уже есть владелец");
-						if(GetPlayerMoneyID(playerid) < KV_DATA[kv][data_PRICE][k]) return SCM(playerid, COLOR_GREY,"У Вас недостаточно денег на руках");
-						PI[playerid][data_PADIK] = kv;
-						PI[playerid][data_KV] = k;
-			            KV_DATA[kv][data_OWNED][k] = 1;
-			            KV_DATA[kv][data_DAY][k] = 3;
-			            switch(k) {
-							case 0: strmid(KV_DATA[kv][data_OWNER_1], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 1: strmid(KV_DATA[kv][data_OWNER_2], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 2: strmid(KV_DATA[kv][data_OWNER_3], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 3: strmid(KV_DATA[kv][data_OWNER_4], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 4: strmid(KV_DATA[kv][data_OWNER_5], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-							case 5: strmid(KV_DATA[kv][data_OWNER_6], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-						}
-			            GivePlayerMoneyLog(playerid,-KV_DATA[kv][data_PRICE][k]);
-			            SCM(playerid, 0xFFCC33FF, !"Поздравляем Вас с покупкой квартиры! Она была оплачена на 3 дня");
-			            SCM(playerid, 0xFFCC33FF, !"Для управления квартирой используйте: /home");
-			            SCM(playerid, 0x9F81F7FF, !"Используйте: /setspawn, чтобы изменить место появления");
-			            UpdateKVData(kv,k);
-			            SaveKVData(kv);
-			           	return 1;
-			        }
-			    }
-			    return 1;
 			}
 		}
 		case dialog_ABACK: {
@@ -11709,148 +11374,6 @@ callback: LoadHouses()
         }
         if(console_Debbug == 1) printf("[INFO]  Load houses. Load: %d h. Time: %d ms.",TotalHouses, GetTickCount()-time);
 	}
-    return 1;
-}
-callback: LoadKV() 
-{
-    new rows, fields, temp[256],time = GetTickCount(),str[256],str1[64];
-    cache_get_data(rows, fields);
-	LoadedKV = cache_get_row_count(mysql);
-    if(rows) 
-	{
-    	for(new kv = 0; kv < rows; kv++) 
-		{
-	        cache_get_field_content(kv, "id", temp), KV_DATA[kv][data_ID] = strval (temp);
-         	cache_get_field_content(kv, "owner1", KV_DATA[kv][data_OWNER_1], mysql, MAX_PLAYER_NAME);
-	        cache_get_field_content(kv, "owner2", KV_DATA[kv][data_OWNER_2], mysql, MAX_PLAYER_NAME);
-	        cache_get_field_content(kv, "owner3", KV_DATA[kv][data_OWNER_3], mysql, MAX_PLAYER_NAME);
-	        cache_get_field_content(kv, "owner4", KV_DATA[kv][data_OWNER_4], mysql, MAX_PLAYER_NAME);
-	        cache_get_field_content(kv, "owner5", KV_DATA[kv][data_OWNER_5], mysql, MAX_PLAYER_NAME);
-	        cache_get_field_content(kv, "owner6", KV_DATA[kv][data_OWNER_6], mysql, MAX_PLAYER_NAME);
-            cache_get_field_content(kv, "owned1", temp), KV_DATA[kv][data_OWNED][0] = strval (temp);
-	        cache_get_field_content(kv, "owned2", temp), KV_DATA[kv][data_OWNED][1] = strval (temp);
-	        cache_get_field_content(kv, "owned3", temp), KV_DATA[kv][data_OWNED][2] = strval (temp);
-	        cache_get_field_content(kv, "owned4", temp), KV_DATA[kv][data_OWNED][3] = strval (temp);
-	        cache_get_field_content(kv, "owned5", temp), KV_DATA[kv][data_OWNED][4] = strval (temp);
-	        cache_get_field_content(kv, "owned6", temp), KV_DATA[kv][data_OWNED][5] = strval (temp);
-	        cache_get_field_content(kv, "price1", temp), KV_DATA[kv][data_PRICE][0] = strval (temp);
-	        cache_get_field_content(kv, "price2", temp), KV_DATA[kv][data_PRICE][1] = strval (temp);
-	        cache_get_field_content(kv, "price3", temp), KV_DATA[kv][data_PRICE][2] = strval (temp);
-	        cache_get_field_content(kv, "price4", temp), KV_DATA[kv][data_PRICE][3] = strval (temp);
-	        cache_get_field_content(kv, "price5", temp), KV_DATA[kv][data_PRICE][4] = strval (temp);
-	        cache_get_field_content(kv, "price6", temp), KV_DATA[kv][data_PRICE][5] = strval (temp);
-	        cache_get_field_content(kv, "lock1", temp), KV_DATA[kv][data_LOCK][0] = strval (temp);
-	        cache_get_field_content(kv, "lock2", temp), KV_DATA[kv][data_LOCK][1] = strval (temp);
-	        cache_get_field_content(kv, "lock3", temp), KV_DATA[kv][data_LOCK][2] = strval (temp);
-	        cache_get_field_content(kv, "lock4", temp), KV_DATA[kv][data_LOCK][3] = strval (temp);
-	        cache_get_field_content(kv, "lock5", temp), KV_DATA[kv][data_LOCK][4] = strval (temp);
-	        cache_get_field_content(kv, "lock6", temp), KV_DATA[kv][data_LOCK][5] = strval (temp);
-	        cache_get_field_content(kv, "day1", temp), KV_DATA[kv][data_DAY][0] = strval (temp);
-	        cache_get_field_content(kv, "day2", temp), KV_DATA[kv][data_DAY][1] = strval (temp);
-	        cache_get_field_content(kv, "day3", temp), KV_DATA[kv][data_DAY][2] = strval (temp);
-	        cache_get_field_content(kv, "day4", temp), KV_DATA[kv][data_DAY][3] = strval (temp);
-	        cache_get_field_content(kv, "day5", temp), KV_DATA[kv][data_DAY][4] = strval (temp);
-	        cache_get_field_content(kv, "day6", temp), KV_DATA[kv][data_DAY][5] = strval (temp);
-	        cache_get_field_content(kv, "class1", temp), KV_DATA[kv][data_CLASS][0] = strval (temp);
-	        cache_get_field_content(kv, "class2", temp), KV_DATA[kv][data_CLASS][1] = strval (temp);
-	        cache_get_field_content(kv, "class3", temp), KV_DATA[kv][data_CLASS][2] = strval (temp);
-	        cache_get_field_content(kv, "class4", temp), KV_DATA[kv][data_CLASS][3] = strval (temp);
-	        cache_get_field_content(kv, "class5", temp), KV_DATA[kv][data_CLASS][4] = strval (temp);
-	        cache_get_field_content(kv, "class6", temp), KV_DATA[kv][data_CLASS][5] = strval (temp);
-	        cache_get_field_content(kv, "enter_x", temp), KV_DATA[kv][data_ENTER_X] = floatstr (temp);
-	        cache_get_field_content(kv, "enter_y", temp), KV_DATA[kv][data_ENTER_Y] = floatstr (temp);
-	        cache_get_field_content(kv, "enter_z", temp), KV_DATA[kv][data_ENTER_Z] = floatstr (temp);
-	        cache_get_field_content(kv, "exit_x", temp), KV_DATA[kv][data_EXIT_X] = floatstr (temp);
-	        cache_get_field_content(kv, "exit_y", temp), KV_DATA[kv][data_EXIT_Y] = floatstr (temp);
-	        cache_get_field_content(kv, "exit_z", temp), KV_DATA[kv][data_EXIT_Z] = floatstr (temp);
-			// Вход в инт
-            KV_DATA[kv][data_ENTER_POSX][0] = 32.7846;
-            KV_DATA[kv][data_ENTER_POSY][0] = 1906.9014;
-            KV_DATA[kv][data_ENTER_POSZ][0] = 1116.1168;
-            KV_DATA[kv][data_ENTER_POSX][1] = 37.1719;
-            KV_DATA[kv][data_ENTER_POSY][1] = 1906.7296;
-            KV_DATA[kv][data_ENTER_POSZ][1] = 1116.1168;
-            KV_DATA[kv][data_ENTER_POSX][2] = 44.9090;
-            KV_DATA[kv][data_ENTER_POSY][2] = 1908.8892;
-            KV_DATA[kv][data_ENTER_POSZ][2] = 1116.1168;
-            KV_DATA[kv][data_ENTER_POSX][3] = 37.5377;
-            KV_DATA[kv][data_ENTER_POSY][3] = 1927.5522;
-            KV_DATA[kv][data_ENTER_POSZ][3] = 1120.9175;
-            KV_DATA[kv][data_ENTER_POSX][4] = 31.3240;
-            KV_DATA[kv][data_ENTER_POSY][4] = 1924.9763;
-            KV_DATA[kv][data_ENTER_POSZ][4] = 1120.9175;
-            KV_DATA[kv][data_ENTER_POSX][5] = 33.4195;
-            KV_DATA[kv][data_ENTER_POSY][5] = 1927.6848;
-            KV_DATA[kv][data_ENTER_POSZ][5] = 1120.9175;
-            // Выход из инт
-            KV_DATA[kv][data_EXIT_POSX][0] = 1113.1810;
-            KV_DATA[kv][data_EXIT_POSY][0] = 1525.8893;
-            KV_DATA[kv][data_EXIT_POSZ][0] = 905.8036;
-            KV_DATA[kv][data_EXIT_POSX][1] = 1113.1810;
-            KV_DATA[kv][data_EXIT_POSY][1] = 1525.8893;
-            KV_DATA[kv][data_EXIT_POSZ][1] = 905.8036;
-            KV_DATA[kv][data_EXIT_POSX][2] = 1113.1810;
-            KV_DATA[kv][data_EXIT_POSY][2] = 1525.8893;
-            KV_DATA[kv][data_EXIT_POSZ][2] = 905.8036;
-            KV_DATA[kv][data_EXIT_POSX][3] = 1113.1810;
-            KV_DATA[kv][data_EXIT_POSY][3] = 1525.8893;
-            KV_DATA[kv][data_EXIT_POSZ][3] = 905.8036;
-            KV_DATA[kv][data_EXIT_POSX][4] = 1113.1810;
-            KV_DATA[kv][data_EXIT_POSY][4] = 1525.8893;
-            KV_DATA[kv][data_EXIT_POSZ][4] = 905.8036;
-            KV_DATA[kv][data_EXIT_POSX][5] = 1113.1810;
-            KV_DATA[kv][data_EXIT_POSY][5] = 1525.8893;
-            KV_DATA[kv][data_EXIT_POSZ][5] = 905.8036;
-	        cache_get_field_content(kv, "car_posx", temp), KV_DATA[kv][data_CAR_POSX] = floatstr (temp);
-	        cache_get_field_content(kv, "car_posy", temp), KV_DATA[kv][data_CAR_POSY] = floatstr (temp);
-	        cache_get_field_content(kv, "car_posz", temp), KV_DATA[kv][data_CAR_POSZ] = floatstr (temp);
-	        cache_get_field_content(kv, "car_posa", temp), KV_DATA[kv][data_CAR_POSA] = floatstr (temp);
-	        TotalKV++;
-            KV_DATA[kv][data_PICK_ENTER] = CreateDynamicPickup(1272, 23, KV_DATA[kv][data_ENTER_X], KV_DATA[kv][data_ENTER_Y], KV_DATA[kv][data_ENTER_Z],0);
-			KV_DATA[kv][data_PICK_EXIT] = CreateDynamicPickup(1318, 23, 35.8316,1927.6235,1113.7346,KV_DATA[kv][data_ID]);
-			format(str1,sizeof(str1), "{FFFFFF}Подъезд {ee3366}№%d\n{FFFFFF}Кол-во квартир: {ee3366}7",kv+1);
-   			KV_DATA[kv][data_INF_ENTER] = CreateDynamic3DTextLabel(str1, -1, KV_DATA[kv][data_ENTER_X], KV_DATA[kv][data_ENTER_Y], KV_DATA[kv][data_ENTER_Z], 5.0,INVALID_PLAYER_ID,INVALID_VEHICLE_ID,0,0);
-   			KV_DATA[kv][data_INF_EXIT] = CreateDynamic3DTextLabel("{FFFFFF}Для выхода нажмите 'L.ALT'", -1, KV_DATA[kv][data_EXIT_X], KV_DATA[kv][data_EXIT_Y], KV_DATA[kv][data_EXIT_Z], 5.0,INVALID_PLAYER_ID,INVALID_VEHICLE_ID,0,KV_DATA[kv][data_ID]);
-			new owner[MAX_PLAYER_NAME], class_kv[9],kk;
-			for(new k = 0; k < 6; k++) {
-				switch(k) {
-				    case 0: strmid(owner, KV_DATA[kv][data_OWNER_1], 0, strlen(KV_DATA[kv][data_OWNER_1]), MAX_PLAYER_NAME);
-				    case 1: strmid(owner, KV_DATA[kv][data_OWNER_2], 0, strlen(KV_DATA[kv][data_OWNER_2]), MAX_PLAYER_NAME);
-				    case 2: strmid(owner, KV_DATA[kv][data_OWNER_3], 0, strlen(KV_DATA[kv][data_OWNER_3]), MAX_PLAYER_NAME);
-				    case 3: strmid(owner, KV_DATA[kv][data_OWNER_4], 0, strlen(KV_DATA[kv][data_OWNER_4]), MAX_PLAYER_NAME);
-				    case 4: strmid(owner, KV_DATA[kv][data_OWNER_5], 0, strlen(KV_DATA[kv][data_OWNER_5]), MAX_PLAYER_NAME);
-				    case 5: strmid(owner, KV_DATA[kv][data_OWNER_6], 0, strlen(KV_DATA[kv][data_OWNER_6]), MAX_PLAYER_NAME);
-				}
-				switch(KV_DATA[kv][data_CLASS][k]) {
-				    case 0: class_kv = "Хрущёвка";
-				    case 1: class_kv = "Простая";
-				    case 2: class_kv = "Элитный";
-				}
-				KV_DATA[kv][data_PICKKV_ENTER][k] = CreateDynamicPickup(1277, 23, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k], KV_DATA[kv][data_ID]);
-				KV_DATA[kv][data_PICKKV_EXIT][k] = CreateDynamicPickup(1272, 23, KV_DATA[kv][data_EXIT_POSX][k], KV_DATA[kv][data_EXIT_POSY][k], KV_DATA[kv][data_EXIT_POSZ][k], KV_DATA[kv][data_ID]+k);
-				if(KV_DATA[kv][data_OWNED][k] == 1) {
-			        kk++;
-			        format(str,sizeof(str), "\
-					{ffffff}Номер квартиры: {ffffff}№%d\n\
-					{ffffff}Название: {FFFFFF}%s\n\
-					{ffffff}Владелец: {3377cc}%s\n\
-					Стоимость: {3377cc}%d руб",k+1, class_kv, owner, KV_DATA[kv][data_PRICE][k]);
-		 	        KV_DATA[kv][data_INFO][k] = CreateDynamic3DTextLabel(str, -1, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k], 5.0,INVALID_PLAYER_ID,INVALID_VEHICLE_ID,0,KV_DATA[kv][data_ID]);
-			    }
-			    else {
-                    format(str,sizeof(str), "\
-					{ffffff}Номер квартиры: {ffffff}№%d\n\
-					{ffffff}Название: {ffffff}%s\n\
-					{ffffff}Стоимость: {ffffff}%d рублей\n\
-					{ffffff}Используйте: {3377cc}/buykv",k+1, class_kv, KV_DATA[kv][data_PRICE][k]);
-		 	        KV_DATA[kv][data_INFO][k] = CreateDynamic3DTextLabel(str, -1, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k], 5.0,INVALID_PLAYER_ID,INVALID_VEHICLE_ID,0,KV_DATA[kv][data_ID]);
-			    }
-			}
-			if(kk == 6) KV_DATA[kv][data_MAPICON] = CreateDynamicMapIcon(KV_DATA[kv][data_ENTER_X], KV_DATA[kv][data_ENTER_Y], KV_DATA[kv][data_ENTER_Z], 32, -1, 0, -1, -1, 100.0);
-			else KV_DATA[kv][data_MAPICON] = CreateDynamicMapIcon(KV_DATA[kv][data_ENTER_X], KV_DATA[kv][data_ENTER_Y], KV_DATA[kv][data_ENTER_Z], 31, -1, 0, -1, -1, 100.0);
-        }
-        if(console_Debbug == 1) printf("[INFO]  Load kvartiry. Load: %d b. Time: %d ms.",TotalKV,GetTickCount()-time);
-  	}
     return 1;
 }
 callback: LoadGZ() {
@@ -12511,12 +12034,12 @@ callback: CheckNameDonate(playerid, inputtext[])
 			new k = PI[playerid][data_KV];
 			switch(k) 
 			{
-				case 0: strmid(KV_DATA[kv][data_OWNER_1], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 1: strmid(KV_DATA[kv][data_OWNER_2], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 2: strmid(KV_DATA[kv][data_OWNER_3], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 3: strmid(KV_DATA[kv][data_OWNER_4], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 4: strmid(KV_DATA[kv][data_OWNER_5], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 5: strmid(KV_DATA[kv][data_OWNER_6], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 0: strmid(kvData[kv][kvOwner_1], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 1: strmid(kvData[kv][kvOwner_2], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 2: strmid(kvData[kv][kvOwner_3], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 3: strmid(kvData[kv][kvOwner_4], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 4: strmid(kvData[kv][kvOwner_5], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 5: strmid(kvData[kv][kvOwner_6], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
 			}
 			UpdateKVData(kv, k);
 			SaveKVData(kv);
@@ -12575,12 +12098,12 @@ callback: CheckName(playerid, inputtext[])
 			new k = PI[playerid][data_KV];
 			switch(k) 
 			{
-				case 0: strmid(KV_DATA[kv][data_OWNER_1], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 1: strmid(KV_DATA[kv][data_OWNER_2], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 2: strmid(KV_DATA[kv][data_OWNER_3], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 3: strmid(KV_DATA[kv][data_OWNER_4], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 4: strmid(KV_DATA[kv][data_OWNER_5], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-				case 5: strmid(KV_DATA[kv][data_OWNER_6], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 0: strmid(kvData[kv][kvOwner_1], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 1: strmid(kvData[kv][kvOwner_2], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 2: strmid(kvData[kv][kvOwner_3], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 3: strmid(kvData[kv][kvOwner_4], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 4: strmid(kvData[kv][kvOwner_5], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
+				case 5: strmid(kvData[kv][kvOwner_6], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
 			}
 			UpdateKVData(kv, k);
 			SaveKVData(kv);
@@ -13389,88 +12912,6 @@ stock SaveHouseData(h) {
 	mysql_function_query(mysql, str_q, true, "", "");
 	return 1;
 }
-stock SaveKVData(kv) {
-	new str_q[512];
-	new str_q2[512];
-	str_q = "UPDATE `kvartiry` SET ";
-	acc_str_strcat(str_q, sizeof(str_q), "owner1", KV_DATA[kv][data_OWNER_1]);
-	acc_str_strcat(str_q, sizeof(str_q), "owner2", KV_DATA[kv][data_OWNER_2]);
-	acc_str_strcat(str_q, sizeof(str_q), "owner3", KV_DATA[kv][data_OWNER_3]);
-	acc_str_strcat(str_q, sizeof(str_q), "owner4", KV_DATA[kv][data_OWNER_4]);
-	acc_str_strcat(str_q, sizeof(str_q), "owner5", KV_DATA[kv][data_OWNER_5]);
-	acc_str_strcat(str_q, sizeof(str_q), "owner6", KV_DATA[kv][data_OWNER_6]);
-	acc_int_strcat(str_q, sizeof(str_q), "owned1", KV_DATA[kv][data_OWNED][0]);
-	acc_int_strcat(str_q, sizeof(str_q), "owned2", KV_DATA[kv][data_OWNED][1]);
-	acc_int_strcat(str_q, sizeof(str_q), "owned3", KV_DATA[kv][data_OWNED][2]);
-	acc_int_strcat(str_q, sizeof(str_q), "owned4", KV_DATA[kv][data_OWNED][3]);
-	acc_int_strcat(str_q, sizeof(str_q), "owned5", KV_DATA[kv][data_OWNED][4]);
-	acc_int_strcat(str_q, sizeof(str_q), "owned6", KV_DATA[kv][data_OWNED][5]);
-	acc_int_strcat(str_q, sizeof(str_q), "lock1", KV_DATA[kv][data_LOCK][0]);
-	acc_int_strcat(str_q, sizeof(str_q), "lock2", KV_DATA[kv][data_LOCK][1]);
-	acc_int_strcat(str_q, sizeof(str_q), "lock3", KV_DATA[kv][data_LOCK][2]);
-	acc_int_strcat(str_q, sizeof(str_q), "lock4", KV_DATA[kv][data_LOCK][3]);
-	acc_int_strcat(str_q, sizeof(str_q), "lock5", KV_DATA[kv][data_LOCK][4]);
-	acc_int_strcat(str_q, sizeof(str_q), "lock6", KV_DATA[kv][data_LOCK][5]);
-	acc_int_strcat(str_q, sizeof(str_q), "day1", KV_DATA[kv][data_DAY][0]);
-	acc_int_strcat(str_q, sizeof(str_q), "day2", KV_DATA[kv][data_DAY][1]);
-	acc_int_strcat(str_q, sizeof(str_q), "day3", KV_DATA[kv][data_DAY][2]);
-	acc_int_strcat(str_q, sizeof(str_q), "day4", KV_DATA[kv][data_DAY][3]);
-	acc_int_strcat(str_q, sizeof(str_q), "day5", KV_DATA[kv][data_DAY][4]);
-	acc_int_strcat(str_q, sizeof(str_q), "day6", KV_DATA[kv][data_DAY][5]);
-	strdel(str_q, strlen(str_q)-1, strlen(str_q));
-	format(str_q2,sizeof(str_q2)," WHERE `id` = '%d' LIMIT 1",KV_DATA[kv][data_ID]);
-	strcat(str_q, str_q2);
-	mysql_function_query(mysql, str_q, true, "", "");
-	return 1;
-}
-stock UpdateKVData(kv, k) {
-	DestroyDynamic3DTextLabel(KV_DATA[kv][data_INFO][k]);
-    new owner[MAX_PLAYER_NAME], class_kv[9],str[174];
-	switch(k) {
-		case 0: strmid(owner, KV_DATA[kv][data_OWNER_1], 0, strlen(KV_DATA[kv][data_OWNER_1]), MAX_PLAYER_NAME);
-		case 1: strmid(owner, KV_DATA[kv][data_OWNER_2], 0, strlen(KV_DATA[kv][data_OWNER_2]), MAX_PLAYER_NAME);
-		case 2: strmid(owner, KV_DATA[kv][data_OWNER_3], 0, strlen(KV_DATA[kv][data_OWNER_3]), MAX_PLAYER_NAME);
-		case 3: strmid(owner, KV_DATA[kv][data_OWNER_4], 0, strlen(KV_DATA[kv][data_OWNER_4]), MAX_PLAYER_NAME);
-		case 4: strmid(owner, KV_DATA[kv][data_OWNER_5], 0, strlen(KV_DATA[kv][data_OWNER_5]), MAX_PLAYER_NAME);
-		case 5: strmid(owner, KV_DATA[kv][data_OWNER_6], 0, strlen(KV_DATA[kv][data_OWNER_6]), MAX_PLAYER_NAME);
-	}
-	switch(KV_DATA[kv][data_CLASS][k]) {
-	    case 0: class_kv = "Хрущёвка";
-	    case 1: class_kv = "Простая";
-	    case 2: class_kv = "Элитный";
-	}
-	if(KV_DATA[kv][data_OWNED][k] == 0) {
-        format(str,sizeof(str), "\
-		{ffffff}Номер квартиры: {ffffff}№%d\n\
-		{ffffff}Название: {ffffff}%s\n\
-		{ffffff}Стоимость: {ffffff}%d рублей\n\
-		{ffffff}Используйте: {3377cc}/buykv",k+1, class_kv, KV_DATA[kv][data_PRICE][k]);
-        KV_DATA[kv][data_INFO][k] = CreateDynamic3DTextLabel(str, -1, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k], 5.0,INVALID_PLAYER_ID,INVALID_VEHICLE_ID,0,KV_DATA[kv][data_ID]);
-    }
-    else {
-		format(str,sizeof(str), "\
-		{ffffff}Номер квартиры: {ffffff}№%d\n\
-		{ffffff}Название: {FFFFFF}%s\n\
-		{ffffff}Владелец: {3377cc}%s\n\
-		Стоимость: {3377cc}%d руб",k+1, class_kv, owner, KV_DATA[kv][data_PRICE][k]);
-        KV_DATA[kv][data_INFO][k] = CreateDynamic3DTextLabel(str, -1, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k], 5.0,INVALID_PLAYER_ID,INVALID_VEHICLE_ID,0,KV_DATA[kv][data_ID]);
-	}	
-	new kk;
-	for(new kq = 0; kq < 6; kq++) {
-		if(KV_DATA[kv][data_OWNED][kq] == 0)
-		{}
-		else kk++;
-	}
-	if(kk == 6) {
-	    DestroyDynamicMapIcon(KV_DATA[kv][data_MAPICON]);
-		KV_DATA[kv][data_MAPICON] = CreateDynamicMapIcon(KV_DATA[kv][data_ENTER_X], KV_DATA[kv][data_ENTER_Y], KV_DATA[kv][data_ENTER_Z], 32, -1, 0, -1, -1, 100.0);
-	}
-	else {
-	    DestroyDynamicMapIcon(KV_DATA[kv][data_MAPICON]);
-		KV_DATA[kv][data_MAPICON] = CreateDynamicMapIcon(KV_DATA[kv][data_ENTER_X], KV_DATA[kv][data_ENTER_Y], KV_DATA[kv][data_ENTER_Z], 31, -1, 0, -1, -1, 100.0);
-	}
-	return 1;
-}
 stock GetCoordBootVehicle(vehicleid, &Float:x, &Float:y, &Float:z) {
 	new Float:angle,Float:distance;
 	GetVehicleModelInfo(GetVehicleModel(vehicleid), 1, x, distance, z);
@@ -13589,8 +13030,10 @@ stock ProxDetector(Float:radi, playerid, string[],col1,col2,col3,col4,col5) {
     }
     return 1;
 }
-stock RestartCFG() {
-	for(new i = 0; i < MAX_PLAYERS; i++) {
+stock RestartCFG() 
+{
+	for(new i = 0; i < MAX_PLAYERS; i++) 
+	{
 		if(!IsPlayerConnected(i)) continue;
 		SCM(i, COLOR_TOMATO, "");
 		SCM(i, COLOR_TOMATO, "");
@@ -13620,22 +13063,22 @@ stock RestartCFG() {
 	{
 		for(new k = 0; k < 6; k++) 
 		{
-  			if(KV_DATA[kv][data_OWNED][k] == 1) 
+  			if(kvData[kv][kvOwned][k] == 1) 
 			{
-				if(KV_DATA[kv][data_DAY][k] > 1) KV_DATA[kv][data_DAY][k]--;
+				if(kvData[kv][kvDays][k] > 1) kvData[kv][kvDays][k]--;
 				else 
 				{
 				    switch(k) 
 					{
-						case 0: strmid(KV_DATA[kv][data_OWNER_1], "none", 0, strlen(KV_DATA[kv][data_OWNER_1]), MAX_PLAYER_NAME);
-						case 1: strmid(KV_DATA[kv][data_OWNER_2], "none", 0, strlen(KV_DATA[kv][data_OWNER_2]), MAX_PLAYER_NAME);
-						case 2: strmid(KV_DATA[kv][data_OWNER_3], "none", 0, strlen(KV_DATA[kv][data_OWNER_3]), MAX_PLAYER_NAME);
-						case 3: strmid(KV_DATA[kv][data_OWNER_4], "none", 0, strlen(KV_DATA[kv][data_OWNER_4]), MAX_PLAYER_NAME);
-						case 4: strmid(KV_DATA[kv][data_OWNER_5], "none", 0, strlen(KV_DATA[kv][data_OWNER_5]), MAX_PLAYER_NAME);
-						case 5: strmid(KV_DATA[kv][data_OWNER_6], "none", 0, strlen(KV_DATA[kv][data_OWNER_6]), MAX_PLAYER_NAME);
+						case 0: strmid(kvData[kv][kvOwner_1], "none", 0, strlen(kvData[kv][kvOwner_1]), MAX_PLAYER_NAME);
+						case 1: strmid(kvData[kv][kvOwner_2], "none", 0, strlen(kvData[kv][kvOwner_2]), MAX_PLAYER_NAME);
+						case 2: strmid(kvData[kv][kvOwner_3], "none", 0, strlen(kvData[kv][kvOwner_3]), MAX_PLAYER_NAME);
+						case 3: strmid(kvData[kv][kvOwner_4], "none", 0, strlen(kvData[kv][kvOwner_4]), MAX_PLAYER_NAME);
+						case 4: strmid(kvData[kv][kvOwner_5], "none", 0, strlen(kvData[kv][kvOwner_5]), MAX_PLAYER_NAME);
+						case 5: strmid(kvData[kv][kvOwner_6], "none", 0, strlen(kvData[kv][kvOwner_6]), MAX_PLAYER_NAME);
 					}
-				    mysql_tqueryf(mysql, "UPDATE `accounts` SET `kv` = '-1', `padik` = '-1', `salary` = '%d' WHERE `padik` = '%d' AND `kv` = '%d'", KV_DATA[kv][data_PRICE][k]/2, kv, k);
-	    			KV_DATA[kv][data_OWNED][k] = 0;
+				    mysql_tqueryf(mysql, "UPDATE `accounts` SET `kv` = '-1', `padik` = '-1', `salary` = '%d' WHERE `padik` = '%d' AND `kv` = '%d'", kvData[kv][kvCost]/2, kv, k);
+	    			kvData[kv][kvOwned][k] = 0;
 				}
 			}
 		}
@@ -14546,11 +13989,11 @@ stock SettingSpawn(playerid)
 				new kv = PI[playerid][data_PADIK];
 				new k = PI[playerid][data_KV];
 				SetPVarInt(playerid, "padik",kv);
-				SetSpawnInfoEx(playerid, skin, KV_DATA[kv][data_CAR_POSX], KV_DATA[kv][data_CAR_POSY], KV_DATA[kv][data_CAR_POSZ], KV_DATA[kv][data_CAR_POSA]);
+				SetSpawnInfoEx(playerid, skin, kvData[kv][kvExit_X], kvData[kv][kvExit_Y], kvData[kv][kvExit_Z], kvData[kv][kvExit_A]);
 				SetPlayerInterior(playerid,0);
 				SetPlayerVirtualWorld(playerid,0);
 				Freeze(playerid);
-				SCMf(playerid, COLOR_GREEN, "Ваша квартира оплачена на %d дня/дней",KV_DATA[kv][data_DAY][k]);
+				SCMf(playerid, COLOR_GREEN, "Ваша квартира оплачена на %d дня/дней",kvData[kv][kvDays][k]);
 				return true;
 			}
 			else if(PI[playerid][data_KV] == INVALID_KV_ID)
@@ -14668,23 +14111,8 @@ stock SetPlayerSkills(playerid)
 	}
     return 1;
 }
-stock addkv(playerid) 
+stock AddHouse(playerid) 
 {
-    new Float:a1 = GetPVarFloat(playerid, "aEnterX");
-    new Float:a2 = GetPVarFloat(playerid, "aEnterY");
-    new Float:a3 = GetPVarFloat(playerid, "aEnterZ");
-    new Float:a4 = GetPVarFloat(playerid, "aCarX");
-    new Float:a5 = GetPVarFloat(playerid, "aCarY");
-    new Float:a6 = GetPVarFloat(playerid, "aCarZ");
-    new Float:a7 = GetPVarFloat(playerid, "aCarAngle");
-	new str_q[512];
-	mysql_format(mysql,str_q, sizeof str_q, "INSERT INTO `kvartiry` ( `enter_x`, `enter_y`, `enter_z`, `car_posx`, `car_posy`, `car_posz`, `car_posa`) VALUES ( '%f', '%f', '%f', '%f', '%f', '%f', '%f')",a1,a2,a3,a4,a5,a6,a7);
-    mysql_function_query(mysql, str_q, false, "", "");
-    CreateDynamicMapIcon(GetPVarFloat(playerid, "aEnterX"), GetPVarFloat(playerid, "aEnterY"), GetPVarFloat(playerid, "aEnterZ"), 31, -1, 0, -1, -1, 100.0);
-    CreateDynamicPickup(1273, 23, GetPVarFloat(playerid, "aEnterX"), GetPVarFloat(playerid, "aEnterY"), GetPVarFloat(playerid, "aEnterZ"),-1);
-	return 1;
-}
-stock AddHouse(playerid) {
     new h = TotalHouses;
     new Float:a1 = GetPVarFloat(playerid, "aEnterX");
     new Float:a2 = GetPVarFloat(playerid, "aEnterY");
@@ -14832,6 +14260,7 @@ CMD:flip(playerid, params[])
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] перевернул транспорт игрока %s[%d]", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid,getName(params[0]),params[0]);
 	return 1;
 }
+alias:ans("pm");
 CMD:ans(playerid,params[]) 
 {
     if(CheckAdmin(playerid, 2)) return 1;
@@ -14992,7 +14421,6 @@ CMD:makegm(playerid, params[])
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /makegm [ID игрока]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	if(PI[params[0]][pAdmin] >= PI[playerid][pAdmin]) return SCM(playerid, COLOR_GREY, !"Чтобы изменить уровень данного игрового мастера обратитесь к основателю.");
 	if(PI[playerid][pAdmin] < PI[params[0]][pAdmin]) return SCM(playerid, COLOR_GREY, !"Нельзя изменить уровень игрового мастера который выше Вас");
 	SetPVarInt(playerid, "AdmID", params[0]);
 	return ShowPlayerDialog(playerid, 8000, DIALOG_STYLE_LIST, "{ee3366}Выдача прав игрового мастера", "\
@@ -15160,40 +14588,6 @@ CMD:invite(playerid,params[])
 	
 	mysql_string[0] = EOS, f(mysql_string, 110, "SELECT * FROM `fractions_blacklist` WHERE bl_name = '%e' AND bl_fraction = '%d'", getName(params[0]), PI[playerid][pMember]);
 	mysql_tquery(mysql, mysql_string, "CheckBlackListInvite", "d", playerid);
-	return 1;
-}
-callback: CheckBlackListInvite(playerid) 
-{
-	new id = GetPVarInt(playerid, "Invite");
-	new rows, fields;
-    cache_get_data(rows, fields);
-    if(rows) 
-	{
-		SCM(playerid, COLOR_GREY, !"Вы не можете принять игрока из чёрного списка организации.");
-		SCM(id, COLOR_GREY, !"Вы находитесь в чёрном списке организации");
-
-		return DeletePVar(playerid, "Invite");
-	}
-	else 
-	{
-		if(id == playerid) return SCM(playerid, COLOR_GREY, !"Нельзя использовать на самом себе");
-		if(!IsPlayerConnected(id))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-		if(!IsPlayerLogged{id})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-		if(PI[id][pMember] != 0) return  SCM(playerid, COLOR_GREY, !"Данный игрок состоит в организации");
-		if(PI[id][data_WARN] > 0) return SCM(playerid, COLOR_GREY, !"У данного игрока есть предупреждения");
-		if(PI[id][data_MILITARY] == 0 && PI[playerid][pMember] == 3) return SCM(playerid, COLOR_GREY, !"У игрока нет военного билета");
-
-		new Float:x,Float:y,Float:z;
-		GetPlayerPos(id,x,y,z);
-		if(!PlayerToPoint(5.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Данный игрок слишком далеко от Вас");
-
-		SetPVarInt(playerid, "to_player", id);
-		new str1[144];
-		format(str1,sizeof(str1),"{FFFFFF}- Отлично! Я думаю мы сработаемся {FF99CC}- сказал %s, взяв пакет с формой",getName(playerid));
-		ProxDetector(25.0, playerid, str1, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF ,0xFF99CCFF);
-		pCurrectMessage[playerid]++;
-		pTimerMessage[playerid] = gettime() + 1;
-	}
 	return 1;
 }
 CMD:leave(playerid,params[]) 
@@ -15398,23 +14792,17 @@ CMD:allmembers(playerid)
 	mysql_function_query(mysql, str_q, true, "LoadAllMembers", "d", playerid);
 	return 1;
 }
-CMD:addkv(playerid) 
-{
-    if(CheckAdmin(playerid, 8)) return 1;
-	ShowPlayerDialog(playerid,dialog_ADD_KV,DIALOG_STYLE_MSGBOX, !"{ee3366}Добавление подъезда","Вы желаете добавить подъезд?","Да","Отмена");
-	return 1;
-}
 CMD:tpc(playerid) 
 {
     if(CheckAdmin(playerid, 8)) return 1;
-	if(GetPVarInt(playerid, "addkv") == 0 && GetPVarInt(playerid, "addhouse") == 0) return SCM(playerid, COLOR_GREY, !"Вы не начали добавлять подъезд");
+	if(GetPVarInt(playerid, "AddKV") == 0 && GetPVarInt(playerid, "addhouse") == 0) return SCM(playerid, COLOR_GREY, !"Вы не начали добавлять подъезд / дом");
 	new Float:x, Float:y, Float:z, Float:a;
     GetPlayerPos(playerid, x, y, z);
     GetPlayerFacingAngle(playerid, a);
-  	SetPVarFloat(playerid,"aCarX",x);
-  	SetPVarFloat(playerid,"aCarY",y);
-  	SetPVarFloat(playerid,"aCarZ",z);
-  	SetPVarFloat(playerid,"aCarAngle",a);
+  	SetPVarFloat(playerid,"aCarX", x);
+  	SetPVarFloat(playerid,"aCarY", y);
+  	SetPVarFloat(playerid,"aCarZ", z);
+  	SetPVarFloat(playerid,"aCarAngle", a);
   	SCM(playerid, COLOR_YELLOW, !"Встаньте на место, где будет находиться подъезд и введите (/tpkv) или же если создаёте дом (/tph)");
 	return 1;
 }
@@ -15464,59 +14852,6 @@ CMD:licsell(playerid,params[])
 	}
 	else SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
 	return 1;
-}
-CMD:tpkv(playerid) 
-{
-    if(CheckAdmin(playerid, 8)) return 1;
-	if(GetPVarInt(playerid, "addkv") == 0) return SCM(playerid, COLOR_GREY, !"Вы не начали добавлять подъезд");
-	new Float:x, Float:y, Float:z;
-	GetPlayerPos(playerid, x, y, z);
-	SetPVarFloat(playerid,"aEnterX",x);
-	SetPVarFloat(playerid,"aEnterY",y);
-	SetPVarFloat(playerid,"aEnterZ",z);
-	return addkv(playerid);
-}
-CMD:home(playerid) 
-{
-    if(PI[playerid][data_HOUSE] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
-	if(PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) ShowPlayerDialog(playerid, dialog_HOUSE, DIALOG_STYLE_LIST, "{ee3366}Дом", "Информация\nОткрыть/закрыть дом\nПродать дом", "Выбрать", "Отмена");
-	else ShowPlayerDialog(playerid, dialog_KV, DIALOG_STYLE_LIST, "{ee3366}Квартира", "Информация\nОткрыть/закрыть квартиру\nПродать квартиру", "Выбрать", "Отмена");
-	return 1;
-}
-CMD:buykv(playerid) 
-{
-	if(PI[playerid][pLevel] < 2) return SCM(playerid, COLOR_GREY, "Для преобретения имущества Вы должны иметь как минимум 2 уровень");
-	for(new k = 0; k < TotalKV; k++)
-    {
-        new kv = GetPlayerVirtualWorld(playerid)-1;
-        if(kv == -1) break;
-        if(PlayerToPoint(3.0, playerid, KV_DATA[kv][data_ENTER_POSX][k], KV_DATA[kv][data_ENTER_POSY][k], KV_DATA[kv][data_ENTER_POSZ][k]))
-        {
-            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
-            if(KV_DATA[kv][data_OWNED][k] == 1) return SCM(playerid, COLOR_GREY, !"У данной квартиры уже есть владелец");
-			if(GetPlayerMoneyID(playerid) < KV_DATA[kv][data_PRICE][k]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
-			PI[playerid][data_PADIK] = kv;
-			PI[playerid][data_KV] = k;
-            KV_DATA[kv][data_OWNED][k] = 1;
-            KV_DATA[kv][data_DAY][k] = 3;
-            switch(k)
-			{
-				case 0: strmid(KV_DATA[kv][data_OWNER_1], getName(playerid), 0, strlen(getName(playerid)), MAX_PLAYER_NAME);
-				case 1: strmid(KV_DATA[kv][data_OWNER_2], getName(playerid), 0, strlen(getName(playerid)), MAX_PLAYER_NAME);
-				case 2: strmid(KV_DATA[kv][data_OWNER_3], getName(playerid), 0, strlen(getName(playerid)), MAX_PLAYER_NAME);
-				case 3: strmid(KV_DATA[kv][data_OWNER_4], getName(playerid), 0, strlen(getName(playerid)), MAX_PLAYER_NAME);
-				case 4: strmid(KV_DATA[kv][data_OWNER_5], getName(playerid), 0, strlen(getName(playerid)), MAX_PLAYER_NAME);
-				case 5: strmid(KV_DATA[kv][data_OWNER_6], getName(playerid), 0, strlen(getName(playerid)), MAX_PLAYER_NAME);
-			}
-            GivePlayerMoneyLog(playerid,-KV_DATA[kv][data_PRICE][k]);
-			SCM(playerid, COLOR_YELLOW, !"Поздравляем! Вы купили дом");
-			ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Покупка жилья", !"{FFFFFF}Для управления недвижимостью используйте команду /home\nОплата дома производится в банке (/gps 1 5). Не забудьте\nвовремя платить за него, в противном случае он будет опечатан!", "Закрыть", "");
-            SaveKVData(kv);
-			UpdateKVData(kv, k);
-           	return true;
-        }
-    }
-    return true;
 }
 CMD:healme(playerid,params[]) 
 {
@@ -17386,43 +16721,20 @@ CMD:wbook(playerid,params[])
 	mysql_function_query(mysql, str_q, true, "WorkBook", "dd", playerid,params[0]);
 	return 1;
 }
-callback: WorkBook(playerid,id) {
+callback: WorkBook(playerid,id) 
+{
     new rows, fields, temp[144], reas[256], rank, w_d, w_m, w_y, fracname5;
 	new str_3[512];
 	new str_1[256];
     cache_get_data(rows, fields);
-    for(new i = 0; i < rows; i++) {
+    for(new i = 0; i < rows; i++) 
+	{
 		cache_get_field_content(i, "w_day", temp), w_d = strval(temp);
 		cache_get_field_content(i, "w_mes", temp), w_m = strval(temp);
 		cache_get_field_content(i, "w_year", temp), w_y = strval(temp);
 		cache_get_field_content(i, "w_fraction", temp), fracname5 = strval(temp);
 		cache_get_field_content(i, "w_rank", temp), rank = strval(temp);
 		cache_get_field_content(i, "w_reason", reas, mysql, 24*2);
-		new fracname[16];
-		switch(fracname5) {
-			case 1: fracname = "Правительство";
-			case 2: fracname = "Войсковая часть";
-			case 3: fracname = "Полиция";
-   			case 4: fracname = "БЦРБ";
-			case 5: fracname = "Скинхеды";
-			case 6: fracname = "Гопота";
-			case 7: fracname = "Кавказцы";
-  		}
-		new monthname[9];
-		switch(w_m) {
-			case 1: monthname = "январь";
-			case 2: monthname = "февраль";
-			case 3: monthname = "март";
-   			case 4: monthname = "апрель";
-			case 5: monthname = "май";
-			case 6: monthname = "июнь";
-			case 7: monthname = "июль";
-   			case 8: monthname = "август";
-			case 9: monthname = "сентябрь";
-			case 10: monthname = "октябрь";
-			case 11: monthname = "ноябрь";
-			case 12: monthname = "декабрь";
-  		}
   		new str[20];
 		switch(fracname5)
 	 	{
@@ -17434,10 +16746,10 @@ callback: WorkBook(playerid,id) {
 		    case 6:format(str,sizeof(str),"%s",rang_gopota[rank-1][frName]);
 		    case 7:format(str,sizeof(str),"%s",rang_kavkaz[rank-1][frName]);
 		}
-		format(str_3,sizeof(str_3),"%s%d %s %d г.{FFFFFF}\t%s - %s[%d]\t%s\n", str_3, w_d, monthname, w_y, fracname, str, rank, reas);
+		format(str_3,sizeof(str_3), "%s%d %s %d г.{FFFFFF}\t%s - %s[%d]\t%s\n", str_3, w_d, monthNames[w_m-1], w_y, Fraction_Name[fracname5], str, rank, reas);
 	}
-	format(str_1,sizeof(str_1),"Уход из организации\tОргнизация - ранг\tПричина ухода\n%s",str_3);
-	return ShowPlayerDialog(id,0, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Трудовая книга", str_1, "Закрыть", "");
+	format(str_1,sizeof(str_1), "Уход из организации\tОргнизация - ранг\tПричина ухода\n%s",str_3);
+	return ShowPlayerDialog(id, 0, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Трудовая книга", str_1, "Закрыть", "");
 }
 CMD:anim(playerid)
 {
@@ -17541,32 +16853,6 @@ stock CheckString(string[]) {
 	};
 	for(new i = 0; i < sizeof(WebSites); i++) if(strfind(string, WebSites[i], true) != -1) return 1;
 	return 0;
-}
-callback: LoadBlackList()
-{
-    new rows, fields, temp[60],time = GetTickCount(),banac;
-    cache_get_data(rows, fields);
-    if(rows) {
-    	for(new b = 0; b < rows; b++) {
-         	cache_get_field_content(b, "bl_id", temp), BL_DATA[b][data_ID] = strval (temp);
-         	cache_get_field_content(b, "bl_day", temp), BL_DATA[b][data_DAY] = strval (temp);
-			TotalBlackList++;
-   			if(BL_DATA[b][data_DAY] <= 0) {
-				new str_q[185];
-			    mysql_format(mysql,str_q, sizeof(str_q), "DELETE FROM `fractions_blacklist` WHERE `bl_id` = '%d'", BL_DATA[b][data_ID]);
-	    		mysql_function_query(mysql, str_q, false, "", "");
-	    		banac++;
-			}
-			else {
-       			BL_DATA[b][data_DAY]--;
-				new str_q[185];
-			    mysql_format(mysql,str_q, sizeof(str_q),"UPDATE `fractions_blacklist` SET `bl_day` = '%d' WHERE `bl_id` = '%d'",BL_DATA[b][data_DAY],BL_DATA[b][data_ID]);
-			    mysql_function_query(mysql, str_q, false, "", "");
-			}
-		}
-		if(console_Debbug == 1) printf("[INFO]  Load blacklist accounts. Load: %d. UnBlackList: %d. Ex UnBlackList: %d. Time: %d ms.",TotalBlackList,banac,TotalBans-banac, GetTickCount()-time);
-  	}
-    return 1;
 }
 CMD:phone(playerid) {
 	if(PI[playerid][data_PHONE] == 0) return SCM(playerid, COLOR_GREY,"У вас нет телефона");
@@ -18593,23 +17879,6 @@ callback: setleaderskin(playerid) {
 		}
 	}
 	return 1;
-}
-stock SetCarPark(playerid) 
-{
-	new str_q[512],str_k[256];
-	str_q = "UPDATE `accounts` SET ";
-	acc_float_strcat(str_q, sizeof(str_q), "car_tpposx", 2304.5645);
-	acc_float_strcat(str_q, sizeof(str_q), "car_tpposy", -1827.1555);
-	acc_float_strcat(str_q, sizeof(str_q), "car_tpposz", 22.2345);
-	acc_float_strcat(str_q, sizeof(str_q), "car_tpangle", 270.4927);
-	strdel(str_q, strlen(str_q)-1, strlen(str_q));
-	format(str_k,sizeof(str_k)," WHERE `Name` = '%s' LIMIT 1",getName(playerid));
-	strcat(str_q, str_k);
-	mysql_function_query(mysql, str_q, false, "", "");
-	PI[playerid][data_CAR_POSX] = 2304.5645;
-	PI[playerid][data_CAR_POSY] = -1827.1555;
-	PI[playerid][data_CAR_POSZ] = 22.2345;
-	PI[playerid][data_CAR_ANGLE] = 270.4927;
 }
 stock CarInformation(playerid) 
 {
@@ -23297,25 +22566,6 @@ callback: DialogTimerSellGun(playerid)
 	}
 	return 1;
 }
-public SV_VOID:OnPlayerActivationKeyPress(SV_UINT:playerid, SV_UINT:keyid)
-{
-    // Подключаем игрока к локальному потоку как спикера, если нажата клавиша 'B'
-    if (keyid == 0x58 && lstream[playerid]) SvAttachSpeakerToStream(lstream[playerid], playerid);
-	if(keyid == 0x5A && gstream && PI[playerid][pAdmin] >= 7)
-	{
-    	SvAttachSpeakerToStream(gstream, playerid);
-    }
-}
-
-public SV_VOID:OnPlayerActivationKeyRelease(SV_UINT:playerid, SV_UINT:keyid)
-{
-    // Отключаем игрока от локального потока, если отпущена клавиша 'B'
-    if (keyid == 0x58 && lstream[playerid]) SvDetachSpeakerFromStream(lstream[playerid], playerid);
-    if(keyid == 0x5A && gstream && PI[playerid][pAdmin] >= 7)
-	{
-    	SvDetachSpeakerFromStream(gstream, playerid);
-    }
-}
 stock RandomString() 
 {
     new string[8];
@@ -23367,15 +22617,6 @@ CMD:help(playerid)
 	6. Команды организации\n\
 	7. Команды лидера/заместителя", "Выбрать", "Закрыть");
     return true;
-}
-public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
-{
-	if(PI[playerid][pAdmin] <= 1)
-	{
-		SCM(playerid, COLOR_GREEN, "Пункт назначения отмечен у Вас на мини-карте!");
-		cef_emit_event(playerid, "show-notify", CEFINT(17), CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), CEFSTR("4ea650"));
-	}
-	return 1;
 }
 CMD:getcar(playerid, params[])
 {
@@ -23820,8 +23061,27 @@ stock OtherMapping()
 	BCRDEnter_1 = CreateDynamicPickup(1318, 23,  2110.8955,1820.9956,13.3484, -1);
 	BCRDExit = CreateDynamicPickup(1318, 23,  -679.4802,1633.7867,1002.0200, -1);
 	BCRDExit1 = CreateDynamicPickup(1318, 23,  -679.4778,1630.4673,1002.0200, -1);
-	shahtavhod = CreateDynamicPickup(1318, 23,  2784.7847,2711.2119,16.7200, -1);
-	shahtavihod= CreateDynamicPickup(1318, 23,  2343.8123,-1457.7288,1137.4415, -1);
+	//=============================[ ШАХТА ]=============================//
+	Create3DTextLabel("{008000}Шахта", -1, 2784.7847,2711.2119,16.7200, 10.0, 0, 0);
+	MineEnter = CreateDynamicPickup(1318, 23, 2784.7847,2711.2119,16.7200, -1);
+
+	Create3DTextLabel("{008000}Выход", -1, -346.8698, -1871.4194, 16.9119, 10.0, 1, 0);
+	MineExit= CreateDynamicPickup(1318, 23, -346.8698, -1871.4194, 16.9119, -1);
+
+	MineClothes = CreatePickup(1275, 23, -354.9774,-1881.3033,16.9119, -1); // шахта закончить/начать 
+
+	Create3DTextLabel("{008000}Лифт", -1, -356.5614,-1885.3411,16.9119, 10.0, 1, 0);
+	MineLift_up = CreatePickup(1318, 23, -356.5614,-1885.3411,16.9119, -1);
+
+	Create3DTextLabel("{008000}Лифт", -1, -284.7726,-1883.3909,18.3447, 10.0, 1, 0);
+	MineLift_down = CreatePickup(1318, 23, -284.7726,-1883.3909,18.3447, -1);
+
+	MinePoint_1 = CreatePickup(19133, 23, 2383.3367,-1440.9891,1137.3475, -1); // шахта место добычи
+	MinePoint_2 = CreatePickup(19133, 23, 2364.8472,-1438.0321,1137.3826, -1); // шахта место добычи
+	MinePoint_3 = CreatePickup(19133, 23, 2382.2844,-1432.3588,1137.5203, -1); // шахта место добычи
+	MinePoint_4 = CreatePickup(19133, 23, 2372.6978,-1423.6947,1137.5745, -1); // шахта место добычи
+	MineDropOre = CreatePickup(19135, 23, 2318.4268,-1450.5154,1137.4485, -1); // шахта место сдачи
+	//=============================[ ШАХТА ]=============================//
 	Create3DTextLabel("{008000}Казино", -1, 2320.5139,-1930.3152,22.3337, 10.0, 0);
 	kazino_vhod = CreateDynamicPickup(1318, 23, 2320.5139,-1930.3152,22.3337, -1);
 	kazino_vihod = CreateDynamicPickup(1318, 23, 2337.2285,1766.9097,-13.9100, -1);
@@ -24816,7 +24076,7 @@ stock ShowHotKeys(playerid)
 	L\t{FFFF99}Любой\t{FFFFFF}Открыть / закрыть транспорт\n\
 	M\t{FFFF99}Любой\t{FFFFFF}Открыть меню игрока\n\
 	P\t{FFFF99}Любой\t{FFFFFF}Открыть меню телефона\n\
-	F11\t{FFFF99}Любой\t{FFFFFF}Настройки голосового чата\n\
+	O\t{FFFF99}Любой\t{FFFFFF}Настройки голосового чата\n\
 	X\t{FFFF99}Любой\t{FFFFFF}Голосовой чат\n\
 	B\t{ff9933}Пешеход\tОткрыть меню в бизнесе\n\
 	B\t{ff9933}Пешеход\tНажать кнопку (открыть ворота, дверь)\n\
@@ -24958,22 +24218,9 @@ stock CheckGangWar(playerid)
 	{
 		if(PI[playerid][pMember] == Command[0] || PI[playerid][pMember] == Command[1]) 
 		{
-			static name_org[15], nameorg[15];
-			switch(Command[0]) 
-			{
-				case 5: name_org = "Скинхеды";
-				case 6: name_org = "Гопота";
-				case 7: name_org = "Кавказцы";
-			}
-			switch(Command[1]) 
-			{
-				case 5: nameorg = "Скинхеды";
-				case 6: nameorg = "Гопота";
-				case 7: nameorg = "Кавказцы";
-			}
 			cef_emit_event(playerid, "show-capture");
 			cef_emit_event(playerid, "capture-score", CEFINT(CommandKill[0]), CEFINT(CommandKill[1]));
-			cef_emit_event(playerid, "capture-info-name", CEFSTR(name_org), CEFSTR(nameorg));
+			cef_emit_event(playerid, "capture-info-name", CEFSTR(Fraction_Name[Command[0]]), CEFSTR(Fraction_Name[Command[1]]));
 			cef_emit_event(playerid, "show_kill_list");
 			GangZoneFlashForPlayer(playerid, WarZone, 0xFF000055);
 		}
@@ -25247,9 +24494,7 @@ stock ShowLMenu_OPG(playerid)
 	{3CB371}11. Снять выговор оффлайн\n\
 	{3CB371}12. Изменить внешность\n\
 	{3CB371}13. Изменить группу\n\
-	{3CB371}14. Назначить смотрящего за стрелой\n\
-	{3CB371}15. Снять смотрящего за стрелой\n\
-	{6dbdd8}16. Расформировать организацию", !"Выбрать", !"Отмена");
+	{6dbdd8}14. Расформировать организацию", !"Выбрать", !"Отмена");
 }
 stock ShowPlayerSpeedometer(playerid) 
 {
@@ -25289,3 +24534,43 @@ callback: UpdateSpeedometer(playerid)
 	
 	cef_emit_event(playerid, "cef:speed:fuel", CEFINT(CarInfo[vehicleid][cFuel]));
 }
+callback: DelayedKick(playerid)
+{
+    Kick(playerid);
+}
+CMD:sv(playerid)
+{
+	SCMf(playerid, -1, "sv ver %d | ", SvGetVersion(playerid));
+	return 1;
+}
+/*stock LoadVoiceChat(playerid)
+{
+	if(SvGetVersion(playerid) == SV_NULL) 
+	{
+		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, 	!"{ff5511}Критическая ошибка", !"\
+									{FFFFFF}Не удалось инициализировать данные игры (#2). Скорее всего,\n\
+									ваша игра устарела и трубует обновления. Запустите лаунчер и\n\
+									обновите игру до актуальной версии. Если эта проблема\n\
+									повяляется регулярно, обратитесь к игровым мастерам.\n\n\
+									Используйте команду '{3377cc}/q{FFFFFF}', чтобы просто закрыть игру", !"Закрыть", !"");
+		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);
+	}
+	else if(SvGetVersion(playerid) < 390) 
+	{
+		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ff5511}Критическая ошибка", !"\
+									{FFFFFF}Не удалось инициализировать данные игры (#1). Скорее всего,\n\
+									ваша игра устарела и трубует обновления. Запустите лаунчер и\n\
+									обновите игру до актуальной версии. Если эта проблема\n\
+									повяляется регулярно, обратитесь к игровым мастерам.\n\n\
+									Используйте команду '{3377cc}/q{FFFFFF}', чтобы просто закрыть игру", !"Закрыть", !"");
+		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);
+	}
+    else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, SV_INFINITY, playerid, 0xff0000ff, "")))
+    {
+		if (gstream) SvAttachListenerToStream(gstream, playerid);
+        SvAddKey(playerid, 0x58);
+		SvAddKey(playerid, 0x5A);
+		CheckStatus(playerid);
+    }
+	return 1;
+}*/

@@ -3,7 +3,7 @@
 #endif
 #define _sampvoice_included
 
-#define SV_VERSION			10
+#define SV_VERSION			40
 
 #define SV_NULL				0
 #define SV_INFINITY			-1

@@ -1,3 +1,79 @@
+#define MAX_BLACKLIST 2000
+
+new TotalBlackList;
+enum BlackListData 
+{
+	blID,
+	blDays
+}
+new blackList[MAX_BLACKLIST][BlackListData];
+//==================================================================================//
+callback: LoadBlackList()
+{
+    new rows, fields, temp[60], time = GetTickCount(), BlackListRemove;
+    cache_get_data(rows, fields);
+    if(rows) 
+	{
+    	for(new b = 0; b < rows; b++) 
+		{
+         	cache_get_field_content(b, "bl_id", temp), blackList[b][blID] = strval (temp);
+         	cache_get_field_content(b, "bl_day", temp), blackList[b][blDays] = strval (temp);
+
+			TotalBlackList++;
+
+   			if(blackList[b][blDays] <= 0) 
+			{
+				mysql_string[0] = EOS, f(mysql_string, 64, "DELETE FROM `fractions_blacklist` WHERE `bl_id` = '%d'", blackList[b][blID]);
+				mysql_tquery(mysql, mysql_string, "");
+	    		BlackListRemove++;
+			}
+			else 
+			{
+       			blackList[b][blDays]--;
+				mysql_string[0] = EOS, f(mysql_string, 93, "UPDATE `fractions_blacklist` SET `bl_day` = '%d' WHERE `bl_id` = '%d'", blackList[b][blDays], blackList[b][blID]);
+				mysql_tquery(mysql, mysql_string, "");
+			}
+		}
+		if(console_Debbug == 1) printf("[INFO]  Load blacklist accounts. Load: %d. UnBlackList: %d. Ex UnBlackList: %d. Time: %d ms.", TotalBlackList, BlackListRemove, TotalBans-BlackListRemove, GetTickCount()-time);
+  	}
+    return 1;
+}
+callback: CheckBlackListInvite(playerid) 
+{
+	new id = GetPVarInt(playerid, "Invite");
+	new rows, fields;
+    cache_get_data(rows, fields);
+    if(rows) 
+	{
+		SCM(playerid, COLOR_GREY, !"Вы не можете принять игрока из чёрного списка организации.");
+		SCM(id, COLOR_GREY, !"Вы находитесь в чёрном списке организации");
+
+		return DeletePVar(playerid, "Invite");
+	}
+	else 
+	{
+		if(id == playerid) return SCM(playerid, COLOR_GREY, !"Нельзя использовать на самом себе");
+		if(!IsPlayerConnected(id))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
+		if(!IsPlayerLogged{id})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+		if(PI[id][pMember] != 0) return  SCM(playerid, COLOR_GREY, !"Данный игрок состоит в организации");
+		if(PI[id][data_WARN] > 0) return SCM(playerid, COLOR_GREY, !"У данного игрока есть предупреждения");
+		if(PI[id][data_MILITARY] == 0 && PI[playerid][pMember] == 3) return SCM(playerid, COLOR_GREY, !"У игрока нет военного билета");
+
+		new Float:x,Float:y,Float:z;
+		GetPlayerPos(id,x,y,z);
+		if(!PlayerToPoint(5.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Данный игрок слишком далеко от Вас");
+
+		SetPVarInt(playerid, "to_player", id);
+		new str_invite[83 + MAX_PLAYER_NAME];
+		format(str_invite, sizeof(str_invite), "{FFFFFF}- Отлично! Я думаю мы сработаемся {FF99CC}- сказал %s, взяв пакет с формой", getName(playerid));
+		ProxDetector(25.0, playerid, str_invite, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF ,0xFF99CCFF);
+
+		pCurrectMessage[playerid]++;
+		pTimerMessage[playerid] = gettime() + 1;
+	}
+	return 1;
+}
+//==================================================================================//
 stock bl_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) 
 {
     switch(dialogid)

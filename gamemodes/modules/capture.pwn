@@ -1343,43 +1343,20 @@ cmd:capture(playerid)
 	Command[0] = PI[playerid][pMember];
 	Command[1] = gz_info[gz][gzopg];
 
-	static name[24];
-	SetString(name, NameRang(playerid));
-	name = NameRang(playerid);
-
-	new str[145];
-	switch(PI[playerid][pMember]) 
-	{
-     	case 5:format(str,sizeof(str),"%s {3377CC}%s[%d] {3377CC}(%s){FFFF00} инициировал захват территории {3377CC}(%s)", name, getName(playerid), playerid, Fraction_Name[PI[playerid][pMember]], warname);
-   		case 6:format(str,sizeof(str),"%s {3377CC}%s[%d] {3377CC}(%s){FFFF00} инициировал захват территории {3377CC}(%s)", name, getName(playerid), playerid, Fraction_Name[PI[playerid][pMember]], warname);
-	    case 7:format(str,sizeof(str),"%s {3377CC}%s[%d] {3377CC}(%s){FFFF00} инициировал захват территории {3377CC}(%s)", name, getName(playerid), playerid, Fraction_Name[PI[playerid][pMember]], warname);
-	}
-    static name_org[15], nameorg[15];
-    switch(Command[0]) 
-	{
-        case 5: name_org = "Скинхеды";
-        case 6: name_org = "Гопота";
-        case 7: name_org = "Кавказцы";
-    }
-    switch(Command[1]) 
-	{
-        case 5: nameorg = "Скинхеды";
-        case 6: nameorg = "Гопота";
-        case 7: nameorg = "Кавказцы";
-    }
 	SCM(playerid, COLOR_YELLOW, !"За инициацию захвата территории Вы получите вознаграждение в PayDay"); 
 	foreach(new i:Player) 
 	{
 	    if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 		{
-			SCM(i, COLOR_YELLOW, str);
-			SCM(i, COLOR_YELLOW, !"Территория отмечена у Вас на мини-карте красным (мигающим) прямоугольником");
-			SCM(i, COLOR_YELLOW, !"Место стрельбы отмечено у Вас на мини-карте красным (не мигающим!) прямоугольником в южной части карты");
-			SCM(i, COLOR_YELLOW, !"Используйте команду {3377CC}/cteam{FFFF00}, чтобы посмотреть список участников своей ОПГ на территории стрелы");
+			SCMf(i, COLOR_YELLOW, "%s {%s}%s[%d] (%s){FFFF00} забил стрелу за территорию {%s}(%s)", \
+				NameRang(playerid), ColorTeam[Command[0]], Fraction_Name[Command[0]], getName(playerid), playerid, Fraction_Name[PI[playerid][pMember]], ColorTeam[Command[1]], Fraction_Name[Command[1]]);
+
+			SCM(i, COLOR_YELLOW, !"Территория отмечена на карте красным мигающим прямоугольником");
+			SCM(i, COLOR_YELLOW, !"Место стрелы отмечено у Вас на мини-карте (/gps 5 5)");
 			cef_emit_event(i, "show-capture");
 			cef_emit_event(i, "capture-score", CEFINT(CommandKill[0]), CEFINT(CommandKill[1]));
 			cef_emit_event(i, "capture-text", CEFSTR("подготовка к битве"));
-			cef_emit_event(i, "capture-info-name", CEFSTR(name_org), CEFSTR(nameorg));
+			cef_emit_event(i, "capture-info-name", CEFSTR(Fraction_Name[Command[0]]), CEFSTR(Fraction_Name[Command[1]]));
 			cef_emit_event(i, "show_kill_list");
 			GangZoneFlashForPlayer(i, gz, 0xFF000055);	
 		}
@@ -1425,6 +1402,47 @@ CMD:cteam(playerid, params[])
 		    format(str_1,sizeof(str_1),"№\tИгрок\tРанг\tПинг\n%s",string);
 		    ShowPlayerDialog(playerid, 0, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Участники стрелы", str_1, "Закрыть", "");
         }
+	}
+	return 1;
+}
+CMD:clead(playerid, params[]) 
+{
+	if(PI[playerid][pRang] < 9) return SCM(playerid, COLOR_GREY, !"Данная команда доступна лидерам организаций и их заместителям");
+
+	if(sscanf(params,"u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /clead [ID игрока]");
+
+	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
+	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	if(PI[playerid][pMember] != PI[params[0]][pMember]) return SCM(playerid, COLOR_GREY, !"Данный игрок не состоит в Вашей организации");
+
+	if(PI[params[0]][pCaptureManager] == 0) 
+	{
+		new Cache: result, query[68];
+
+		mysql_format(mysql, query, sizeof query, "SELECT * FROM accounts WHERE member='%d' AND CaptureManager = '1'", PI[playerid][pMember]);
+		result = mysql_query(mysql, query, true);
+
+		if(cache_num_rows() >= 3)
+		{	
+			return SendClientMessage(playerid, COLOR_GREY, !"Максимум можно иметь 3 смотрящих за захватом территории");
+		}
+		cache_delete(result);
+
+		SendFractionMessagef(PI[playerid][pMember], 0x69b867FF, "[R] %s %s[%d] назначил смотрящим за стрелой %s %s[%d]",\
+			NameRang(playerid), getName(playerid), playerid,\
+			NameRang(params[0]), getName(params[0]), params[0]);
+		
+		PI[params[0]][pCaptureManager] = 1;
+		UpdatePlayerDataInt(params[0], "CaptureManager", PI[params[0]][pCaptureManager], 1462);
+	}
+	else
+	{
+		SendFractionMessagef(PI[playerid][pMember], COLOR_TOMATO, "[R] %s %s[%d] снял смотрящего за стрелой %s %s[%d]",\
+			NameRang(playerid), getName(playerid), playerid,\
+			NameRang(params[0]), getName(params[0]), params[0]);
+		
+		PI[params[0]][pCaptureManager] = 0;
+		UpdatePlayerDataInt(params[0], "CaptureManager", PI[params[0]][pCaptureManager], 1471);
 	}
 	return 1;
 }
