@@ -1087,4 +1087,4 @@ CMD:givemoney(playerid, params[])
 	SCMf(params[0], COLOR_YELLOW, "Игровой мастер #%d выдал Вам %d рублей", PI[playerid][pAdminNumber], params[1]);
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал игроку %s[%d] %d рублей", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0], params[1]);
 	return 1;
-}1
+}
