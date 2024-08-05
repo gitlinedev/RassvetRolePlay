@@ -2151,7 +2151,7 @@ public OnPlayerConnect(playerid)
             Используйте команду '{3377cc}/q{FFFFFF}', чтобы просто закрыть игру", !"Закрыть", !"");
 		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);*/
     }
-    else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, SV_INFINITY, playerid, 0xff0000ff, "")))
+    else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, SV_INFINITY, playerid, 0xff0000ff, "Voice")))
     {
         if (gstream) SvAttachListenerToStream(gstream, playerid);
         SvAddKey(playerid, 0x58);
