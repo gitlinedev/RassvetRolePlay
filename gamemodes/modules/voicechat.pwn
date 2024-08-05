@@ -98,26 +98,24 @@ stock LoadVoiceChat(playerid)
 {
 	if(SvGetVersion(playerid) == SV_NULL) 
 	{
-        /*SCMf(playerid, -1, "sv ver %d | ", SvGetVersion(playerid));
-		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, 	!"{ff5511}˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜", !"\
-									{FFFFFF}˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜ (#2). ˜˜˜˜˜˜ ˜˜˜˜˜,\n\
-									˜˜˜˜ ˜˜˜˜ ˜˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜. ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜\n\
-									˜˜˜˜˜˜˜˜ ˜˜˜˜ ˜˜ ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜. ˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜\n\
-									˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜, ˜˜˜˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜.\n\n\
-									˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ '{3377cc}/q{FFFFFF}', ˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜", !"˜˜˜˜˜˜˜", !"");
-		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);*/
-	}
-	/*else if(SvGetVersion(playerid) < 134) 
-	{
-        SCMf(playerid, -1, "sv ver %d | ", SvGetVersion(playerid));
-		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ff5511}˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜", !"\
-									{FFFFFF}˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜ (#1). ˜˜˜˜˜˜ ˜˜˜˜˜,\n\
-									˜˜˜˜ ˜˜˜˜ ˜˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜˜. ˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜\n\
-									˜˜˜˜˜˜˜˜ ˜˜˜˜ ˜˜ ˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜. ˜˜˜˜ ˜˜˜ ˜˜˜˜˜˜˜˜\n\
-									˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜˜, ˜˜˜˜˜˜˜˜˜˜ ˜ ˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜˜.\n\n\
-									˜˜˜˜˜˜˜˜˜˜˜ ˜˜˜˜˜˜˜ '{3377cc}/q{FFFFFF}', ˜˜˜˜˜ ˜˜˜˜˜˜ ˜˜˜˜˜˜˜ ˜˜˜˜", !"˜˜˜˜˜˜˜", !"");
+		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, 	!"{ff5511}Êðèòè÷åñêàÿ îøèáêà", !"\
+									{FFFFFF}Íå óäàëîñü èíèöèàëèçèðîâàòü äàííûå èãðû (#2). Ñêîðåå âñåãî,\n\
+									âàøà èãðà óñòàðåëà è òðóáóåò îáíîâëåíèÿ. Çàïóñòèòå ëàóí÷åð è\n\
+									îáíîâèòå èãðó äî àêòóàëüíîé âåðñèè. Åñëè ýòà ïðîáëåìà\n\
+									ïîâÿëÿåòñÿ ðåãóëÿðíî, îáðàòèòåñü ê èãðîâûì ìàñòåðàì.\n\n\
+									Èñïîëüçóéòå êîìàíäó '{3377cc}/q{FFFFFF}', ÷òîáû ïðîñòî çàêðûòü èãðó", !"Çàêðûòü", !"");
 		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);
-	}*/
+	}
+	else if(SvGetVersion(playerid) < 390) 
+	{
+		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ff5511}Êðèòè÷åñêàÿ îøèáêà", !"\
+									{FFFFFF}Íå óäàëîñü èíèöèàëèçèðîâàòü äàííûå èãðû (#1). Ñêîðåå âñåãî,\n\
+									âàøà èãðà óñòàðåëà è òðóáóåò îáíîâëåíèÿ. Çàïóñòèòå ëàóí÷åð è\n\
+									îáíîâèòå èãðó äî àêòóàëüíîé âåðñèè. Åñëè ýòà ïðîáëåìà\n\
+									ïîâÿëÿåòñÿ ðåãóëÿðíî, îáðàòèòåñü ê èãðîâûì ìàñòåðàì.\n\n\
+									Èñïîëüçóéòå êîìàíäó '{3377cc}/q{FFFFFF}', ÷òîáû ïðîñòî çàêðûòü èãðó", !"Çàêðûòü", !"");
+		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);
+	}
     else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, SV_INFINITY, playerid, 0xff0000ff, "")))
     {
 		if (gstream) SvAttachListenerToStream(gstream, playerid);
