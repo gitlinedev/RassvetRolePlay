@@ -1074,3 +1074,17 @@ public OnPlayerClickMap(playerid, Float:fX, Float:fY, Float:fZ)
 	}
 	return 1;
 }
+CMD:givemoney(playerid, params[]) 
+{
+    if(CheckAdmin(playerid, 8)) return 1;
+    if(GetPVarInt(playerid,"givemoney") > gettime()) return SCM(playerid, COLOR_GREY,"Команду можно использовать раз в 1 минуту");
+	if(sscanf(params,"ud",params[0],params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givemoney [id] [ammount]");
+    if(!IsPlayerConnected(params[0])) return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
+	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	if(params[1] > 5000000)return  SCM(playerid, COLOR_GREY, !"Можно выдать только от 1 до 5000000 руб");
+    SetPVarInt(playerid,"givemoney",gettime() + 59);
+	GivePlayerMoneyLog(params[0], params[1]);
+	SCMf(params[0], COLOR_YELLOW, "Игровой мастер #%d выдал Вам %d рублей", PI[playerid][pAdminNumber], params[1]);
+	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал игроку %s[%d] %d рублей", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0], params[1]);
+	return 1;
+}1
