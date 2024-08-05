@@ -20184,7 +20184,6 @@ CMD:dialog2(playerid)
         SvAddKey(playerid, 0x58);
 		SvAddKey(playerid, 0x5A);
 		CheckStatus(playerid);
-		adaddsad
     }
 	return 1;
 }*/
