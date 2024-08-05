@@ -1017,7 +1017,6 @@ stock CheckCount(playerid)
 						}
 						GangZoneHideForPlayer(i, WarZone);
 						GangZoneShowForPlayer(i, WarZone, col);
-						ClearKillFeed(i);
 						cef_emit_event(i, "hide-capture");
 						cef_emit_event(i, "clear-kill-list");
 						TogglePlayerControllable(i, true);
@@ -1053,7 +1052,6 @@ stock CheckCount(playerid)
 						GangZoneHideForPlayer(i, WarZone);
 						GangZoneShowForPlayer(i, WarZone, col);
 						SaveGZ(Command[0], WarZone);
-						ClearKillFeed(i);
 						cef_emit_event(i, "hide-capture");
 						cef_emit_event(i, "clear-kill-list");
 						TogglePlayerControllable(i, true);

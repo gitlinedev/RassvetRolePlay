@@ -563,10 +563,8 @@ callback: ShowBussinesPeople(playerid)
             Diff = People - LastDayPeople;
             PercentageChange = (Diff / float(LastDayPeople)) * 100.0;
         } 
-        else 
-        {
-            PercentageChange = 0.0;
-        }
+        else PercentageChange = 0.0;
+
 
         LastDayPeople = People;
 

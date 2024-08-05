@@ -13,18 +13,18 @@ callback: TheftCartridges(playerid)
 			{
 				if(PI[playerid][data_VIP] == 0)
 				{
-				    if(PI[playerid][data_PATR] < 400)
+				    if(PI[playerid][pAmmo] < 400)
 					{
 						new patr,str[47];
 						patr = RandomEX(2,5);
-						PI[playerid][data_PATR] += patr;
-						if(PI[playerid][data_PATR] > 400) PI[playerid][data_PATR] = 400;
-						if(PI[playerid][data_MET] > 40) PI[playerid][data_MET] = 40;
+						PI[playerid][pAmmo] += patr;
+						if(PI[playerid][pAmmo] > 400) PI[playerid][pAmmo] = 400;
+						if(PI[playerid][pMetall] > 40) PI[playerid][pMetall] = 40;
 						army_wh[1] -= patr;
 						SaveWarehouse();
-						UpdatePlayerDataInt(playerid, "met", PI[playerid][data_MET],2577);
-						UpdatePlayerDataIntNoLog(playerid, "patr", PI[playerid][data_PATR]);
-						format(str,sizeof(str),"Загружено патронов: %d / 400 шт", PI[playerid][data_PATR]);
+						UpdatePlayerDataInt(playerid, "met", PI[playerid][pMetall],2577);
+						UpdatePlayerDataIntNoLog(playerid, "patr", PI[playerid][pAmmo]);
+						format(str,sizeof(str),"Загружено патронов: %d / 400 шт", PI[playerid][pAmmo]);
 						cef_emit_event(playerid, "show-ammo-notify", CEFSTR(str), CEFSTR("7fa1a1"));
 						HidePlayerSpeedometer(playerid);
 				    }
@@ -32,18 +32,18 @@ callback: TheftCartridges(playerid)
 				}
 				else
 				{
-				    if(PI[playerid][data_PATR] < 800)
+				    if(PI[playerid][pAmmo] < 800)
 					{
 						new patr,str[47];
 						patr = RandomEX(2,5);
-						PI[playerid][data_PATR] += patr;
-						if(PI[playerid][data_PATR] > 800) PI[playerid][data_PATR] = 800;
-						if(PI[playerid][data_MET] > 80) PI[playerid][data_MET] = 80;
+						PI[playerid][pAmmo] += patr;
+						if(PI[playerid][pAmmo] > 800) PI[playerid][pAmmo] = 800;
+						if(PI[playerid][pMetall] > 80) PI[playerid][pMetall] = 80;
 						army_wh[1] -= patr;
 						SaveWarehouse();
-						UpdatePlayerDataInt(playerid, "met", PI[playerid][data_MET],2595);
-						UpdatePlayerDataIntNoLog(playerid, "patr", PI[playerid][data_PATR]);
-						format(str,sizeof(str),"Загружено патронов: %d / 800 шт", PI[playerid][data_PATR]);
+						UpdatePlayerDataInt(playerid, "met", PI[playerid][pMetall],2595);
+						UpdatePlayerDataIntNoLog(playerid, "patr", PI[playerid][pAmmo]);
+						format(str,sizeof(str),"Загружено патронов: %d / 800 шт", PI[playerid][pAmmo]);
 						cef_emit_event(playerid, "show-ammo-notify", CEFSTR(str), CEFSTR("7fa1a1"));
 						HidePlayerSpeedometer(playerid);
 					}

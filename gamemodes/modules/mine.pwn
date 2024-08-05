@@ -49,7 +49,7 @@ stock mine_OnDialogResponse(playerid, dialogid, response)
 
                 SetPVarInt(playerid, "PlayerInDialog", 1);
 
-                CEF__Dialog(playerid, 4003, DIALOG_STYLE_MSGBOX, "{ee3366}Инвентарь для работы", "\
+                CEF_ShowPlayerDialog(playerid, 4003, DIALOG_STYLE_MSGBOX, "{ee3366}Инвентарь для работы", "\
                 Вы хотите преобрести дополнительный инвентарь?\n\n\
                 Стоимость: {000000}250 руб\n\n\
                 {696969}Инвентарь позволяет существенно повысить зарплату", "Купить", "Отмена");

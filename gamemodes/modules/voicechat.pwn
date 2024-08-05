@@ -98,26 +98,26 @@ stock LoadVoiceChat(playerid)
 {
 	if(SvGetVersion(playerid) == SV_NULL) 
 	{
-        SCMf(playerid, -1, "sv ver %d | ", SvGetVersion(playerid));
-		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, 	!"{ff5511}Критическая ошибка", !"\
-									{FFFFFF}Не удалось инициализировать данные игры (#2). Скорее всего,\n\
-									ваша игра устарела и трубует обновления. Запустите лаунчер и\n\
-									обновите игру до актуальной версии. Если эта проблема\n\
-									повяляется регулярно, обратитесь к игровым мастерам.\n\n\
-									Используйте команду '{3377cc}/q{FFFFFF}', чтобы просто закрыть игру", !"Закрыть", !"");
-		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);
+        /*SCMf(playerid, -1, "sv ver %d | ", SvGetVersion(playerid));
+		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, 	!"{ff5511} ", !"\
+									{FFFFFF}     (#2).  ,\n\
+									     .   \n\
+									    .   \n\
+									 ,    .\n\n\
+									  '{3377cc}/q{FFFFFF}',    ", !"", !"");
+		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);*/
 	}
-	else if(SvGetVersion(playerid) < 134) 
+	/*else if(SvGetVersion(playerid) < 134) 
 	{
         SCMf(playerid, -1, "sv ver %d | ", SvGetVersion(playerid));
-		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ff5511}Критическая ошибка", !"\
-									{FFFFFF}Не удалось инициализировать данные игры (#1). Скорее всего,\n\
-									ваша игра устарела и трубует обновления. Запустите лаунчер и\n\
-									обновите игру до актуальной версии. Если эта проблема\n\
-									повяляется регулярно, обратитесь к игровым мастерам.\n\n\
-									Используйте команду '{3377cc}/q{FFFFFF}', чтобы просто закрыть игру", !"Закрыть", !"");
+		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ff5511} ", !"\
+									{FFFFFF}     (#1).  ,\n\
+									     .   \n\
+									    .   \n\
+									 ,    .\n\n\
+									  '{3377cc}/q{FFFFFF}',    ", !"", !"");
 		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);
-	}
+	}*/
     else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, SV_INFINITY, playerid, 0xff0000ff, "")))
     {
 		if (gstream) SvAttachListenerToStream(gstream, playerid);
