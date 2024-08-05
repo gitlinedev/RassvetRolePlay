@@ -96,33 +96,12 @@ stock GivePlayerRadio(playerid)
 
 stock LoadVoiceChat(playerid)
 {
-    if (SvGetVersion(playerid) == SV_NULL)
-    {
-        /*ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, 	!"{ff5511}Критическая ошибка", !"\
-            {FFFFFF}Не удалось инициализировать данные игры (#2). Скорее всего,\n\
-            ваша игра устарела и трубует обновления. Запустите лаунчер и\n\
-            обновите игру до актуальной версии. Если эта проблема\n\
-            повяляется регулярно, обратитесь к игровым мастерам.\n\n\
-            Используйте команду '{3377cc}/q{FFFFFF}', чтобы просто закрыть игру", !"Закрыть", !"");
-        return SetTimerEx("DelayedKick", 1000, false, "d", playerid);*/
-    }
-    // Проверяем наличие микрофона
-    else if (SvHasMicro(playerid) == SV_FALSE)
-    {
-        /*ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ff5511}Критическая ошибка", !"\
-            {FFFFFF}Не удалось инициализировать данные игры (#1). Скорее всего,\n\
-            ваша игра устарела и трубует обновления. Запустите лаунчер и\n\
-            обновите игру до актуальной версии. Если эта проблема\n\
-            повяляется регулярно, обратитесь к игровым мастерам.\n\n\
-            Используйте команду '{3377cc}/q{FFFFFF}', чтобы просто закрыть игру", !"Закрыть", !"");
-		return SetTimerEx("DelayedKick", 1000, false, "d", playerid);*/
-    }
-    else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, SV_INFINITY, playerid, 0xff0000ff, "")))
+    /*else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, SV_INFINITY, playerid, 0xff0000ff, "")))
     {
 		if (gstream) SvAttachListenerToStream(gstream, playerid);
         SvAddKey(playerid, 0x58);
 		SvAddKey(playerid, 0x5A);
-    }
+    }*/
     CheckStatus(playerid);
 	return 1;
 }
