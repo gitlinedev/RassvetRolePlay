@@ -1,18 +1,3 @@
-RemoveBuildingForPlayer(playerid, 8580, -2560.0000, -1402.4000, 9.6560, 0.25);
-RemoveBuildingForPlayer(playerid, 8580, -2552.1899, -1399.2900, 8.4685, 0.25);
-RemoveBuildingForPlayer(playerid, 8580, -2580.2200, -1448.5500, 9.4060, 0.25);
-RemoveBuildingForPlayer(playerid, 8581, -2570.9600, -1373.5400, 7.8435, 0.25);
-RemoveBuildingForPlayer(playerid, 8581, -2591.6399, -1405.2600, 10.5310, 0.25);
-RemoveBuildingForPlayer(playerid, 8581, -2577.3401, -1413.0900, 9.2185, 0.25);
-RemoveBuildingForPlayer(playerid, 8581, -2595.9199, -1436.9700, 8.4685, 0.25);
-RemoveBuildingForPlayer(playerid, 8581, -2556.7400, -1450.3101, 9.0310, 0.25);
-RemoveBuildingForPlayer(playerid, 8582, -2578.4299, -1371.7000, 7.5310, 0.25);
-RemoveBuildingForPlayer(playerid, 8582, -2560.9500, -1382.4700, 8.0310, 0.25);
-RemoveBuildingForPlayer(playerid, 8582, -2605.6201, -1399.0000, 9.0935, 0.25);
-RemoveBuildingForPlayer(playerid, 8582, -2575.2700, -1455.4399, 9.2185, 0.25);
-RemoveBuildingForPlayer(playerid, 8583, -2563.9500, -1393.2100, 8.9060, 0.25);
-RemoveBuildingForPlayer(playerid, 3694, -2587.5200, -1421.0400, 9.7190, 0.25);
-RemoveBuildingForPlayer(playerid, 1702, -2497.5300, -1540.7500, 6.5000, 0.25);
 CreateDynamicObject(3508, -2522.16, -1521.29, 6.72,   0.00, 0.00, -67.44);
 CreateDynamicObject(3508, -2499.28, -1537.54, 6.72,   0.00, 0.00, -67.44);
 CreateDynamicObject(3508, -2516.81, -1513.70, 6.83,   0.00, 0.00, -67.44);

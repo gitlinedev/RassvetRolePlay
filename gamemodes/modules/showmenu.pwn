@@ -122,7 +122,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                         }
 
 						PI[playerid][pHealPack]++;
-						UpdatePlayerDataInt(playerid, "healthchest", PI[playerid][pHealPack],10245);
+						UpdatePlayerDataInt(playerid, "healthchest", PI[playerid][pHealPack]);
 						SCM(playerid, 0x00AA33FF, "Чтобы подлечиться используйте {fe9a7e}/healme{00aa33}, передать другому игроку {fe9a7e}/givechest");
 						ShowArmyShop(playerid);
 					}
@@ -186,7 +186,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(GetPlayerMoneyID(playerid) < HEALPACK) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 						GivePlayerMoneyLog(playerid,-HEALPACK);
 						PI[playerid][pHealPack]++;
-						UpdatePlayerDataInt(playerid, "healthchest", PI[playerid][pHealPack],10245);
+						UpdatePlayerDataInt(playerid, "healthchest", PI[playerid][pHealPack]);
 					    UpdateBusinessData(b);
                         new cef[10]; f(cef, 10, "-%dР", HEALPACK);
 						cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка мед. аптечки (/healme)"), CEFSTR("fb4949"), CEFSTR(cef));
@@ -274,7 +274,7 @@ callback: CheckSimCard(playerid)
         
 		GivePlayerMoneyLog(playerid,-SIM_CARD);
 		PI[playerid][data_NUMBER] = GetPVarInt(playerid,"simcard");
-		UpdatePlayerDataInt(playerid, "number", PI[playerid][data_NUMBER], 28023);
+		UpdatePlayerDataInt(playerid, "number", PI[playerid][data_NUMBER]);
 		cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка сим-карты"), CEFSTR("fb4949"), CEFSTR("-300P"));
 		ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Покупка SIM-карты", "Закрыть", "Назад", "{FFFFFF}Поздравляем!\nВы купили SIM-карту c номером {3377cc}%d", GetPVarInt(playerid,"simcard"));
 		UpdateBusinessData(b);

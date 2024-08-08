@@ -1,4 +1,3 @@
-RemoveBuildingForPlayer(playerid, 4885, 1740.9000, 2522.9399, 17.0780, 0.25);
 CreateDynamicObject(621, 2000.63, 1616.03, 8.94,   0.00, 0.00, 141.20);
 CreateDynamicObject(634, 1995.72, 1635.69, 14.62,   0.00, 0.00, 19.10);
 CreateDynamicObject(634, 1985.64, 1664.79, 14.62,   0.00, 0.00, 19.10);

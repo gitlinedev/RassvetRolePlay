@@ -22,7 +22,7 @@ callback: TheftCartridges(playerid)
 						if(PI[playerid][pMetall] > 40) PI[playerid][pMetall] = 40;
 						army_wh[1] -= patr;
 						SaveWarehouse();
-						UpdatePlayerDataInt(playerid, "met", PI[playerid][pMetall],2577);
+						UpdatePlayerDataInt(playerid, "met", PI[playerid][pMetall]);
 						UpdatePlayerDataIntNoLog(playerid, "patr", PI[playerid][pAmmo]);
 						format(str,sizeof(str),"Загружено патронов: %d / 400 шт", PI[playerid][pAmmo]);
 						cef_emit_event(playerid, "show-ammo-notify", CEFSTR(str), CEFSTR("7fa1a1"));
@@ -41,7 +41,7 @@ callback: TheftCartridges(playerid)
 						if(PI[playerid][pMetall] > 80) PI[playerid][pMetall] = 80;
 						army_wh[1] -= patr;
 						SaveWarehouse();
-						UpdatePlayerDataInt(playerid, "met", PI[playerid][pMetall],2595);
+						UpdatePlayerDataInt(playerid, "met", PI[playerid][pMetall]);
 						UpdatePlayerDataIntNoLog(playerid, "patr", PI[playerid][pAmmo]);
 						format(str,sizeof(str),"Загружено патронов: %d / 800 шт", PI[playerid][pAmmo]);
 						cef_emit_event(playerid, "show-ammo-notify", CEFSTR(str), CEFSTR("7fa1a1"));

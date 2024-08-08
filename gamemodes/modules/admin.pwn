@@ -48,13 +48,13 @@ CMD:setsex(playerid, params[])
 		case 1:
 		{
 			SCMf(playerid, COLOR_GREY, "Вы изменили пол игроку %s на женский", getName(params[0]));
-			SCMf(params[0], -1, "Игровой мастер #%d изменил ваш пол на женский", PI[playerid][pAdminNumber]);
+			SCMf(params[0], -1, "Игровой мастер изменил ваш пол на женский", PI[playerid][pAdminNumber]);
 			PI[params[0]][pSex] = 2;
 		}
 		case 2:
 		{
 			SCMf(playerid, COLOR_GREY, "Вы изменили пол игроку %s на мужской",getName(params[0]));
-			SCMf(params[0], -1, "Игровой мастер #%d изменил ваш пол на мужской", PI[playerid][pAdminNumber]);
+			SCMf(params[0], -1, "Игровой мастер изменил ваш пол на мужской", PI[playerid][pAdminNumber]);
 			PI[params[0]][pSex] = 1;
 		}
 	}
@@ -109,7 +109,7 @@ CMD:unwarn(playerid,params[])
 	if(PI[params[0]][data_WARN] == 0) return SCM(playerid, COLOR_GREY, !"У игрока нет предупреждений");
  	PI[params[0]][data_WARN] = 0;
 	PI[params[0]][data_WARNTIME] = 0;
-	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер #%d снял Вам игровое предупреждение", PI[playerid][pAdminNumber]);
+	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер снял Вам игровое предупреждение", PI[playerid][pAdminNumber]);
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял игровое предупреждение игроку %s[%d]", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0]);
 	return 1;
 }
@@ -120,7 +120,7 @@ CMD:spawn(playerid,params[],text)
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	PlayerSpawn(params[0]);
-	SCMf(params[0], -1, "Игровой мастер #%d заспавнил Вас", PI[playerid][pAdminNumber]);
+	SCMf(params[0], -1, "Игровой мастер заспавнил Вас", PI[playerid][pAdminNumber]);
 	cef_emit_event(params[0], "show-center-notify", CEFINT(1), CEFSTR("Игровой мастер заспавнил Вас"));
  	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заспавнил игрока %s[%d]", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0]);
     return 1;
@@ -148,7 +148,7 @@ CMD:ban(playerid,params[])
     mysql_tqueryf(mysql, "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '%d', '%e', '%e')",getName(params[0]),getName(playerid),params[1],params[2],PI[params[0]][pLoginIP]);
 
 	SendAdminsMessagef(COLOR_TOMATO, "[%s #%d] %s заблокировал %s на %d дней. Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),getName(params[0]),params[1],params[2]);
-	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер #%d заблокировал Ваш аккаунт на %d дней. Причина: %s", PI[playerid][pAdminNumber],params[1], params[2]);
+	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер заблокировал Ваш аккаунт на %d дней. Причина: %s", PI[playerid][pAdminNumber],params[1], params[2]);
 
 	CreatePunishment(playerid, params[0], 1, params[2]);
 
@@ -200,7 +200,7 @@ CMD:skin(playerid,params[])
 	if(params[1] > 2000) return 1;
 	SetPlayerSkinAC(params[0],params[1]);
     SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал временный скин игроку %s[%d] (ID %d)", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0], params[1]);
-    SCMf(params[0], -1, "Игровой мастер #%d выдал Вам временный скин.", PI[playerid][pAdminNumber]);
+    SCMf(params[0], -1, "Игровой мастер выдал Вам временный скин.", PI[playerid][pAdminNumber]);
     return 1;
 }
 CMD:gethere(playerid,params[]) 
@@ -245,11 +245,12 @@ CMD:veh(playerid,params[])
     new Float:pos[3]; GetPlayerPos(playerid,pos[0],pos[1],pos[2]);
     new vehc = CreateVehicle(params[0],pos[0],pos[1],pos[2],0,params[1],params[2],-1);
     SetVehicleVirtualWorld(vehc, GetPlayerVirtualWorld(playerid));
-	PutPlayerInVehicle(playerid, vehc, 1);
+	PutPlayerInVehicle(playerid, vehc, 0);
     ClearCarData(vehc);
     CarInfo[vehc][cFuel] = 50;
     CarInfo[vehc][cCreate] = 1;
 	new vehicadm = GetVehicleModel(vehc);
+	SetVehicleNumberPlate(vehc, "ADMIN");
     SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] создал %s[%d] (id: %d, цвет: %d, %d)", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid, VehicleNames[vehicadm-400], vehc, params[0], params[1], params[2]);
 	return 1;
 }
@@ -273,7 +274,7 @@ CMD:unmute(playerid,params[])
 	if(PI[params[0]][pMute] == 0) return SCM(playerid, COLOR_GREY, !"У данного игрока нет блокировки чата");
 	PI[params[0]][pMute] = 0;
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял блокировку чата игроку %s[%d]", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]),params[0]);
-	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер #%d снял Вам блокировку чата", PI[playerid][pAdminNumber]);
+	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер снял Вам блокировку чата", PI[playerid][pAdminNumber]);
 	return 1;
 }
 CMD:setarm(playerid,params[]) 
@@ -284,7 +285,7 @@ CMD:setarm(playerid,params[])
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	cef_emit_event(params[0], "show-center-notify", CEFINT(5), CEFSTR("Игровой мастер изменил Вам броню"));
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] изменил уровень брони игрока %s[%d] на %d.0", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0], params[1]);
-	SCMf(params[0], -1, "Игровой мастер #%d выдал Вам бронижелет", PI[playerid][pAdminNumber]);
+	SCMf(params[0], -1, "Игровой мастер выдал Вам бронижелет", PI[playerid][pAdminNumber]);
 	SetPlayerArmourAC(params[0], params[1]);
 	return 1;
 }
@@ -306,7 +307,7 @@ CMD:vmute(playerid,params[])
 	SendPlayerHudNotify(params[0], 20, "mute", "Блокировка голосового чата", PI[params[0]][pVmuteTime]);
 
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заблокировал игроку %s[%d] голосовой чат на %d минут. Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]),params[0],params[1],params[2]);
-	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер #%d заблокировал Вам голосовой чат на %d минут. Причина: %s", PI[playerid][pAdminNumber], params[1], params[2]);
+	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер заблокировал Вам голосовой чат на %d минут. Причина: %s", PI[playerid][pAdminNumber], params[1], params[2]);
 	SvMutePlayerEnable(params[0]);
 	return 1;
 }
@@ -324,7 +325,7 @@ CMD:unvmute(playerid,params[])
 	cef_emit_event(params[0], "cef:remove:notification:hud", CEFINT(20));
 
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял игроку %s[%d] блокировку голосового чата", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]),params[0]);
-	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер #%d снял Вам блокировку голосового чата", PI[playerid][pAdminNumber]);
+	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер снял Вам блокировку голосового чата", PI[playerid][pAdminNumber]);
 	SvMutePlayerDisable(params[0]);
 	return 1;
 }
@@ -343,7 +344,7 @@ CMD:mute(playerid,params[])
 	PI[params[0]][pMute] = 1;
 	PI[params[0]][pMuteTime] = params[1]*60;
     SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заблокировал чат игрока %s[%d] на %d минут. Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]),params[0],params[1],params[2]);
-	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер #%d заблокировал Вам чат на %d минут. Причина: %s", PI[playerid][pAdminNumber], params[1], params[2]);
+	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер заблокировал Вам чат на %d минут. Причина: %s", PI[playerid][pAdminNumber], params[1], params[2]);
 	return 1;
 }
 cmd:saveplayers(playerid) 
@@ -365,7 +366,7 @@ CMD:msg(playerid,params[])
 {
     if(CheckAdmin(playerid)) return 1;
 	if(sscanf(params,"s[144]",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /msg [текст]");
-	SendClientMessageToAllf(COLOR_BLACKRED, "Игровой мастер #%d: %s", PI[playerid][pAdminNumber],params[0]);
+	SendClientMessageToAllf(COLOR_BLACKRED, "Игровой мастер: %s", params[0]);
     return 1;
 }
 CMD:a(playerid,params[]) 
@@ -383,7 +384,7 @@ CMD:kick(playerid,params[])
     if(playerid == params[0]) return SCM(playerid, COLOR_GREY, !"Нельзя кикать самого себя");
     if(PI[params[0]][pAdmin] > PI[playerid][pAdmin]) return SCM(playerid, COLOR_GREY, !"Нельзя применить к игровому мастеру");
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] кикнул игрока %s. Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid, PI[params[0]][pName], params[1]);
-	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер #%d кикнул Вас. Причина: %d", PI[playerid][pAdminNumber], params[1]);
+	SendClientMessagef(playerid, COLOR_TOMATO, "Игровой мастер кикнул Вас. Причина: %d", params[1]);
 	Kick(params[0]);
 	return 1;
 }
@@ -412,7 +413,7 @@ CMD:giveownable(playerid,params[])
 	GivePlayerOwnable(params[0], params[1], 0, 50, params[2], params[3], 1, 336);
 
     SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал игроку %s[%d] машину %s в /cars на 14 дней.", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid, getName(params[0]), params[0], VehicleNames[params[1]-400]);
-    SendClientMessagef(params[0], COLOR_YELLOW, "Игровой мастер #%d выдал Вам машину %s на 14 дней, используйте /cars", PI[playerid][pAdminNumber], VehicleNames[params[1]-400]);
+    SendClientMessagef(params[0], COLOR_YELLOW, "Игровой мастер выдал Вам машину %s на 14 дней, используйте /cars", VehicleNames[params[1]-400]);
 	return 1;
 }
 CMD:resgun(playerid,params[]) 
@@ -436,7 +437,7 @@ CMD:mphp(playerid,params[])
 		if(PlayerToPoint(100.0, i, x,y,z)) 
 		{
 		    SetPlayerHealthAC(i, params[0]);
-		    SCMf(i, -1,"Игровой мастер #%d изменил уровень вашего здоровья", PI[playerid][pAdminNumber]);
+		    SCMf(i, -1,"Игровой мастер изменил уровень Вашего здоровья", PI[playerid][pAdminNumber]);
 			PI[i][pHospital] = 0;
 		}
    	}
@@ -471,7 +472,7 @@ cmd:slap(playerid, params[])
 	GetPlayerPos(id,X,Y,Z);
 	SetPlayerPos(id,X,Y,Z+params[1]);
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] подбросил игрока %s[%d] на %d.0 метров", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(id), id, params[1]);
-	SendClientMessage(params[0], -1, !"Игровой мастер слапнул Вас");
+	SendClientMessage(params[0], -1, !"Игровой мастер подкинул Вас");
 	new Float: SlapHealth;
     GetPlayerHealth(params[0], SlapHealth);
     SetPlayerHealthAC(params[0], SlapHealth - 5);
@@ -489,7 +490,7 @@ CMD:mparm(playerid,params[])
 		if(PlayerToPoint(100.0, i, x,y,z)) 
 		{
 		    SetPlayerHealthAC(i, params[0]);
-		    SCMf(i, -1,"Игровой мастер #%d выдал Вам бронижелет", PI[playerid][pAdminNumber]);
+		    SCMf(i, -1,"Игровой мастер выдал Вам бронижелет", PI[playerid][pAdminNumber]);
 		}
    	}
     return 1;
@@ -512,7 +513,7 @@ CMD:mpskin(playerid,params[])
             if(params[0] == 3) 
 			{
 			    SetPlayerSkinAC(i,params[1]);
-			    SCMf(i, -1, "Игровой мастер #%d выдал Вам временный скин", PI[playerid][pAdminNumber]);
+			    SCMf(i, -1, "Игровой мастер выдал Вам временный скин", PI[playerid][pAdminNumber]);
 			    continue;
 			}
             if(params[0] == 2 && all%2 == 0) 
@@ -520,7 +521,7 @@ CMD:mpskin(playerid,params[])
                 team2++;
             	team_2[team2] = i;
             	SetPlayerSkinAC(i,params[1]);
-            	SCMf(i, -1, "Игровой мастер #%d выдал Вам временный скин", PI[playerid][pAdminNumber]);
+            	SCMf(i, -1, "Игровой мастер выдал Вам временный скин", PI[playerid][pAdminNumber]);
             	continue;
 			}
 			if(params[0] == 1 && all%2 == 1) 
@@ -528,7 +529,7 @@ CMD:mpskin(playerid,params[])
 			    team1++;
 			    team_1[team1] = i;
 			    SetPlayerSkinAC(i,params[1]);
-			    SCMf(i, -1, "Игровой мастер #%d выдал Вам временный скин", PI[playerid][pAdminNumber]);
+			    SCMf(i, -1, "Игровой мастер выдал Вам временный скин", PI[playerid][pAdminNumber]);
 			    continue;
 			}
 			if(params[0] < 1 || params[0] > 3) 
@@ -563,21 +564,21 @@ CMD:mpgun(playerid,params[])
             if(params[0] == 3) 
 			{
 			    GiveWeapon(i,params[1], params[2]);
-			    SCMf(i, -1,"Игровой мастер #%d выдал Вам %s (+%d пт)", PI[playerid][pAdminNumber], weapon_names[params[1]], params[2]);
+			    SCMf(i, -1,"Игровой мастер выдал Вам %s (+%d пт)", PI[playerid][pAdminNumber], weapon_names[params[1]], params[2]);
 			    continue;
 			}
             if(params[0] == 2 && all%2 == 0) {
                 team2++;
             	team_2[team2] = i;
             	GiveWeapon(i,params[1], params[2]);
-            	SCMf(i, -1,"Игровой мастер #%d выдал Вам %s (+%d пт)", PI[playerid][pAdminNumber], weapon_names[params[1]], params[2]);
+            	SCMf(i, -1,"Игровой мастер выдал Вам %s (+%d пт)", PI[playerid][pAdminNumber], weapon_names[params[1]], params[2]);
             	continue;
 			}
 			if(params[0] == 1 && all%2 == 1) {
 			    team1++;
 			    team_1[team1] = i;
 			    GiveWeapon(i,params[1], params[2]);
-			    SCMf(i, -1,"Игровой мастер #%d выдал Вам %s (+%d пт)", PI[playerid][pAdminNumber], weapon_names[params[1]], params[2]);
+			    SCMf(i, -1,"Игровой мастер выдал Вам %s (+%d пт)", PI[playerid][pAdminNumber], weapon_names[params[1]], params[2]);
 			    continue;
 			}
 			if(params[0] < 1 || params[0] > 3) 
@@ -658,7 +659,7 @@ CMD:auninvite(playerid, params[])
 		CheckCount(params[0]);
 	}
 
-	SCMf(params[0], COLOR_YELLOW, "Игровой мастер #%d уволил Вас из организации %s (%d ранг)",
+	SCMf(params[0], COLOR_YELLOW, "Игровой мастер уволил Вас из организации %s (%d ранг)",
 		PI[playerid][pAdminNumber], Fraction_Name[PI[playerid][pMember]], PI[params[0]][pRang]);
 
 	cef_emit_event(params[0], "hide-capture");
@@ -746,7 +747,7 @@ CMD:unjail(playerid,params[])
 
 	PlayerSpawn(params[0]);
 	SCMf(playerid, COLOR_TOMATO, "Вы выпустили игрока %s из тюрьмы", getName(params[0]));
-	SCMf(params[0], COLOR_TOMATO, "Игровой мастер #%d выпустил Вас из тюрьмы.", PI[playerid][pAdminNumber]);
+	SCMf(params[0], COLOR_TOMATO, "Игровой мастер выпустил Вас из тюрьмы.", PI[playerid][pAdminNumber]);
 	return SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] освободил игрока %s[%d] из тюрьмы", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]),params[0]);
 }
 CMD:givevb(playerid, params[])
@@ -755,7 +756,7 @@ CMD:givevb(playerid, params[])
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givevb [ID игрока]");
 	else if(PI[params[0]][pMilitaryID]) return SCM(playerid, COLOR_GREY,"У игрока уже имеется военный билет!");
 	PI[params[0]][pMilitaryID] = 1;
-	SCMf(params[0], COLOR_WHITE, "Игровой мастер #%d выдал Вам военный билет.", PI[playerid][pAdminNumber]);
+	SCMf(params[0], COLOR_WHITE, "Игровой мастер выдал Вам военный билет.", PI[playerid][pAdminNumber]);
 	return SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал игроку %s[%d] военный билет",\
 		AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0]);
 }
@@ -767,7 +768,7 @@ CMD:givelic(playerid,params[])
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	PI[params[0]][pDriveLicense] = 1;
 	if(PI[params[0]][data_LICNUM] == 0) PI[params[0]][data_LICNUM] = RandomEX(1111111, 6666666);
-	SCMf(playerid, -1, "Игровой мастер #%d выдал Вам водительские права", PI[playerid][pAdminNumber]);
+	SCMf(playerid, -1, "Игровой мастер выдал Вам водительские права", PI[playerid][pAdminNumber]);
 	return SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s выдал водительские права %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),getName(params[0]));
 }
 CMD:jail(playerid,params[])
@@ -791,7 +792,7 @@ CMD:jail(playerid,params[])
 	PI[params[0]][pDemorganTime] = params[1]*60;
 
 	SCMf(playerid, COLOR_TOMATO, "Вы посадили в тюрьму игрока %s на %d минут. Причина: %s", getName(params[0]), params[1], params[2]);
-	SCMf(params[0], COLOR_TOMATO, "Игровой мастер #%d посадил Вас в тюрьму на %d минут. Причина: %s", PI[playerid][pAdminNumber], params[1], params[2]);
+	SCMf(params[0], COLOR_TOMATO, "Игровой мастер посадил Вас в тюрьму на %d минут. Причина: %s", params[1], params[2]);
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] посадил игрока %s в тюрьму на %d минут. Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]),params[1],params[2]);
 	PlayerSpawn(params[0]);
 	return ResetPlayerWeapons(params[0]);
@@ -848,7 +849,7 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
                     case 14: SetPlayerPos(playerid, 2782.3528,2698.6128,16.7200+2);
                     case 15: SetPlayerPos(playerid, 1880.3647,1180.8679,38.8619+2);
 					case 16: SetPlayerPos(playerid, 2469.1038,-714.2072,24.5437+2);
-					case 17: SetPlayerPos(playerid, 1806.8326,2507.3311,21.5287+2);
+					case 17: SetPlayerPos(playerid, 1474.5935,2045.2124,24.0309+2);
 					case 18: SetPlayerPos(playerid, 1517.7395,-1213.6506,15.0275+2);
                 }
 				SetPlayerVirtualWorld(playerid,0);
@@ -909,7 +910,7 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 				mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `fraction` = '%d' AND `skin_m` = %d", PI[id][pMember], PI[id][pOrgSkin]);
 				mysql_function_query(mysql, str_q, true, "SetPlayerStandartGroup", "d", id);
 
-				UpdatePlayerDataInt(playerid, "skinm", PI[playerid][pOrgSkin],12241);
+				UpdatePlayerDataInt(playerid, "skinm", PI[playerid][pOrgSkin]);
 				SetPlayerSkinAC(id,PI[id][pOrgSkin]);
 
 				if(PI[id][pMember] == 5 || PI[id][pMember] == 6 || PI[id][pMember] == 7) for(new g; g <= totalgz; g++) GangZoneShowForPlayer(id, g, GetGZFrac(g));
@@ -1084,7 +1085,7 @@ CMD:givemoney(playerid, params[])
 	if(params[1] > 5000000)return  SCM(playerid, COLOR_GREY, !"Можно выдать только от 1 до 5000000 руб");
     SetPVarInt(playerid,"givemoney",gettime() + 59);
 	GivePlayerMoneyLog(params[0], params[1]);
-	SCMf(params[0], COLOR_YELLOW, "Игровой мастер #%d выдал Вам %d рублей", PI[playerid][pAdminNumber], params[1]);
+	SCMf(params[0], COLOR_YELLOW, "Игровой мастер выдал Вам %d рублей", PI[playerid][pAdminNumber], params[1]);
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал игроку %s[%d] %d рублей", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0], params[1]);
 	return 1;
 }

@@ -46,8 +46,9 @@ stock SendRequestForPlayer(playerid, id, type, value = 0, value_2 = 0)
 	if(type == 2)
 	{
 		SCMf(playerid, 0x36e96cFF, "¬ы предложили %s вз€ть вашу аптечку.", PI[id][pName]);
-		SCMf(id, 0x33ceffFF, "%s предложил ¬ам вз€ть аптечку", getName(playerid));
-		SCM(id, COLOR_LIGHTGREY, !"»спользуйте {43d778}Y{CCCCCC} чтобы согласитьс€ или {ff6633}N{CCCCCC}");
+
+		global_str[0] = EOS, format(global_str, 50, "%s предложил ¬ам вз€ть аптечку", getName(playerid));
+		SendPlayerOfferNotify(id, global_str, "—ќ√Ћј—»“№—я", "ќ“ ј«ј“№—я", 15);
 	}
 	if(type == 3)
 	{
@@ -378,6 +379,7 @@ stock CheckRequest(playerid)
 }
 stock ClearProposition(playerid) 
 {
+	cef_emit_event(playerid, "cef:remove:notification:offer");
 	PI[playerid][pRequestIDFrom] = -1;
 	PI[playerid][pRequestType] = -1;
 	PI[playerid][pRequestIDFor] = -1;

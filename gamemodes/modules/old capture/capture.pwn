@@ -1,4 +1,5 @@
-#define ROUND_TIME 		300
+#define ROUND_MIN 		5
+#define ROUND_SEC 		1
 #define START_ROUND		5
 #define FINISH_ROUND	5
 
@@ -8,8 +9,10 @@ new CommandKill[2],
 	CommandRounds[2],
 	Command[2],
 	GangWarStatus,
-	WarTime,
-	CommadCount[2],
+	WarTimeMin,
+	WarTimeSec,
+	count_1,
+	count_2,
 	PointCapture,
 	CaptZone;
 
@@ -78,14 +81,40 @@ stock capture_SecondTimer()
 {
     if(GangWarStatus == 1)
 	{
-		WarTime--;
+		WarTimeSec--;
 
-		if(WarTime == 0)
+		new time[12];
+
+		if(WarTimeSec == 0 && WarTimeMin != 0)
 		{
-			CommadCount[0] = GetCountonGanwWar(Command[0]);
-			CommadCount[1] = GetCountonGanwWar(Command[1]);
+			WarTimeSec = 59;
+			WarTimeMin--;
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+            {
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+                {
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+				}
+			}
+		}
+		else
+		{
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+				}
+			}
+		}
+		if(WarTimeMin == 0 && WarTimeSec == 0)
+		{
+			count_1 = GetCountonGanwWar(Command[0]); // кто закаптил
+			count_2 = GetCountonGanwWar(Command[1]); // кого закаптили
 
-			if(CommadCount[0] <= 0)
+			if(count_1 < 1)
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
@@ -94,8 +123,8 @@ stock capture_SecondTimer()
 						GangZoneStopFlashForPlayer(i, WarZone);
 						GangZoneHideForPlayer(i, WarZone);
 						GangZoneShowForPlayer(i, WarZone, GetColorZone(Command[1]));
-						
-						cef_emit_event(i, "cef:capture:visible", CEFINT(false));
+						cef_emit_event(i, "hide-capture");
+						cef_emit_event(i, "clear-kill-list");
 
 						SendClientMessagef(i, COLOR_YELLOW, "Попытка {%s}ОПГ %s{FFFF00} захватить территорию {%s}ОПГ %s{FFFF00} завершилась неуспешно", ColorTeam[Command[0]], Fraction_Name[Command[0]], ColorTeam[Command[1]], Fraction_Name[Command[1]]);
 						ClearCapture();
@@ -103,7 +132,7 @@ stock capture_SecondTimer()
 				}
 				GangWarStatus = 0;
 			}
-			else if(CommadCount[1] <= 0)
+			else if(count_2 < 1)
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
@@ -114,8 +143,8 @@ stock capture_SecondTimer()
 						GangZoneHideForPlayer(i, WarZone);
 						GangZoneShowForPlayer(i, WarZone, GetColorZone(Command[0]));
 						SaveGZ(Command[0], WarZone);
-
-						cef_emit_event(i, "cef:capture:visible", CEFINT(false));
+						cef_emit_event(i, "hide-capture");
+						cef_emit_event(i, "clear-kill-list");
 
 						SendClientMessagef(i, COLOR_YELLOW, "Попытка {%s}ОПГ %s{FFFF00} захватить территорию {%s}ОПГ %s{FFFF00} завершилась успешно", ColorTeam[Command[0]], Fraction_Name[Command[0]], ColorTeam[Command[1]], Fraction_Name[Command[1]]);
 						ClearCapture();
@@ -123,51 +152,81 @@ stock capture_SecondTimer()
 				}
 				GangWarStatus = 0;
 			}
-			else
+			if(count_1 >= 1 && count_2 >= 1)
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
 					if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 					{
-						cef_emit_event(i, "cef:capture:start", CEFSTR("начало раунда"), CEFINT(WarTime));
 						if(PI[i][pOnCapture] == 1)
 						{
 							WaitToStart(i);
 						}
 					}
 				}
-				WarTime = START_ROUND;
-				GangWarStatus = 2; // начало раунда 
+				WarTimeMin = 00;
+				WarTimeSec = START_ROUND;
+				GangWarStatus = 2;
 			}
 		}
 	}
-	if(GangWarStatus == 2) // начало раунда
+	if(GangWarStatus == 2)
 	{
-		WarTime--;
-		if(WarTime <= 0)
+		WarTimeSec--;
+		if(WarTimeSec <= 0)
 		{
 			CommandKill[0] = 0;
 			CommandKill[1] = 0;
 
-			GangWarStatus = 3; // раунд 1
-			WarTime = ROUND_TIME;
-			for(new i = 0; i < MAX_PLAYERS; i++)
+			GangWarStatus = 3;
+			WarTimeMin = ROUND_MIN;
+			WarTimeSec = ROUND_SEC;
+		}
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:kill:list:clear");
-					cef_emit_event(i, "cef:capture:start", CEFSTR("раунд 1"), CEFINT(WarTime));
-				}
+				new time[12];
+				format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+				cef_emit_event(i, "capture-time", CEFSTR(time));
+				cef_emit_event(i, "clear-kill-list");
+				cef_emit_event(i, "capture-text", CEFSTR("начало раунда"));
 			}
 		}
 	}
-	if(GangWarStatus == 3) // раунд
+	if(GangWarStatus == 3)
 	{
-		WarTime--;
-
-		if(CommandKill[0] == CommadCount[1] || CommandKill[1] == CommadCount[0])
+		WarTimeSec--;
+		if(WarTimeSec == 0 && WarTimeMin != 0)
 		{
-			if(CommandKill[0] == CommadCount[1]) 
+			WarTimeSec = 59;
+			WarTimeMin--;
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("раунд 1"));
+				}
+			}
+		}
+		else
+		{
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+				}
+			}
+		}
+		if(CommandKill[0] == count_2 || CommandKill[1] == count_1)
+		{
+			if(CommandKill[0] == count_2) 
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++) 
 				{
@@ -178,7 +237,7 @@ stock capture_SecondTimer()
 				}
 				CommandRounds[0]++;
 			}
-			else if(CommandKill[1] == CommadCount[0]) 
+			else if(CommandKill[1] == count_1) 
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++) 
 				{
@@ -197,67 +256,111 @@ stock capture_SecondTimer()
 			}
 
 			GangWarStatus = 4;
-			WarTime = FINISH_ROUND;
+			WarTimeSec = FINISH_ROUND;
+			WarTimeMin = 0;
 
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("завершение раунда"));
+				}
+			}
 			for(new i; i < MAX_PLAYERS; i++) 
 			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:capture:start", CEFSTR("завершение раунда"), CEFINT(WarTime));
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(1), CEFINT(CommandRounds[0]));
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(2), CEFINT(CommandRounds[1]));
-				}
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1]) cef_emit_event(i, "capture-score", CEFINT(CommandRounds[0]), CEFINT(CommandRounds[1]));
 			}
 		}
 	}
-	if(GangWarStatus == 4) // конец раунда
+	if(GangWarStatus == 4)
 	{
-		WarTime--;
-		if(WarTime <= 0)
+		WarTimeSec--;
+		if(WarTimeSec <= 0)
 		{
 			CommandKill[0] = 0;
 			CommandKill[1] = 0;
 
-			GangWarStatus = 5; // раунд 2
-			WarTime = START_ROUND;
+			GangWarStatus = 5;
+			WarTimeMin = 0;
+			WarTimeSec = START_ROUND;
 
-			for(new i = 0; i < MAX_PLAYERS; i++)
+			/*for(new i = 0; i < MAX_PLAYERS; i++) 
 			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:capture:start", CEFSTR("начало раунда"), CEFINT(WarTime));
-				}
-			}
+				if(PI[i][pMember] == Command[0] && PI[i][pOnCapture] == 1) FinishRound(i);
+				if(PI[i][pMember] == Command[1] && PI[i][pOnCapture] == 1) FinishRound(i);
+			}*/
 		}
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+			{
+				new time[12];
+				format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+				cef_emit_event(i, "capture-time", CEFSTR(time));
+			}
+		}	
 	}
-	if(GangWarStatus == 5) // начало
+	if(GangWarStatus == 5)
 	{
-		WarTime--;
-		if(WarTime <= 0)
+		WarTimeSec--;
+		if(WarTimeSec <= 0)
 		{
 			CommandKill[0] = 0;
 			CommandKill[1] = 0;
 
-			GangWarStatus = 6; // раунд 2
-			WarTime = ROUND_TIME;
-
-			for(new i = 0; i < MAX_PLAYERS; i++)
+			GangWarStatus = 6;
+			WarTimeMin = ROUND_MIN;
+			WarTimeSec = ROUND_SEC;
+		}
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:kill:list:clear");
-					cef_emit_event(i, "cef:capture:start", CEFSTR("раунд 2"), CEFINT(WarTime));
-				}
+				new time[12];
+				format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+				cef_emit_event(i, "capture-time", CEFSTR(time));
+				cef_emit_event(i, "clear-kill-list");
+				cef_emit_event(i, "capture-text", CEFSTR("начало раунда"));
 			}
 		}
 	}
-	if(GangWarStatus == 6) // раунд 2
+	if(GangWarStatus == 6)
 	{
-		WarTime--;
-
-		if(CommandKill[0] == CommadCount[1] || CommandKill[1] == CommadCount[0])
+		WarTimeSec--;
+		if(WarTimeSec == 0 && WarTimeMin != 0)
 		{
-			if(CommandKill[0] == CommadCount[1]) 
+			WarTimeSec = 59;
+			WarTimeMin--;
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("раунд 2"));
+				}
+			}
+		}
+		else
+		{
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("раунд 2"));
+				}
+			}
+		}
+		if(CommandKill[0] == count_2 || CommandKill[1] == count_1)
+		{
+			if(CommandKill[0] == count_2) 
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++) 
 				{
@@ -268,7 +371,7 @@ stock capture_SecondTimer()
 				}
 				CommandRounds[0]++;
 			}
-			else if(CommandKill[1] == CommadCount[0]) 
+			else if(CommandKill[1] == count_1) 
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++) 
 				{
@@ -279,167 +382,117 @@ stock capture_SecondTimer()
 				}
 				CommandRounds[1]++;
 			}
-
 			for(new i = 0; i < MAX_PLAYERS; i++) 
 			{
 				if(PI[i][pMember] == Command[0] && PI[i][pOnCapture] == 1) FinishRound(i);
 				if(PI[i][pMember] == Command[1] && PI[i][pOnCapture] == 1) FinishRound(i);
 			}
-
 			GangWarStatus = 7;
-			WarTime = FINISH_ROUND;
+			WarTimeSec = FINISH_ROUND;
+			WarTimeMin = 0;
 
-
-			for(new i; i < MAX_PLAYERS; i++) 
+			for(new i = 0; i < MAX_PLAYERS; i++) 
 			{
 				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 				{
-					cef_emit_event(i, "cef:capture:start", CEFSTR("завершение раунда"), CEFINT(WarTime));
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(1), CEFINT(CommandRounds[0]));
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(2), CEFINT(CommandRounds[1]));
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("завершение раунда"));
 				}
 			}
-		}
+			for(new i; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1]) cef_emit_event(i, "capture-score", CEFINT(CommandRounds[0]), CEFINT(CommandRounds[1]));
+			}
+		}		
 	}
-	if(GangWarStatus == 7) // завершение раунд 2
+	if(GangWarStatus == 7)
 	{
-		WarTime--;
-		if(WarTime <= 0)
+		WarTimeSec--;
+		if(WarTimeSec <= 0)
 		{
 			CommandKill[0] = 0;
 			CommandKill[1] = 0;
 
 			GangWarStatus = 8;
-			WarTime = START_ROUND;
+			WarTimeMin = 0;
+			WarTimeSec = START_ROUND;
 
-			for(new i = 0; i < MAX_PLAYERS; i++)
-			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:capture:start", CEFSTR("начало раунда"), CEFINT(WarTime));
-				}
-			}
-		}
-	}
-	if(GangWarStatus == 8) // начало
-	{
-		WarTime--;
-		if(WarTime <= 0)
-		{
-			CommandKill[0] = 0;
-			CommandKill[1] = 0;
-
-			GangWarStatus = 9; // раунд 3
-			WarTime = ROUND_TIME;
-
-			for(new i = 0; i < MAX_PLAYERS; i++)
-			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:kill:list:clear");
-					cef_emit_event(i, "cef:capture:start", CEFSTR("раунд 3"), CEFINT(WarTime));
-				}
-			}
-		}
-	}
-	if(GangWarStatus == 9) // раунд 3
-	{
-		WarTime--;
-
-		if(CommandKill[0] == CommadCount[1] || CommandKill[1] == CommadCount[0])
-		{
-			if(CommandKill[0] == CommadCount[1]) 
-			{
-				for(new i = 0; i < MAX_PLAYERS; i++) 
-				{
-					if(PI[i][pMember] == Command[0] && GetPVarInt(i, "DeathOnCapture") == 0)
-					{
-						TogglePlayerControllable(i, false);
-					}
-				}
-				CommandRounds[0]++;
-			}
-			else if(CommandKill[1] == CommadCount[0]) 
-			{
-				for(new i = 0; i < MAX_PLAYERS; i++) 
-				{
-					if(PI[i][pMember] == Command[1] && GetPVarInt(i, "DeathOnCapture") == 0)
-					{
-						TogglePlayerControllable(i, false);
-					}
-				}
-				CommandRounds[1]++;
-			}
-
-			for(new i = 0; i < MAX_PLAYERS; i++) 
+			/*for(new i = 0; i < MAX_PLAYERS; i++) 
 			{
 				if(PI[i][pMember] == Command[0] && PI[i][pOnCapture] == 1) FinishRound(i);
 				if(PI[i][pMember] == Command[1] && PI[i][pOnCapture] == 1) FinishRound(i);
-			}
-
-			GangWarStatus = 10;
-			WarTime = FINISH_ROUND;
-
-
-			for(new i; i < MAX_PLAYERS; i++) 
+			}*/
+		}
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:capture:start", CEFSTR("завершение раунда"), CEFINT(WarTime));
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(1), CEFINT(CommandRounds[0]));
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(2), CEFINT(CommandRounds[1]));
-				}
+				new time[12];
+				format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+				cef_emit_event(i, "capture-time", CEFSTR(time));
 			}
 		}	
 	}
-	if(GangWarStatus == 10) // завершение
+	if(GangWarStatus == 8)
 	{
-		WarTime--;
-		if(WarTime <= 0)
+		WarTimeSec--;
+		if(WarTimeSec <= 0)
 		{
 			CommandKill[0] = 0;
 			CommandKill[1] = 0;
 
-			GangWarStatus = 11; // раунд 3
-			WarTime = START_ROUND;
-
-			for(new i = 0; i < MAX_PLAYERS; i++)
+			GangWarStatus = 9;
+			WarTimeMin = ROUND_MIN;
+			WarTimeSec = ROUND_SEC;
+		}
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:capture:start", CEFSTR("начало раунда"), CEFINT(WarTime));
-				}
+				new time[12];
+				format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+				cef_emit_event(i, "capture-time", CEFSTR(time));
+				cef_emit_event(i, "clear-kill-list");
+				cef_emit_event(i, "capture-text", CEFSTR("начало раунда"));
 			}
 		}
 	}
-	if(GangWarStatus == 11) // начало
+	if(GangWarStatus == 9)
 	{
-		WarTime--;
-		if(WarTime <= 0)
+		WarTimeSec--;
+		if(WarTimeSec == 0 && WarTimeMin != 0)
 		{
-			CommandKill[0] = 0;
-			CommandKill[1] = 0;
-
-			GangWarStatus = 12; // раунд 4
-			WarTime = ROUND_TIME;
-
-			for(new i = 0; i < MAX_PLAYERS; i++)
+			WarTimeSec = 59;
+			WarTimeMin--;
+			for(new i = 0; i < MAX_PLAYERS; i++) 
 			{
 				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 				{
-					cef_emit_event(i, "cef:kill:list:clear");
-					cef_emit_event(i, "cef:capture:start", CEFSTR("раунд 4"), CEFINT(WarTime));
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("раунд 3"));
 				}
 			}
 		}
-	}
-	if(GangWarStatus == 12) // раунд 4
-	{
-		WarTime--;
-
-		if(CommandKill[0] == CommadCount[1] || CommandKill[1] == CommadCount[0])
+		else
 		{
-			if(CommandKill[0] == CommadCount[1]) 
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("раунд 3"));
+				}
+			}
+		}
+		if(CommandKill[0] == count_2 || CommandKill[1] == count_1)
+		{
+			if(CommandKill[0] == count_2) 
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++) 
 				{
@@ -450,7 +503,7 @@ stock capture_SecondTimer()
 				}
 				CommandRounds[0]++;
 			}
-			else if(CommandKill[1] == CommadCount[0]) 
+			else if(CommandKill[1] == count_1) 
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++) 
 				{
@@ -461,75 +514,117 @@ stock capture_SecondTimer()
 				}
 				CommandRounds[1]++;
 			}
-
 			for(new i = 0; i < MAX_PLAYERS; i++) 
 			{
 				if(PI[i][pMember] == Command[0] && PI[i][pOnCapture] == 1) FinishRound(i);
 				if(PI[i][pMember] == Command[1] && PI[i][pOnCapture] == 1) FinishRound(i);
 			}
+			GangWarStatus = 10;
+			WarTimeSec = FINISH_ROUND;
+			WarTimeMin = 0;
 
-			GangWarStatus = 13;
-			WarTime = FINISH_ROUND;
-
-			for(new i; i < MAX_PLAYERS; i++) 
+			for(new i = 0; i < MAX_PLAYERS; i++) 
 			{
 				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 				{
-					cef_emit_event(i, "cef:capture:start", CEFSTR("завершение раунда"), CEFINT(WarTime));
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(1), CEFINT(CommandRounds[0]));
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(2), CEFINT(CommandRounds[1]));
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("завершение раунда"));
 				}
+			}
+			for(new i; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1]) cef_emit_event(i, "capture-score", CEFINT(CommandRounds[0]), CEFINT(CommandRounds[1]));
 			}
 		}		
 	}
-	if(GangWarStatus == 13) // завершение
+	if(GangWarStatus == 10)
 	{
-		WarTime--;
-		if(WarTime <= 0)
+		WarTimeSec--;
+		if(WarTimeSec <= 0)
 		{
 			CommandKill[0] = 0;
 			CommandKill[1] = 0;
 
-			GangWarStatus = 14; // раунд 4
-			WarTime = START_ROUND;
+			GangWarStatus = 11;
+			WarTimeMin = 0;
+			WarTimeSec = START_ROUND;
 
-			for(new i = 0; i < MAX_PLAYERS; i++)
+			/*for(new i = 0; i < MAX_PLAYERS; i++) 
 			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:capture:start", CEFSTR("начало раунда"), CEFINT(WarTime));
-				}
-			}
+				if(PI[i][pMember] == Command[0] && PI[i][pOnCapture] == 1) FinishRound(i);
+				if(PI[i][pMember] == Command[1] && PI[i][pOnCapture] == 1) FinishRound(i);
+			}*/
 		}
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+			{
+				new time[12];
+				format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+				cef_emit_event(i, "capture-time", CEFSTR(time));
+			}
+		}	
 	}
-	if(GangWarStatus == 14) // начало
+	if(GangWarStatus == 11)
 	{
-		WarTime--;
-		if(WarTime <= 0)
+		WarTimeSec--;
+		if(WarTimeSec <= 0)
 		{
 			CommandKill[0] = 0;
 			CommandKill[1] = 0;
 
-			GangWarStatus = 15; // раунд 5
-			WarTime = ROUND_TIME;
-
-			for(new i = 0; i < MAX_PLAYERS; i++)
+			GangWarStatus = 12;
+			WarTimeMin = ROUND_MIN;
+			WarTimeSec = ROUND_SEC;
+		}
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 			{
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:kill:list:clear");
-					cef_emit_event(i, "cef:capture:start", CEFSTR("раунд 5"), CEFINT(WarTime));
-				}
+				new time[12];
+				format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+				cef_emit_event(i, "capture-time", CEFSTR(time));
+				cef_emit_event(i, "clear-kill-list");
+				cef_emit_event(i, "capture-text", CEFSTR("начало раунда"));
 			}
 		}
 	}
-	if(GangWarStatus == 15) // ласт раунд
+	if(GangWarStatus == 12)
 	{
-		WarTime--;
-
-		if(CommandKill[0] == CommadCount[1] || CommandKill[1] == CommadCount[0])
+		WarTimeSec--;
+		if(WarTimeSec == 0 && WarTimeMin != 0)
 		{
-			if(CommandKill[0] == CommadCount[1]) 
+			WarTimeSec = 59;
+			WarTimeMin--;
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("раунд 4"));
+				}
+			}
+		}
+		else
+		{
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("раунд 4"));
+				}
+			}
+		}
+		if(CommandKill[0] == count_2 || CommandKill[1] == count_1)
+		{
+			if(CommandKill[0] == count_2) 
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++) 
 				{
@@ -540,7 +635,138 @@ stock capture_SecondTimer()
 				}
 				CommandRounds[0]++;
 			}
-			else if(CommandKill[1] == CommadCount[0]) 
+			else if(CommandKill[1] == count_1) 
+			{
+				for(new i = 0; i < MAX_PLAYERS; i++) 
+				{
+					if(PI[i][pMember] == Command[1] && GetPVarInt(i, "DeathOnCapture") == 0)
+					{
+						TogglePlayerControllable(i, false);
+					}
+				}
+				CommandRounds[1]++;
+			}
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] && PI[i][pOnCapture] == 1) FinishRound(i);
+				if(PI[i][pMember] == Command[1] && PI[i][pOnCapture] == 1) FinishRound(i);
+			}
+			GangWarStatus = 13;
+			WarTimeSec = FINISH_ROUND;
+			WarTimeMin = 0;
+
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("завершение раунда"));
+				}
+			}
+			for(new i; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1]) cef_emit_event(i, "capture-score", CEFINT(CommandRounds[0]), CEFINT(CommandRounds[1]));
+			}
+		}		
+	}
+	if(GangWarStatus == 13)
+	{
+		WarTimeSec--;
+		if(WarTimeSec <= 0)
+		{
+			CommandKill[0] = 0;
+			CommandKill[1] = 0;
+
+			GangWarStatus = 14;
+			WarTimeMin = 0;
+			WarTimeSec = START_ROUND;
+
+			/*for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] && PI[i][pOnCapture] == 1) FinishRound(i);
+				if(PI[i][pMember] == Command[1] && PI[i][pOnCapture] == 1) FinishRound(i);
+			}*/
+		}
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+			{
+				new time[12];
+				format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+				cef_emit_event(i, "capture-time", CEFSTR(time));
+			}
+		}	
+	}
+	if(GangWarStatus == 14)
+	{
+		WarTimeSec--;
+		if(WarTimeSec <= 0)
+		{
+			CommandKill[0] = 0;
+			CommandKill[1] = 0;
+
+			GangWarStatus = 15;
+			WarTimeMin = ROUND_MIN;
+			WarTimeSec = ROUND_SEC;
+		}
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+			{
+				new time[12];
+				format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+				cef_emit_event(i, "capture-time", CEFSTR(time));
+				cef_emit_event(i, "capture-text", CEFSTR("начало раунда"));
+			}
+		}
+	}
+	if(GangWarStatus == 15)
+	{
+		WarTimeSec--;
+		if(WarTimeSec == 0 && WarTimeMin != 0)
+		{
+			WarTimeSec = 59;
+			WarTimeMin--;
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("раунд 5"));
+				}
+			}
+		}
+		else
+		{
+			for(new i = 0; i < MAX_PLAYERS; i++) 
+			{
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+				{
+					new time[12];
+					format(time, sizeof(time), "%d:%02d", WarTimeMin, WarTimeSec);
+					cef_emit_event(i, "capture-time", CEFSTR(time));
+					cef_emit_event(i, "capture-text", CEFSTR("раунд 5"));
+				}
+			}
+		}
+		if(CommandKill[0] == count_2 || CommandKill[1] == count_1)
+		{
+			if(CommandKill[0] == count_2) 
+			{
+				for(new i = 0; i < MAX_PLAYERS; i++) 
+				{
+					if(PI[i][pMember] == Command[0] && GetPVarInt(i, "DeathOnCapture") == 0)
+					{
+						TogglePlayerControllable(i, false);
+					}
+				}
+				CommandRounds[0]++;
+			}
+			else if(CommandKill[1] == count_1) 
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++) 
 				{
@@ -553,24 +779,15 @@ stock capture_SecondTimer()
 			}
 
 			GangWarStatus = 16;
-			WarTime = FINISH_ROUND;
+			WarTimeSec = FINISH_ROUND;
+			WarTimeMin = 0;
 
 			for(new i; i < MAX_PLAYERS; i++) 
 			{
-				cef_emit_event(i, "cef:capture:start", CEFSTR("завершение раунда"), CEFINT(WarTime));
-				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-				{
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(1), CEFINT(CommandRounds[0]));
-					cef_emit_event(i, "cef:capture:gang:score", CEFINT(2), CEFINT(CommandRounds[1]));
-				}
-			}	
-		}		
-	}
-	if(GangWarStatus == 16) // завершение last
-	{
-		WarTime--;
-		if(WarTime <= 0)
-		{
+				cef_emit_event(i, "capture-text", CEFSTR("завершение раунда"));
+				if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1]) cef_emit_event(i, "capture-score", CEFINT(CommandRounds[0]), CEFINT(CommandRounds[1]));
+			}
+			//================ last round =================== //
 			if(CommandRounds[0] < CommandRounds[1])
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++)
@@ -586,10 +803,8 @@ stock capture_SecondTimer()
 						}
 						GangZoneHideForPlayer(i, WarZone);
 						GangZoneShowForPlayer(i, WarZone, col);
-						
-						cef_emit_event(i, "cef:capture:visible", CEFINT(false));
-						cef_emit_event(i, "cef:kill:list:clear");
-
+						cef_emit_event(i, "hide-capture");
+						cef_emit_event(i, "clear-kill-list");
 						TogglePlayerControllable(i, true);
 						SendClientMessagef(i, COLOR_YELLOW, "Попыка {%s}ОПГ %s{FFFF00} захватить территорию {%s}ОПГ %s{FFFF00} завершилась неуспешно", ColorTeam[Command[0]], Fraction_Name[Command[0]], ColorTeam[Command[1]], Fraction_Name[Command[1]]);
 						ClearCapture();
@@ -597,13 +812,10 @@ stock capture_SecondTimer()
 				}
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
-					if(PI[i][pOnCapture] == 1)
+					if(PI[i][pOnCapture] == 1 && GetPVarInt(i, "DeathOnCapture") == 0 && PI[i][pMember] == Command[0])
 					{
-						if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-						{
-							SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
-							SetPlayerFacingAngle(i, 359.3068);
-						}
+						SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
+						SetPlayerFacingAngle(i, 359.3068);
 					}
 				}
 				GangWarStatus = 0;
@@ -626,10 +838,8 @@ stock capture_SecondTimer()
 						GangZoneHideForPlayer(i, WarZone);
 						GangZoneShowForPlayer(i, WarZone, col);
 						SaveGZ(Command[0], WarZone);
-
-						cef_emit_event(i, "cef:capture:visible", CEFINT(false));
-						cef_emit_event(i, "cef:kill:list:clear");
-
+						cef_emit_event(i, "hide-capture");
+						cef_emit_event(i, "clear-kill-list");
 						TogglePlayerControllable(i, true);
 						SendClientMessagef(i, COLOR_YELLOW, "Попыка {%s}ОПГ %s{FFFF00} захватить территорию {%s}ОПГ %s{FFFF00} завершилась успешно", ColorTeam[Command[0]], Fraction_Name[Command[0]], ColorTeam[Command[1]], Fraction_Name[Command[1]]);
 						ClearCapture();
@@ -637,18 +847,15 @@ stock capture_SecondTimer()
 				}
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
-					if(PI[i][pOnCapture] == 1)
+					if(PI[i][pOnCapture] == 1 && GetPVarInt(i, "DeathOnCapture") == 0 && PI[i][pMember] == Command[0])
 					{
-						if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-						{
-							SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
-							SetPlayerFacingAngle(i, 359.3068);
-						}
+						SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
+						SetPlayerFacingAngle(i, 359.3068);
 					}
 				}
 				GangWarStatus = 0;
-			}
-		}
+			}	
+		}		
 	}
 }
 stock FinishRound(playerid)
@@ -671,25 +878,23 @@ callback: DeathFinishRound(playerid)
 	}
 	SetPlayerHealthAC(playerid, 176);
 	TogglePlayerControllable(playerid, false);
-
 	new id = GetPlayerID(playerid);
-
 	SetPlayerPos(playerid, SpawnPositions[GangWarInfo[id][gSpawnID]][0], SpawnPositions[GangWarInfo[id][gSpawnID]][1], SpawnPositions[GangWarInfo[id][gSpawnID]][2]);
 	SetPlayerFacingAngle(playerid, SpawnPositions[GangWarInfo[id][gSpawnID]][3]);
-
 	SetTimerEx("UnWairToStart", 5000, false, "d", playerid);
 	return 1;
 }
 callback: NoDeathFinishRound(playerid)
 {
+	for(new i = 0; i < 13; i++) 
+	{
+	    if(PI[playerid][data_GUN][i] != 0 && PI[playerid][data_AMMO][i] != 0) GivePlayerWeapon(playerid, PI[playerid][data_GUN][i], PI[playerid][data_AMMO][i]);
+	}
 	SetPlayerHealthAC(playerid, 176);
 	TogglePlayerControllable(playerid, false);
-
 	new id = GetPlayerID(playerid);
-
 	SetPlayerPos(playerid, SpawnPositions[GangWarInfo[id][gSpawnID]][0], SpawnPositions[GangWarInfo[id][gSpawnID]][1], SpawnPositions[GangWarInfo[id][gSpawnID]][2]);
 	SetPlayerFacingAngle(playerid, SpawnPositions[GangWarInfo[id][gSpawnID]][3]);
-
 	SetTimerEx("UnWairToStart", 5000, false, "d", playerid);
 	return 1;
 }
@@ -703,13 +908,9 @@ stock WaitToStart(playerid) // начало раундов
 }
 callback: UnWairToStart(playerid)
 {
-	cef_emit_event(playerid, "cef:capture:sound", CEFINT(1));
-
+	PlayerPlaySound(playerid, 1137, 0.0, 0.0, 10.0);
 	SetPVarInt(playerid, "DeathOnCapture", 0);
-
 	TogglePlayerControllable(playerid, true);
-
-	cef_emit_event(playerid, "cef:capture:sound", CEFINT(2));
 }
 stock GetColorZone(team)
 {
@@ -799,9 +1000,9 @@ stock CheckCount(playerid)
 {
 	if(GangWarStatus > 1)
 	{
-		if(CommadCount[0] <= 0 && CommadCount[1] <= 0)
+		if(count_1 <= 0 && count_2 <= 0)
 		{			
-			if(PI[playerid][pMember] == Command[0] && CommadCount[0] <= 0)
+			if(PI[playerid][pMember] == Command[0] && count_1 <= 0)
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
@@ -809,33 +1010,31 @@ stock CheckCount(playerid)
 					{
 						GangZoneStopFlashForPlayer(i, WarZone);
 						new col;
-						switch(Command[1]) 
-						{
+						switch(Command[1]) {
 							case 5: col = 0x663399BB;
 							case 6: col = 0x66CCFFBB;
 							case 7: col = 0x339933AA;
 						}
 						GangZoneHideForPlayer(i, WarZone);
 						GangZoneShowForPlayer(i, WarZone, col);
-
-						cef_emit_event(playerid, "cef:capture:visible", CEFINT(false));
-
+						cef_emit_event(i, "hide-capture");
+						cef_emit_event(i, "clear-kill-list");
 						TogglePlayerControllable(i, true);
 						SendClientMessagef(i, COLOR_YELLOW, "Попыка {%s}ОПГ %s{FFFF00} захватить территорию {%s}ОПГ %s{FFFF00} завершилась неуспешно", ColorTeam[Command[0]], Fraction_Name[Command[0]], ColorTeam[Command[1]], Fraction_Name[Command[1]]);
 						ClearCapture();
 					}
-					if(PI[i][pOnCapture] == 1)
+				}
+				for(new i = 0; i < MAX_PLAYERS; i++)
+				{
+					if(PI[i][pOnCapture] == 1 && GetPVarInt(i, "DeathOnCapture") == 0 && PI[i][pMember] == Command[1])
 					{
-						if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-						{
-							SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
-							SetPlayerFacingAngle(i, 359.3068);
-						}
+						SetPlayerPos(i, 1524.0425,-1212.5947,15.0275);
+						SetPlayerFacingAngle(i, 87.1295);
 					}
 				}
 				GangWarStatus = 0;
 			}
-			if(PI[playerid][pMember] == Command[1] && CommadCount[1] <= 0)
+			if(PI[playerid][pMember] == Command[1] && count_2 <= 0)
 			{
 				for(new i = 0; i < MAX_PLAYERS; i++)
 				{
@@ -853,20 +1052,19 @@ stock CheckCount(playerid)
 						GangZoneHideForPlayer(i, WarZone);
 						GangZoneShowForPlayer(i, WarZone, col);
 						SaveGZ(Command[0], WarZone);
-
-						cef_emit_event(playerid, "cef:capture:visible", CEFINT(false));
-
+						cef_emit_event(i, "hide-capture");
+						cef_emit_event(i, "clear-kill-list");
 						TogglePlayerControllable(i, true);
 						SendClientMessagef(i, COLOR_YELLOW, "Попыка {%s}ОПГ %s{FFFF00} захватить территорию {%s}ОПГ %s{FFFF00} завершилась успешно", ColorTeam[Command[0]], Fraction_Name[Command[0]], ColorTeam[Command[1]], Fraction_Name[Command[1]]);
 						ClearCapture();
 					}
-					if(PI[i][pOnCapture] == 1)
+				}
+				for(new i = 0; i < MAX_PLAYERS; i++)
+				{
+					if(PI[i][pOnCapture] == 1 && GetPVarInt(i, "DeathOnCapture") == 0 && PI[i][pMember] == Command[0])
 					{
-						if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-						{
-							SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
-							SetPlayerFacingAngle(i, 359.3068);
-						}
+						SetPlayerPos(i, 1524.0425,-1212.5947,15.0275);
+						SetPlayerFacingAngle(i, 87.1295);
 					}
 				}
 				GangWarStatus = 0;
@@ -893,8 +1091,8 @@ stock capture_OnPlayerDisconnect(playerid)
 		SendFractionMessagef(PI[playerid][pMember], 0x69b867FF, "[R] %s %s[%d] автоматически исключен из участников стрелы (%d/7)",\
 			NameRang(playerid), getName(playerid), playerid, count);
 
-		if(PI[playerid][pMember] == Command[0]) CommadCount[0]--;
-		else if(PI[playerid][pMember] == Command[1]) CommadCount[1]--;
+		if(PI[playerid][pMember] == Command[0]) count_1--;
+		else if(PI[playerid][pMember] == Command[1]) count_2--;
 
 		CheckCount(playerid);
 	}
@@ -1008,8 +1206,8 @@ stock ClearCapture()
 	CommandRounds[0] = 0;
 	CommandKill[0] = 0;
 	CommandKill[0] = 0;
-	CommadCount[0] = 0;
-	CommadCount[1] = 0;
+	count_1 = 0;
+	count_2 = 0;
 }
 stock capture_OnPlayerPickUpPickup(playerid, pickupid)
 {
@@ -1134,7 +1332,8 @@ cmd:capture(playerid)
 
 	GangWarStatus = 1;
 	//
-	WarTime = 280;
+	WarTimeMin = 5;
+	WarTimeSec = 1;
 	WarZone = gz;
 	//
 	CommandKill[0]= 0;
@@ -1152,14 +1351,11 @@ cmd:capture(playerid)
 
 			SCM(i, COLOR_YELLOW, !"Территория отмечена на карте красным мигающим прямоугольником");
 			SCM(i, COLOR_YELLOW, !"Место стрелы отмечено у Вас на мини-карте (/gps 5 5)");
-
-			cef_emit_event(i, "cef:capture:visible", CEFINT(true));
-			cef_emit_event(i, "cef:capture:gang:name", CEFINT(1), CEFSTR(Fraction_Name[Command[0]]));
-			cef_emit_event(i, "cef:capture:gang:name", CEFINT(2), CEFSTR(Fraction_Name[Command[1]]));
-			cef_emit_event(i, "cef:capture:gang:score", CEFINT(1), CEFINT(0));
-			cef_emit_event(i, "cef:capture:gang:score", CEFINT(2), CEFINT(0));
-			cef_emit_event(i, "cef:capture:start", CEFSTR("подготовка к битве"), CEFINT(300));
-
+			cef_emit_event(i, "show-capture");
+			cef_emit_event(i, "capture-score", CEFINT(CommandKill[0]), CEFINT(CommandKill[1]));
+			cef_emit_event(i, "capture-text", CEFSTR("подготовка к битве"));
+			cef_emit_event(i, "capture-info-name", CEFSTR(Fraction_Name[Command[0]]), CEFSTR(Fraction_Name[Command[1]]));
+			cef_emit_event(i, "show_kill_list");
 			GangZoneFlashForPlayer(i, gz, 0xFF000055);	
 		}
 	}

@@ -83,7 +83,7 @@ stock bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 				PI[playerid][pBank] -= Sum;
 				GivePlayerMoneyLog(playerid, strval(inputtext));
-                UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank], 111);
+                UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
 
 				new money[25];
 				format(money, sizeof money, "+%dP", strval(inputtext));
@@ -111,7 +111,7 @@ stock bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 				PI[playerid][pBank] += strval(inputtext);
 				GivePlayerMoneyLog(playerid,-strval(inputtext));
-                UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank], 111);
+                UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
 
 				new money[25];
 				format(money, sizeof money, "-%dP", strval(inputtext));
@@ -208,11 +208,11 @@ stock bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 else
                 {
                     PI[id][pBank] += PI[playerid][pTempBankCash];
-                    UpdatePlayerDataInt(id, "bank", PI[id][pBank], 214);
+                    UpdatePlayerDataInt(id, "bank", PI[id][pBank]);
 				    SendClientMessagef(id, 0x62d44dFF, "[Банк] %s перевёл на Ваш счёт {FFFF99}%d рублей{62d44d}, баланс счёта: {FFFF99}%d рублей", getName(playerid), PI[playerid][pTempBankCash], PI[id][pBank]);
                 }
                 PI[playerid][pBank] -= PI[playerid][pTempBankCash]+Commission;
-                UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank], 217);
+                UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
 
                 transfer_log[0] = EOS, f(transfer_log, 84, "- Перевод %d руб на счёт №%d (комиссия 2%%: %d руб)", PI[playerid][pTempBankCash], PI[playerid][pTempBankID], Commission);
                 TransferBank_log(playerid, PI[playerid][pTempBankCash], transfer_log);
@@ -246,40 +246,40 @@ stock bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                         if(100 > PI[playerid][pBank]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на банковском счёте");
                         PI[playerid][pBank] -= 100;
                         PI[playerid][pNumberMoney] += 100;
-                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank], 249);
-                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney], 249);
+                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
+                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney]);
                     }
                     case 1:
                     {
                         if(500 > PI[playerid][pBank]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на банковском счёте");
                         PI[playerid][pBank] -= 500;
                         PI[playerid][pNumberMoney] += 500;
-                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank], 249);
-                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney], 249);
+                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
+                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney]);
                     }
                     case 2:
                     {
                         if(3000 > PI[playerid][pBank]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на банковском счёте");
                         PI[playerid][pBank] -= 3000;
                         PI[playerid][pNumberMoney] += 3000;
-                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank], 249);
-                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney], 249);
+                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
+                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney]);
                     }
                     case 3:
                     {
                         if(5000 > PI[playerid][pBank]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на банковском счёте");
                         PI[playerid][pBank] -= 5000;
                         PI[playerid][pNumberMoney] += 5000;
-                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank], 249);
-                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney], 249);
+                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
+                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney]);
                     }
                     case 4:
                     {
                         if(10000 > PI[playerid][pBank]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на банковском счёте");
                         PI[playerid][pBank] -= 10000;
                         PI[playerid][pNumberMoney] += 10000;
-                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank], 249);
-                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney], 249);
+                        UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
+                        UpdatePlayerDataInt(playerid, "number_m", PI[playerid][pNumberMoney]);
                     }
                 }
                 ShowPlayerDialogf(playerid, 2345, DIALOG_STYLE_MSGBOX, !"{ee3366}Операция завершена", !"Закрыть", !"Назад", "\

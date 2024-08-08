@@ -7,7 +7,7 @@ callback: OnCefBrowserCreated(player_id, browser_id, status_code)
 	{
 		//SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}Произошла ошибка загрузки. Повторная попытка..");
 		SendAdminsMessagef(COLOR_GREEN, "CEF: У игрока %s[%d] возникла ошибка [code: 0], возможное решение (/reload или переустановка сборки)", getName(player_id), player_id);
-		cef_load_url(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/huds/index.html");
+		cef_load_url(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/hud/index.html");
 		cef_load_url(player_id, DIALOG_CEF, "https://api.s-project.xyz/_rassvet/dialogs/dialog.html");
 	}
 	else if(status_code == 404)
@@ -27,7 +27,7 @@ callback: OnCefInitialize(player_id, success)
 {
 	if(success == 1)
 	{
-		cef_create_browser(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/huds/index.html", false, false);
+		cef_create_browser(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/hud/index.html", false, false);
 		cef_create_browser(player_id, DIALOG_CEF, "https://api.s-project.xyz/_rassvet/dialogs/dialog.html", false, false);
 		cef_always_listen_keys(player_id, DIALOG_CEF, true);
 		cef_always_listen_keys(player_id, 1, true);
@@ -39,7 +39,7 @@ callback: OnCefInitialize(player_id, success)
 CMD:reload(playerid) 
 {
 	cef_load_url(playerid, DIALOG_CEF, "https://api.s-project.xyz/_rassvet/dialogs/dialog.html");
-	cef_load_url(playerid, MAIN_CEF, "https://api.s-project.xyz/_rassvet/huds/index.html");
+	cef_load_url(playerid, MAIN_CEF, "https://api.s-project.xyz/_rassvet/hud/index.html");
 	return 1;
 }
 stock SendPlayerOfferNotify(playerid, message[], button1[], button2[], time) 
@@ -110,15 +110,9 @@ callback: UpdateSpeedometer(playerid)
 	cef_emit_event(playerid, "cef:speed:fuel", CEFINT(CarInfo[vehicleid][cFuel]));
 }
 
-stock ShowPlayerDialogEx(playerid, dialogid, style, caption[], info[], button1[], button2[]) 
-{
-	Dialog(playerid, dialogid, style, caption, info, button1, button2);
-	SetPVarInt(playerid, "USEDIALOGID", dialogid);
-	return 1;
-}
-
 forward CallbackDialogResponse(playerid, const arguments[]);
-public CallbackDialogResponse(playerid, const arguments[]) {
+public CallbackDialogResponse(playerid, const arguments[]) 
+{
 	new dId, responsed, list, input[64];
 	sscanf(arguments, "P< >ddds[64]", dId, responsed, list, input);
 
@@ -126,15 +120,18 @@ public CallbackDialogResponse(playerid, const arguments[]) {
 	return 1;
 }
 
-stock CEF_ShowPlayerDialog(playerid, dialogId, dialogType, dHeader[], dText[], button_1[], button_2[]) {
+stock CEF_ShowPlayerDialog(playerid, dialogId, dialogType, dHeader[], dText[], button_1[], button_2[]) 
+{
  	cef_emit_event(playerid, "cefstudio:dialog", CEFINT(dialogId), CEFINT(dialogType), CEFSTR(dHeader), CEFSTR(dText), CEFSTR(button_1), CEFSTR(button_2));
  	return 1;
 }
-stock CEF_ShowPlayerDialogNew(playerid, dialogId, dHeader[], dText[], dInfo[], button_1[], button_2[]) {
+stock CEF_ShowPlayerDialogNew(playerid, dialogId, dHeader[], dText[], dInfo[], button_1[], button_2[]) 
+{
  	cef_emit_event(playerid, "cefstudio:dialog:new", CEFINT(dialogId), CEFSTR(dHeader), CEFSTR(dText), CEFSTR(dInfo), CEFSTR(button_1), CEFSTR(button_2));
  	return 1;
 }
-stock Dialog(playerid, dialogid, style, caption[], info[], button1[], button2[]) {
+stock Dialog(playerid, dialogid, style, caption[], info[], button1[], button2[]) 
+{
 	if(style == DIALOG_STYLE_LIST ||
 	style == DIALOG_STYLE_INPUT ||
 	style == DIALOG_STYLE_PASSWORD ||
