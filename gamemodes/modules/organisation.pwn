@@ -33,8 +33,7 @@ CMD:setrang(playerid, params[])
     }
 	SCMf(params[0], 0x9eceffFF, "%s %s[%d] %s Ваш ранг до %s[%d]", NameRang(playerid), getName(playerid), playerid, oldrang < PI[params[0]][pRang] ? ("понизил"):("повысил"), NameRang(params[0]), PI[params[0]][pRang]);
 	SCMf(playerid, 0x9eceffFF, "Вы %s %s[%d] до %s[%d]", oldrang > PI[params[0]][pRang] ? ("понизили"):("повысили"), getName(params[0]), params[0], NameRang(params[0]), PI[params[0]][pRang]);
-	PI[params[0]][pRang] = params[1];
-	UpdatePlayerDataInt(params[0], "rank", params[1]);
+	UpdatePlayerDataInt(params[0], "rank", PI[params[0]][pRang]);
 	UpdatePlayerDataInt(params[0], "RankUPTime", gettime()+86400);
 	SavePlayerData(params[0]);
 	return 1;

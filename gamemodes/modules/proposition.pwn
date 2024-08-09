@@ -308,9 +308,8 @@ stock CheckRequest(playerid)
 			}
 			if(type == 11)
 			{
-				pDialogCurrectTime[playerid] = gettime() + 5;
-				pDialogTimer[playerid] = SetTimerEx("DialogTimerInvite", 500, true, "i", playerid);
-			    SetPVarInt(playerid, "from_player",from_player);
+				DialogTimerInvite(playerid);
+			    //SetPVarInt(playerid, "from_player", from_player);
 				return 1;
 			}
 			if(type == 12)
@@ -351,15 +350,13 @@ stock CheckRequest(playerid)
 			}
 			if(type == 15)
 			{
-				pDialogCurrectTime[playerid] = gettime() + 5;
-				pDialogTimer[playerid] = SetTimerEx("DialogTimerGiveGun", 500, true, "i", playerid);
+				//DialogTimerGiveGun(playeyrid);
 				SetPVarInt(playerid, "from_player", from_player);
 				SetPVarInt(playerid, "value_1", value_1);
 			}
 			if(type == 16)
 			{
-				pDialogCurrectTime[playerid] = gettime() + 5;
-				pDialogTimer[playerid] = SetTimerEx("DialogTimerSellGun", 500, true, "i", playerid);
+				DialogTimerSellGun(playerid);
 				SetPVarInt(playerid, "from_player", from_player);
 				SetPVarInt(playerid, "value_1", value_1);
 			}

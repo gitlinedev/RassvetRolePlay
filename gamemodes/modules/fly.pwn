@@ -42,7 +42,8 @@ public OnPlayerCommandText(playerid, cmdtext[])
     new idx;
     cmd = strtok(cmdtext, idx);
     
-    if(strcmp(cmd, "/fly", true) == 0 /* && IsPlayerAdmin(playerid)*/) {
+    if(strcmp(cmd, "/fly", true) == 0 && PI[playerid][pAdmin] >= 1) 
+	{
         new tmp[256];
         tmp = strtok(cmdtext, idx);
         if(!strlen(tmp)) { if(fly[playerid] == 1) { fly[playerid] = 0; SendClientMessage(playerid,red,"Fly mode off."); TogglePlayerControllable(playerid,true); return 1; } else if(fly[playerid] == 0) { fly[playerid] = 1; SendClientMessage(playerid,green,"Fly mode online."); TogglePlayerControllable(playerid,false); return 1; } }

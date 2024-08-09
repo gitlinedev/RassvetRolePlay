@@ -232,8 +232,8 @@ stock OtherMapping()
     ApplyActorAnimation(NPC_ALL[1],"PED","IDLE_chat",4.1, 1, 1, 1, 1, 2000);
     NPC_ALL[2] = CreateActor(2, 1890.2318, 2025.9119, 17.3818, 178.9477);
     ApplyActorAnimation(NPC_ALL[2],"GRAVEYARD", "mrnF_loop",4.1, 1, 1, 1, 1, 2000);
-    NPC_ALL[3] = CreateActor(137, 1840.4908, 2037.1929, 15.4456, 0);
-    ApplyActorAnimation(NPC_ALL[3],"INT_HOUSE", "BED_LOOP_L",4.1, 1, 1, 1, 1, 2000);
+    /*NPC_ALL[3] = CreateActor(137, 1840.4908, 2037.1929, 15.4456, 0);
+    ApplyActorAnimation(NPC_ALL[3],"INT_HOUSE", "BED_LOOP_L",4.1, 1, 1, 1, 1, 2000);*/
     NPC_ALL[4] = CreateActor(295, 1822.4370,2086.6152,15.8538,208.6428);
     ApplyActorAnimation(NPC_ALL[4],"PED","IDLE_chat",4.1, 1, 1, 1, 1, 2000);
     NPC_ALL[5] = CreateActor(228, 1823.1276,2085.9524,15.8534,38.3961);

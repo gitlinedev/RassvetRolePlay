@@ -5,19 +5,19 @@ callback: OnCefBrowserCreated(player_id, browser_id, status_code)
 {
 	if(status_code == 0)
 	{
-		//SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}Произошла ошибка загрузки. Повторная попытка..");
+		SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}Произошла ошибка загрузки. Повторная попытка..");
 		SendAdminsMessagef(COLOR_GREEN, "CEF: У игрока %s[%d] возникла ошибка [code: 0], возможное решение (/reload или переустановка сборки)", getName(player_id), player_id);
-		cef_load_url(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/hud/index.html");
+		cef_load_url(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/huds/index.html");
 		cef_load_url(player_id, DIALOG_CEF, "https://api.s-project.xyz/_rassvet/dialogs/dialog.html");
 	}
 	else if(status_code == 404)
 	{
-		//SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}К сожалению, возникла проблема при загрузке – сервер вернул ошибку 404.");
+		SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}К сожалению, возникла проблема при загрузке – сервер вернул ошибку 404.");
 		SendAdminsMessagef(COLOR_GREEN, "CEF: У игрока %s[%d] возникла ошибка [code: 404], возможно проблема с Web-сервером.", getName(player_id), player_id);
 	}
 	else if(status_code == 200)
 	{
-		//SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}Загрузка прошла успешно! Если интерфейсы не появились, воспользуйтесь командой /reload.");
+		SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}Загрузка прошла успешно! Если интерфейсы не появились, воспользуйтесь командой /reload.");
 		SendAdminsMessagef(COLOR_GREEN, "CEF: Игрока %s[%d] успешно подключился к Web-серверу.", getName(player_id), player_id);
 		PI[player_id][LoadCefInformation] = SetTimerEx("CefLoad", 3200, false, "d", player_id);
 	}
@@ -27,19 +27,25 @@ callback: OnCefInitialize(player_id, success)
 {
 	if(success == 1)
 	{
-		cef_create_browser(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/hud/index.html", false, false);
+		cef_create_browser(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/huds/index.html", false, false);
 		cef_create_browser(player_id, DIALOG_CEF, "https://api.s-project.xyz/_rassvet/dialogs/dialog.html", false, false);
 		cef_always_listen_keys(player_id, DIALOG_CEF, true);
-		cef_always_listen_keys(player_id, 1, true);
+		cef_always_listen_keys(player_id, MAIN_CEF, true);
         return;
 	}
-	//else SCM(player_id, COLOR_HINT, "[CEF-client] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (OCI)");
+	else SCM(player_id, COLOR_HINT, "[CEF-client] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (OCI)");
 	return;
+}
+callback: CefLoad(playerid) 
+{
+	cef_emit_event(playerid, "cef:hud:active", CEFINT(1));
+	KillTimer(PI[playerid][LoadCefInformation]);
+	CheckGangWar(playerid);
 }
 CMD:reload(playerid) 
 {
 	cef_load_url(playerid, DIALOG_CEF, "https://api.s-project.xyz/_rassvet/dialogs/dialog.html");
-	cef_load_url(playerid, MAIN_CEF, "https://api.s-project.xyz/_rassvet/hud/index.html");
+	cef_load_url(playerid, MAIN_CEF, "https://api.s-project.xyz/_rassvet/huds/index.html");
 	return 1;
 }
 stock SendPlayerOfferNotify(playerid, message[], button1[], button2[], time) 
