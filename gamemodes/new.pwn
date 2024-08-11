@@ -5272,7 +5272,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 									/d - чат депортамента\n\
 									/members - члены организации онлайн\n\
 									/free - освободить игрока из тюрьмы (для адвокатов)\n\
-									/licsell - продать лицензии (для секретарей)", "Закрыть", "");
+									/givelic - продать лицензии (для секретарей)", "Закрыть", "");
 							case 2: ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX,"{ee3366}Организация","\
 									{FFFFFF}/r - чат организации\n\
 									/rr - OOC чат организации\n\
@@ -13919,7 +13919,7 @@ CMD:me(playerid,params[]) // +
     if(PI[playerid][pMute] == 1) return SCM(playerid, COLOR_GREY, !"Ваш чат временно заблокирован");
 	if(sscanf(params,"s[80]",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /me [текст]");
     NotReklama(playerid, params[0]);
-	global_str[0] = EOS, f(global_str, sizeof(global_str), "%s %s",getName(playerid), params[0]);
+	global_str[0] = EOS, f(global_str, 150, "%s %s",getName(playerid), params[0]);
 	ProxDetector(30.0, playerid, global_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
 	SetPlayerChatBubblef(playerid, 0xFF99CCFF, 20.0, 4000, "%s %s", getName(playerid), params[0]);
 	return 1;
@@ -14353,9 +14353,9 @@ CMD:tpc(playerid)
   	SCM(playerid, COLOR_YELLOW, !"Встаньте на место, где будет находиться подъезд и введите (/tpkv) или же если создаёте дом (/tph)");
 	return 1;
 }
-cmd:free(playerid,params[]) 
+cmd:free(playerid, params[]) 
 {
-    if(PI[playerid][pMember] == 1 && PI[playerid][pRang] == 4) 
+    if(PI[playerid][pMember] == 1 && PI[playerid][pRang] == 5) 
 	{
     	if(sscanf(params, "u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /free [ID игрока]");
     	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
@@ -14375,14 +14375,14 @@ cmd:free(playerid,params[])
     else SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
 	return 1;
 }
-CMD:licsell(playerid,params[]) 
+CMD:givelic(playerid,params[]) 
 {
-    if(PI[playerid][pMember] == 1 && PI[playerid][pRang] == 3) 
+    if(PI[playerid][pMember] == 1 && PI[playerid][pRang] == 4) 
 	{
-		if(sscanf(params, "ud", params[0],params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /licsell [ID игрока] [1 - водительские права, 2 - лицензия на оружие]");
+		if(sscanf(params, "ud", params[0],params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givelic [ID игрока] [1 - водительские права, 2 - лицензия на оружие]");
 		if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 		if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-		if(params[1] < 1 || params[1] > 2) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /licsell [ID игрока] [1 - водительские права, 2 - лицензия на оружие]");
+		if(params[1] < 1 || params[1] > 2) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givelic [ID игрока] [1 - водительские права, 2 - лицензия на оружие]");
 		new Float:x,Float:y,Float:z;
 		GetPlayerPos(params[0],x,y,z);
 		if(!PlayerToPoint(10.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Игрок находится слишком далеко");
@@ -16926,13 +16926,15 @@ callback:nameleader_check(playerid) {
 	mysql_tquery(mysql, str_q, "sql_lname", "i", playerid);
 	return 1 ;
 }
-callback:sql_lname(playerid) {
+callback:sql_lname(playerid) 
+{
 	new rows, fields;
 	cache_get_data(rows, fields);
 	if(!rows) return SCM(playerid, COLOR_GREY,"Игрок не менял имена");
 	new str_1[256];
 	strcat(str_1, "Старый никнейм - Новый никнейм - Дата изменения\n\n");
-	for(new j = 0; j < rows; j ++ ) {
+	for(new j = 0; j < rows; j ++ ) 
+	{
 		new _nh_oldname[MAX_PLAYER_NAME ],_nh_newname[MAX_PLAYER_NAME ],_nh_date[20],line_string[68];
 		cache_get_field_content(j, "nh_oldname", _nh_oldname, mysql, MAX_PLAYER_NAME);
 		cache_get_field_content(j, "nh_newname", _nh_newname, mysql, MAX_PLAYER_NAME);

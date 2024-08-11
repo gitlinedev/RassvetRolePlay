@@ -794,10 +794,10 @@ CMD:givevb(playerid, params[])
 	return SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал игроку %s[%d] военный билет",\
 		AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0]);
 }
-CMD:givelic(playerid,params[])
+CMD:agivelic(playerid,params[])
 {
     if(CheckAccess(playerid, 3)) return 1;
-	if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givelic [ID игрока]");
+	if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /agivelic [ID игрока]");
 	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	PI[params[0]][pDriveLicense] = 1;

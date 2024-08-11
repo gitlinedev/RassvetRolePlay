@@ -63,6 +63,9 @@ callback: CheckBlackListInvite(playerid)
 		GetPlayerPos(id,x,y,z);
 		if(!PlayerToPoint(5.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"ƒанный игрок слишком далеко от ¬ас");
 
+		global_str[0] = EOS, f(global_str, 67, "%s передал пакет с формой человеку напротив", getName(playerid));
+		ProxDetector(30.0, playerid, global_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
+
 		SendRequestForPlayer(playerid, id, 1);
 	}
 	return 1;
@@ -114,8 +117,8 @@ stock bl_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			new name[25], reason[33];
 			sscanf(inputtext, "p<,>s[24]s[32]", name, reason);
 
-            mysql_string[0] = EOS, f(mysql_string, 115, "SELECT * FROM `fractions_blacklist` WHERE bl_fraction = '%d' AND bl_name = '%s' LIMIT 1", PI[playerid][pMember], name);
-	        mysql_tquery(mysql, mysql_string, "GiveBlackList", "ds", playerid, name);
+			mysql_string[0] = EOS, mysql_format(mysql, mysql_string, 135, "SELECT * FROM `fractions_blacklist` WHERE bl_fraction = '%d' AND bl_name = '%e' LIMIT 1", PI[playerid][pMember], name);
+			mysql_function_query(mysql, mysql_string, true, "GiveBlackList", "ds", playerid, name);
 
 		    SetPVarString(playerid, "reason_bl", reason);
 		}

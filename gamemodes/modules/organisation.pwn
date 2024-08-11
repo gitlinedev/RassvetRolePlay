@@ -31,6 +31,10 @@ CMD:setrang(playerid, params[])
         PI[params[0]][pRang]--;
         SetRang("log_setrang", getName(playerid), PI[params[0]][pRang], getName(params[0]), "понизил");
     }
+	SendFractionMessagef(PI[playerid][pMember], 0x9eceffFF, "[R] %s %s[%d] %s ранг %s[%d] до %s[%d]",\
+		NameRang(playerid), getName(playerid), playerid, oldrang < PI[params[0]][pRang] ? ("понизил"):("повысил"),\
+		getName(params[0]), params[0], NameRang(params[0]), PI[params[0]][pRang]);
+
 	SCMf(params[0], 0x9eceffFF, "%s %s[%d] %s ¬аш ранг до %s[%d]", NameRang(playerid), getName(playerid), playerid, oldrang < PI[params[0]][pRang] ? ("понизил"):("повысил"), NameRang(params[0]), PI[params[0]][pRang]);
 	SCMf(playerid, 0x9eceffFF, "¬ы %s %s[%d] до %s[%d]", oldrang > PI[params[0]][pRang] ? ("понизили"):("повысили"), getName(params[0]), params[0], NameRang(params[0]), PI[params[0]][pRang]);
 	UpdatePlayerDataInt(params[0], "rank", PI[params[0]][pRang]);
