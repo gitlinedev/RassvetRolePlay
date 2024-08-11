@@ -1112,7 +1112,7 @@ cmd:capture(playerid)
     new hour, minute, second;
     gettime(hour, minute, second);
     
-    if(capturetime == 1) 
+    if(Coolldown_Capture == 1) 
 	{
 		if(!((hour >= 12 && hour <= 19) && minute == 0) && !(hour >= 20 && hour <= 23) && !(hour >= 0 && hour <= 9))
 		{

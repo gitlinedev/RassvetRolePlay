@@ -1,8 +1,8 @@
 #define BUSINESS_STATS "business_fin"
-#define BUSINESS_TABLE "busienss"
+#define BUSINESS_TABLE "business"
 
 enum bInfo {
-	data_ID,
+	bID,
 	bRentCost,
 	bClient,
  	bName[50],
@@ -46,7 +46,8 @@ CMD:business(playerid)
     if(PI[playerid][pBusiness] == INVALID_BUSINESS_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет бизнеса");
     if(PI[playerid][pBusiness] != INVALID_BUSINESS_ID) 
     { 
-        if(BizInfo[PI[playerid][pBusiness]][bSealedDays] > 0) return SendClientMessage(playerid, COLOR_GREY, !"Ваш бизнес опечатан, Вы не можете управлять им");
+		new bIndex = GetBusinessIndexByID(PI[playerid][pBusiness]);
+        if(BizInfo[bIndex][bSealedDays] > 0) return SendClientMessage(playerid, COLOR_GREY, !"Ваш бизнес опечатан, Вы не можете управлять им");
         BusinessMenu(playerid);
     }
 	return 1;
@@ -63,7 +64,7 @@ CMD:buybusiness(playerid)
 
             if(BizInfo[b][bOwned] == 1) return SCM(playerid, COLOR_GREY, !"Этот бизнес уже куплен'");
 			if(GetPlayerMoneyID(playerid) < BizInfo[b][bPrice]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
-			PI[playerid][pBusiness] = b;
+			PI[playerid][pBusiness] = BizInfo[b][bID];
 			BizInfo[b][bMoney] = 0;
 			BizInfo[b][bProduct] = 0;
             BizInfo[b][bOwned] = 1;
@@ -104,7 +105,7 @@ stock SetBusinessUpdate()
 			BizInfo[b][bClient] = 0;
 			SaveBusinessData(b);
 		}
-        if(BizInfo[b][bSealedDays] > 0)
+        if(BizInfo[b][bSealedDays] >= 0)
         {
             BizInfo[b][bSealedDays]--;
             if(BizInfo[b][bSealedDays] == 0)
@@ -145,14 +146,17 @@ stock SetBusinessUpdate()
         }
         else
         {
-            BizInfo[b][bDays]--;
-            if(BizInfo[b][bDays] < 1)
-            {
-                new sDays = RandomEX(2,4);
-                BizInfo[b][bSealedDays] = sDays;
-				SaveBusinessData(b);
-                UpdateBusinessData(b);
-            }
+			if (BizInfo[b][bOwned] == 1)
+			{
+				BizInfo[b][bDays]--;
+				if(BizInfo[b][bDays] < 1)
+				{
+					new sDays = RandomEX(2,4);
+					BizInfo[b][bSealedDays] = sDays;
+					SaveBusinessData(b);
+					UpdateBusinessData(b);
+				}
+			}
         }
 	}
 	BusinessUpdate = 0;
@@ -170,7 +174,7 @@ stock UpdateBusinessData(b)
                 format(str_1,sizeof(str_1), "\
                 {FFFFFF}%s {FFD700}№%d\n\
                 {FFFFFF}Владелец: {FFD700}%s\n\
-                {FF6347}БИЗНЕС ОПЕЧАТАН", BizInfo[b][bName], BizInfo[b][data_ID], BizInfo[b][bOwner]);
+                {FF6347}БИЗНЕС ОПЕЧАТАН", BizInfo[b][bName], BizInfo[b][bID], BizInfo[b][bOwner]);
                 UpdateDynamic3DTextLabelText(BizInfo[b][bTextInfo], -1, str_1);
             }
             else 
@@ -179,7 +183,7 @@ stock UpdateBusinessData(b)
                 format(str_1,sizeof(str_1), "\
                 {FFFFFF}%s {FFD700}№%d\n\
                 {FFFFFF}Владелец: {FFD700}%s\n\
-                {FFFFFF}Купить канистру: {FFD700}K", BizInfo[b][bName], BizInfo[b][data_ID], BizInfo[b][bOwner]);
+                {FFFFFF}Купить канистру: {FFD700}K", BizInfo[b][bName], BizInfo[b][bID], BizInfo[b][bOwner]);
                 UpdateDynamic3DTextLabelText(BizInfo[b][bTextInfo], -1, str_1);
             }
 		}
@@ -238,7 +242,7 @@ callback: LoadBusiness()
 	{
     	for(new b = 0; b < rows; b++) 
 		{
-	        cache_get_field_content(b, "id", temp), BizInfo[b][data_ID] = strval (temp);
+	        cache_get_field_content(b, "id", temp), BizInfo[b][bID] = strval (temp);
 	        cache_get_field_content(b, "owner", BizInfo[b][bOwner], mysql, MAX_PLAYER_NAME);
 	        cache_get_field_content(b, "name", BizInfo[b][bName], mysql, 50);
 	        cache_get_field_content(b, "owned", temp), BizInfo[b][bOwned] = strval (temp);
@@ -291,14 +295,14 @@ callback: LoadBusiness()
                         format(str_1,sizeof(str_1), "\
                         {FFFFFF}%s {FFD700}№%d\n\
                         {FFFFFF}Владелец: {FFD700}%s\n\
-                        {FF6347}БИЗНЕС ОПЕЧАТАН", BizInfo[b][bName], BizInfo[b][data_ID], BizInfo[b][bOwner]);
+                        {FF6347}БИЗНЕС ОПЕЧАТАН", BizInfo[b][bName], BizInfo[b][bID], BizInfo[b][bOwner]);
                     }
                     else
                     {
                         format(str_1,sizeof(str_1), "\
                         {FFFFFF}%s {FFD700}№%d\n\
                         {FFFFFF}Владелец: {FFD700}%s\n\
-                        {FFA500}Нажмите клавишу: K", BizInfo[b][bName], BizInfo[b][data_ID], BizInfo[b][bOwner]);
+                        {FFA500}Нажмите клавишу: K", BizInfo[b][bName], BizInfo[b][bID], BizInfo[b][bOwner]);
                     }
                 }
 				else 
@@ -358,7 +362,7 @@ callback: LoadBusiness()
             BizInfo[b][bTextInfo] = CreateDynamic3DTextLabel(str_1, -1,BizInfo[b][data_ENTERX], BizInfo[b][data_ENTERY], BizInfo[b][data_ENTERZ],15.0);
             if(BizInfo[b][data_MAPICON] != -1) BizInfo[b][data_MAPICON] = CreateDynamicMapIcon(BizInfo[b][data_ENTERX], BizInfo[b][data_ENTERY], BizInfo[b][data_ENTERZ], BizInfo[b][data_MAPICON], -1, 0, -1, -1, 200.0);
         }
-        if(console_Debbug == 1) printf("[INFO]  Load business. Load: %d b. Time: %d ms.", TotalBusiness, GetTickCount()-time);
+        printf("[INFO]  Load business. Load: %d b. Time: %d ms.", TotalBusiness, GetTickCount()-time);
   	}
     return 1;
 }
@@ -383,22 +387,22 @@ stock business_OnDialogResponse(playerid, dialogid, response, listitem, inputtex
                     case 1: ShowBusinessUpdateMenu(playerid);
 					case 2: 
                     {
-						new b = PI[playerid][pBusiness];
-                        new str_3[1048];
-						format(str_3,sizeof(str_3),"\
-						{FFFFFF}Для получения прибыли бизнесу нужны продукты. Каждый час в бизнесе\n\
-						{FFFFFF}расходуется 1 партия продуктов и одновременно зачисляется прибыль.\n\
-						{FFFFFF}Если в этот момент отсутствовали продукты - прибыли не будет.\n\
-						{FFFFFF}Изначально Вы можете купить 6 партий продуктов (этого хватит на 6 часов)\n\
-						{FFFFFF}Увеличить вместимость склада можно в Центре недвижимости {FFFF99}(/gps).\n\n\
-						{FFFF99}Обратите внимание: если склад будет пустовать более 5-7 дней,\n\
-						{FFFF99}бизнес будет продан государству, а Вам - возвращена часть его стоимости.\n\n\
-						{FFFFFF}Продуктов на складе:\t\t {3366cc}%d парт.\n\
-						{FFFFFF}Вместимость склада:\t\t {3366cc}100 парт.\n\
-						{FFFFFF}Доступно для закупки:\t\t {3366cc}%d парт.\n\
-						{FFFFFF}Стоимость 1 партии:\t\t {2dc45b}10000 руб\n\n\
-						{FFFFFF}Введите количество партий продуктов для закупки:", BizInfo[b][bProduct], 100-BizInfo[b][bProduct]);
-			            ShowPlayerDialog(playerid, 2355, DIALOG_STYLE_INPUT, !"{ee3366}Преобрести продукты",str_3, "Купить", "Назад");
+						new bIndex = GetBusinessIndexByID(PI[playerid][pBusiness]);
+                        
+						global_str[0] = EOS, format(global_str, 1048,"\
+							{FFFFFF}Для получения прибыли бизнесу нужны продукты. Каждый час в бизнесе\n\
+							{FFFFFF}расходуется 1 партия продуктов и одновременно зачисляется прибыль.\n\
+							{FFFFFF}Если в этот момент отсутствовали продукты - прибыли не будет.\n\
+							{FFFFFF}Изначально Вы можете купить 6 партий продуктов (этого хватит на 6 часов)\n\
+							{FFFFFF}Увеличить вместимость склада можно в Центре недвижимости {FFFF99}(/gps).\n\n\
+							{FFFF99}Обратите внимание: если склад будет пустовать более 5-7 дней,\n\
+							{FFFF99}бизнес будет продан государству, а Вам - возвращена часть его стоимости.\n\n\
+							{FFFFFF}Продуктов на складе:\t\t {3366cc}%d парт.\n\
+							{FFFFFF}Вместимость склада:\t\t {3366cc}100 парт.\n\
+							{FFFFFF}Доступно для закупки:\t\t {3366cc}%d парт.\n\
+							{FFFFFF}Стоимость 1 партии:\t\t {2dc45b}10000 руб\n\n\
+							{FFFFFF}Введите количество партий продуктов для закупки:", BizInfo[bIndex][bProduct], 100-BizInfo[bIndex][bProduct]);
+			            ShowPlayerDialog(playerid, 2355, DIALOG_STYLE_INPUT, !"{ee3366}Преобрести продукты", global_str, "Купить", "Назад");
 					}
                     case 3:
                     {
@@ -412,23 +416,21 @@ stock business_OnDialogResponse(playerid, dialogid, response, listitem, inputtex
                     }
 					case 5: 
                     {
-						new b = PI[playerid][pBusiness];
+						new bIndex = GetBusinessIndexByID(PI[playerid][pBusiness]);
 
 					    DisablePlayerCheckpoint(playerid);
-						SetPlayerCheckpoint(playerid, BizInfo[b][data_ENTERX], BizInfo[b][data_EXITY],BizInfo[b][data_ENTERZ]+1,5.0);
+                        SetPlayerCheckpoint(playerid, BizInfo[bIndex][data_ENTERX], BizInfo[bIndex][data_ENTERY], BizInfo[bIndex][data_ENTERZ], 5.0);
 				
-						SetPVarFloat(playerid, "gps_pos_x", BizInfo[b][data_ENTERX]);
-						SetPVarFloat(playerid, "gps_pos_y", BizInfo[b][data_EXITY]);
-						SetPVarFloat(playerid, "gps_pos_z", BizInfo[b][data_EXITZ]);
+						SetPVarFloat(playerid, "gps_pos_x", BizInfo[bIndex][data_ENTERX]);
+						SetPVarFloat(playerid, "gps_pos_y", BizInfo[bIndex][data_ENTERY]);
+						SetPVarFloat(playerid, "gps_pos_z", BizInfo[bIndex][data_ENTERZ]);
 
 						SCM(playerid,  COLOR_GREY, !"Ваш бизнес был отмечен на мини-карте");
 					}
 					case 6: 
                     {
-					    new b = PI[playerid][pBusiness];
-						new str_3[185];
-						format(str_3,sizeof(str_3),"Вы желаете продать свой бизнес за {FFFF99}%d рублей{FFFFFF}?", BizInfo[b][bPrice]/2);
-			            ShowPlayerDialog(playerid, 2354, DIALOG_STYLE_MSGBOX, !"{ee3366}Продажа бизнеса",str_3, "Продать", "Отмена");
+					    new bIndex = GetBusinessIndexByID(PI[playerid][pBusiness]);
+			            ShowPlayerDialogf(playerid, 2354, DIALOG_STYLE_MSGBOX, !"{ee3366}Продажа бизнеса", "Продать", "Отмена", "Вы желаете продать свой бизнес за {FFFF99}%d рублей{FFFFFF}?", BizInfo[bIndex][bPrice]/2);
 					}
 				}
 			}
@@ -438,15 +440,16 @@ stock business_OnDialogResponse(playerid, dialogid, response, listitem, inputtex
 			if(!response) return 1;
 			if(response) 
             {
-		    	new b = PI[playerid][pBusiness];
-		      	BizInfo[b][bOwned] = 0;
-		      	BizInfo[b][bDays] = 0;
+		    	new bIndex = GetBusinessIndexByID(PI[playerid][pBusiness]);
+
+		      	BizInfo[bIndex][bOwned] = 0;
+		      	BizInfo[bIndex][bDays] = 0;
 		      	PI[playerid][pBusiness] = INVALID_BUSINESS_ID;
-			 	strmid(BizInfo[b][bOwner], "None", 0, strlen(BizInfo[b][bOwner]), 24);
-				GivePlayerMoneyLog(playerid,BizInfo[b][bPrice]/2);
-			 	SCMf(playerid, 0xc89522AA, "Вы продали бизнес государству за %d рублей", BizInfo[b][bPrice]/2);
-				UpdateBusinessData(b);
-				SaveBusinessData(b);
+			 	strmid(BizInfo[bIndex][bOwner], "None", 0, strlen(BizInfo[bIndex][bOwner]), 24);
+				GivePlayerMoneyLog(playerid,BizInfo[bIndex][bPrice]/2);
+			 	SCMf(playerid, 0xc89522AA, "Вы продали бизнес государству за %d рублей", BizInfo[bIndex][bPrice]/2);
+				UpdateBusinessData(bIndex);
+				SaveBusinessData(bIndex);
 			  	SavePlayerData(playerid);
    			}
 		}
@@ -455,28 +458,30 @@ stock business_OnDialogResponse(playerid, dialogid, response, listitem, inputtex
   			if(!response) return callcmd::business(playerid);
 			if(response) 
             {
-                new b = PI[playerid][pBusiness];
-                if(strcmp(PI[playerid][pName], BizInfo[b][bOwner], true)) 
+                new bIndex = GetBusinessIndexByID(PI[playerid][pBusiness]);
+				SCMf(playerid, -1, "bowner - %s, bindex - %d", BizInfo[bIndex][bOwner], bIndex);
+                if(!strcmp(PI[playerid][pName], BizInfo[bIndex][bOwner], false)) 
                 {
 		    	    new ProductValue = strval(inputtext);
 
                     if(ProductValue <= 0) return SCM(playerid, COLOR_GREY, !"Минимальное количество продактов 1 шт.");
-	     			if(BizInfo[b][bProduct] >= 100) return SCM(playerid, COLOR_GREY, !"Склад бизнеса полон");
-                    if(ProductValue+BizInfo[b][bProduct] > 100) return SCM(playerid, COLOR_GREY, !"На складе бизнеса недостаточно места");
+	     			if(BizInfo[bIndex][bProduct] >= 100) return SCM(playerid, COLOR_GREY, !"Склад бизнеса полон");
+                    if(ProductValue+BizInfo[bIndex][bProduct] > 100) return SCM(playerid, COLOR_GREY, !"На складе бизнеса недостаточно места");
                     
                     new money = ProductValue*10000;
                     if(GetPlayerMoneyID(playerid) < money) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно на руках денег");
 
 					GivePlayerMoneyLog(playerid, -money);
 
-					BizInfo[b][bProduct] += ProductValue;
+					BizInfo[bIndex][bProduct] += ProductValue;
 
-				 	SCMf(playerid, COLOR_GREENNEW, "Вы купили {fe9a7e}%d шт.{00aa33} продуктов. Всего продуктов: {fe9a7e}%d шт.{00aa33}", ProductValue, BizInfo[b][bProduct]);
+				 	SCMf(playerid, COLOR_GREENNEW, "Вы купили {fe9a7e}%d шт.{00aa33} продуктов. Всего продуктов: {fe9a7e}%d шт.{00aa33}", ProductValue, BizInfo[bIndex][bProduct]);
 
-					UpdateBusinessData(b);
-					SaveBusinessData(b);
+					UpdateBusinessData(bIndex);
+					SaveBusinessData(bIndex);
 					return 1;
 				}
+				else SCM(playerid, COLOR_GREY, !"Произошла ошибка..");
 			}
 		}
     }
@@ -598,42 +603,57 @@ stock ShowBusinessUpdateMenu(playerid)
 }
 stock ShowBusinessInfo(playerid) 
 {
-    new b = PI[playerid][pBusiness];
+    new baseID = PI[playerid][pBusiness];
+    new bIndex = GetBusinessIndexByID(baseID);
 
-	new str_3[256*3];
-    if(BizInfo[b][data_TYPE] == 1) 
-	{
-		format(str_3,sizeof(str_3),"\
-		Название:\t\t{3173d2}%s\n\
-		{FFFFFF}Номер бизнеса:\t%d\n\
-		{FFFFFF}Владелец:\t\t%s\n\
-		{FFFFFF}Стоимость:\t\t%d руб\n\
-		{FFFFFF}Арендная плата:\t{3de87c}%d руб\n\
-		{FFFFFF}Статус оплаты:\t\t%d дн {FFFF99}(оплатить в Банке - /gps)n\
-		{FFFFFF}Бензина на складе:\t%d л\n\
-		{FFFFFF}Баланс:\t\t%d руб\n\
+    if (bIndex == -1) 
+    {
+        ShowPlayerDialog(playerid, 2349, DIALOG_STYLE_MSGBOX, "{ee3366}Ошибка", "Бизнес не найден", "Закрыть", "");
+        return 1;
+    }
+
+    new str_3[256*3];
+    if (BizInfo[bIndex][data_TYPE] == 1) 
+    {
+        format(str_3,sizeof(str_3),"\
+        {FFFFFF}Название:\t\t{3173d2}%s\n\
+        {FFFFFF}Номер бизнеса:\t%d\n\
+        {FFFFFF}Владелец:\t\t%s\n\
+        {FFFFFF}Стоимость:\t\t%d руб\n\
+        {FFFFFF}Арендная плата:\t{3de87c}%d руб\n\
+        {FFFFFF}Статус оплаты:\t\t%d дн {FFFF99}(оплатить в Банке - /gps)\n\
+        {FFFFFF}Бензина на складе:\t%d л\n\
+        {FFFFFF}Баланс:\t\t%d руб\n\
         {FFFFFF}Продавец:\t\t— {FFFF99}(нанять в Центре недвижимости)",
-		BizInfo[b][bName], BizInfo[b][data_ID], BizInfo[b][bOwner], BizInfo[b][bPrice], BizInfo[b][bRentCost], BizInfo[b][bDays], BizInfo[b][bProduct], BizInfo[b][bMoney]);
-		ShowPlayerDialog(playerid, 2349, DIALOG_STYLE_MSGBOX, !"{ee3366}Информация о бизнесе", str_3, "Закрыть", "Назад");
-	}
-	else 
-	{
-		format(str_3,sizeof(str_3),"\
-		Название:\t\t{3173d2}%s\n\
-		{FFFFFF}Номер бизнеса:\t%d\n\
-		{FFFFFF}Владелец:\t\t%s\n\
-		{FFFFFF}Стоимость:\t\t%d руб\n\
-		{FFFFFF}Арендная плата:\t{3de87c}%d руб\n\
-		{FFFFFF}Статус оплаты:\t\t%d дн {FFFF99}(оплатить в Банке - /gps)\n\
-		{FFFFFF}Продуктов на складе:\t%d / 100.\n\
-		{FFFFFF}Баланс:\t\t%d руб\n\
+        BizInfo[bIndex][bName], BizInfo[bIndex][bID], BizInfo[bIndex][bOwner], BizInfo[bIndex][bPrice], BizInfo[bIndex][bRentCost], BizInfo[bIndex][bDays], BizInfo[bIndex][bProduct], BizInfo[bIndex][bMoney]);
+        ShowPlayerDialog(playerid, 2349, DIALOG_STYLE_MSGBOX, "{ee3366}Информация о бизнесе", str_3, "Закрыть", "Назад");
+    }
+    else 
+    {
+        format(str_3,sizeof(str_3),"\
+        {FFFFFF}Название:\t\t{3173d2}%s\n\
+        {FFFFFF}Номер бизнеса:\t%d\n\
+        {FFFFFF}Владелец:\t\t%s\n\
+        {FFFFFF}Стоимость:\t\t%d руб\n\
+        {FFFFFF}Арендная плата:\t{3de87c}%d руб\n\
+        {FFFFFF}Статус оплаты:\t\t%d дн {FFFF99}(оплатить в Банке - /gps)\n\
+        {FFFFFF}Продуктов на складе:\t%d / 100.\n\
+        {FFFFFF}Баланс:\t\t%d руб\n\
         {FFFFFF}Продавец:\t\t— {FFFF99}(нанять в Центре недвижимости)",
-		BizInfo[b][bName], BizInfo[b][data_ID], BizInfo[b][bOwner], BizInfo[b][bPrice], BizInfo[b][bRentCost], BizInfo[b][bDays], BizInfo[b][bProduct], BizInfo[b][bMoney]);
-		ShowPlayerDialog(playerid, 2349, DIALOG_STYLE_MSGBOX, "{ee3366}Информация о бизнесе", str_3, "Закрыть", "Назад");
-	}
-	return 1;
+        BizInfo[bIndex][bName], BizInfo[bIndex][bID], BizInfo[bIndex][bOwner], BizInfo[bIndex][bPrice], BizInfo[bIndex][bRentCost], BizInfo[bIndex][bDays], BizInfo[bIndex][bProduct], BizInfo[bIndex][bMoney]);
+        ShowPlayerDialog(playerid, 2349, DIALOG_STYLE_MSGBOX, "{ee3366}Информация о бизнесе", str_3, "Закрыть", "Назад");
+    }
+    return 1;
 }
-CMD:test_bizfin(playerid)
+
+stock GetBusinessIndexByID(baseID)
 {
-	return SetBusinessUpdate();
+    for (new i = 0; i < TotalBusiness; i++) 
+    {
+        if (BizInfo[i][bID] == baseID) 
+        {
+            return i;
+        }
+    }
+    return -1;
 }

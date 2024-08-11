@@ -235,7 +235,7 @@ stock bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             if(!response) return 1;
 			if(response) 
 			{
-                if(PI[playerid][data_PHONE] == 0) return SCM(playerid, COLOR_GREY, !"У вас нет телефона");
+                if(PI[playerid][pPhone] == 0) return SCM(playerid, COLOR_GREY, !"У вас нет телефона");
 
                 new OldNumberMoney = PI[playerid][pNumberMoney];
 

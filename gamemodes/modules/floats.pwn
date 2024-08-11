@@ -54,7 +54,7 @@ stock kv_OnDialogResponse(playerid, dialogid, response, listitem)
 			        new kv;
 			        if(PlayerToPoint(3.0, playerid, kvData[kv][kvEnterPosX][k], kvData[kv][kvEnterPosY][k], kvData[kv][kvEnterPosZ][k])) 
                     {
-			            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY,"У Вас уже есть недвижимость");
+			            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY,"У Вас уже есть недвижимость");
 			            if(kvData[kv][kvOwned][k] == 1) return SCM(playerid, COLOR_GREY,"У данной квартиры уже есть владелец");
 						if(GetPlayerMoneyID(playerid) < kvData[kv][kvCost]) return SCM(playerid, COLOR_GREY,"У Вас недостаточно денег на руках");
 						PI[playerid][data_PADIK] = kv;
@@ -94,7 +94,7 @@ stock kv_OnDialogResponse(playerid, dialogid, response, listitem)
 			        new kv;
 			        if(PlayerToPoint(3.0, playerid, kvData[kv][kvEnterPosX][k], kvData[kv][kvEnterPosY][k], kvData[kv][kvEnterPosZ][k])) 
                     {
-			            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
+			            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
 			            if(kvData[kv][kvOwned][k] == 1) return SCM(playerid, COLOR_GREY, !"У данной квартиры уже есть владелец");
 						if(GetPlayerMoneyID(playerid) < kvData[kv][kvCost]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 						PI[playerid][data_PADIK] = kv;
@@ -282,8 +282,8 @@ stock kv_OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 //======================================================================
 CMD:home(playerid) 
 {
-    if(PI[playerid][data_HOUSE] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
-	if(PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) ShowPlayerDialog(playerid, dialog_HOUSE, DIALOG_STYLE_LIST, "{ee3366}Дом", "Информация\nОткрыть/закрыть дом\nПродать дом", "Выбрать", "Отмена");
+    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+	if(PI[playerid][pHouse] != INVALID_HOUSE_ID) ShowPlayerDialog(playerid, dialog_HOUSE, DIALOG_STYLE_LIST, "{ee3366}Дом", "Информация\nОткрыть/закрыть дом\nПродать дом", "Выбрать", "Отмена");
 	else ShowPlayerDialog(playerid, 4507, DIALOG_STYLE_LIST, "{ee3366}Квартира", "Информация\nОткрыть/закрыть квартиру\nПродать квартиру", "Выбрать", "Отмена");
 	return 1;
 }
@@ -296,7 +296,7 @@ CMD:buykv(playerid)
         if(kv == -1) break;
         if(PlayerToPoint(3.0, playerid, kvData[kv][kvEnterPosX][k], kvData[kv][kvEnterPosY][k], kvData[kv][kvEnterPosZ][k]))
         {
-            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][data_HOUSE] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
+            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
             if(kvData[kv][kvOwned][k] == 1) return SCM(playerid, COLOR_GREY, !"У данной квартиры уже есть владелец");
 			if(GetPlayerMoneyID(playerid) < kvData[kv][kvCost]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 			PI[playerid][data_PADIK] = kv;
@@ -546,20 +546,20 @@ callback: LoadKV()
 			if(kk == 6) kvData[kv][kvMapIcon] = CreateDynamicMapIcon(kvData[kv][kvEnterX], kvData[kv][kvEnterY], kvData[kv][kvEnterZ], 32, -1, 0, -1, -1, 100.0);
 			else kvData[kv][kvMapIcon] = CreateDynamicMapIcon(kvData[kv][kvEnterX], kvData[kv][kvEnterY], kvData[kv][kvEnterZ], 31, -1, 0, -1, -1, 100.0);
         }
-        if(console_Debbug == 1) printf("[INFO]  Load kvartiry. Load: %d b. Time: %d ms.",TotalKV,GetTickCount()-time);
+        printf("[INFO]  Load kvartiry. Load: %d b. Time: %d ms.",TotalKV,GetTickCount()-time);
   	}
     return 1;
 }
 //=========================================================================
 CMD:addkv(playerid) 
 {
-    if(CheckAdmin(playerid, 8)) return 1;
+    if(CheckAccess(playerid, 8)) return 1;
 	ShowPlayerDialog(playerid, 3988, DIALOG_STYLE_MSGBOX, !"{ee3366}Добавление подъезда", !"{FFFFFF}Вы желаете добавить подъезд?", !"Да", !"Отмена");
 	return 1;
 }
 CMD:tpplayer(playerid) 
 {
-    if(CheckAdmin(playerid, 8)) return 1;
+    if(CheckAccess(playerid, 8)) return 1;
 	if(GetPVarInt(playerid, "AddKV") == 0 && GetPVarInt(playerid, "addhouse") == 0) return SCM(playerid, COLOR_GREY, !"Вы не начали добавлять подъезд / дом");
 	new Float:x, Float:y, Float:z, Float:a;
     GetPlayerPos(playerid, x, y, z);
@@ -573,7 +573,7 @@ CMD:tpplayer(playerid)
 }
 CMD:tpkv(playerid) 
 {
-    if(CheckAdmin(playerid, 8)) return 1;
+    if(CheckAccess(playerid, 8)) return 1;
 	if(GetPVarInt(playerid, "addkv") == 0) return SCM(playerid, COLOR_GREY, !"Вы не начали добавлять подъезд");
 	new Float:x, Float:y, Float:z;
 	GetPlayerPos(playerid, x, y, z);

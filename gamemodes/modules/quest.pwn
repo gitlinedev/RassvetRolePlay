@@ -27,7 +27,12 @@ stock qeust_OnDialogResponse(playerid, dialogid, response, listitem)
                 {
                     case 0: ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, "{ee3366}Информация", "{FFFFFF}Хаха! Это я-то тебе помогать должен? Скорее наоборот. Впрочем, неважно.\nДля этих целей есть кое-что (команда /help). Полагаю, это тебе поможет. Апчхи!", "Закрыть", "");
                     case 1: SendClientMessage(playerid, COLOR_LIGHTGREY, !"Разработчики ещё не добавили задания для игроков");
-                    case 2: ShowPlayerDialog(playerid, 3435, DIALOG_STYLE_MSGBOX, "{ee3366}Аренда", "{FFFFFF}Да-да, это я сдаю в аренду свои мопеды, не спрашивай откуда они у меня\n{FFFF99}Стоимость аренды: 250 руб", "Далее", "Закрыть");
+                    case 2: 
+                    {
+                        CEF_ShowPlayerDialogNew(playerid, 3435, "{ee3366}Аренда",\
+                            "Да-да, это я сдаю в аренду свои мопеды, не спрашивай откуда они у меня\n\nСтоимость аренды: <strong>250 руб</strong>",\
+                            "Если вы покинете мопед и не вернетесь в него в течении 90 секунд он исчезнет. ", "Арендовать", "Отмена");
+                    }
                 }
             }
         }

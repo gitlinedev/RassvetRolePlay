@@ -34,7 +34,7 @@ callback: LoadBlackList()
 				mysql_tquery(mysql, mysql_string, "");
 			}
 		}
-		if(console_Debbug == 1) printf("[INFO]  Load blacklist accounts. Load: %d. UnBlackList: %d. Ex UnBlackList: %d. Time: %d ms.", TotalBlackList, BlackListRemove, TotalBans-BlackListRemove, GetTickCount()-time);
+		printf("[INFO]  Load blacklist accounts. Load: %d. UnBlackList: %d. Ex UnBlackList: %d. Time: %d ms.", TotalBlackList, BlackListRemove, TotalBans-BlackListRemove, GetTickCount()-time);
   	}
     return 1;
 }
@@ -56,20 +56,14 @@ callback: CheckBlackListInvite(playerid)
 		if(!IsPlayerConnected(id))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 		if(!IsPlayerLogged{id})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 		if(PI[id][pMember] != 0) return  SCM(playerid, COLOR_GREY, !"Данный игрок состоит в организации");
-		if(PI[id][data_WARN] > 0) return SCM(playerid, COLOR_GREY, !"У данного игрока есть предупреждения");
+		if(PI[id][pWarn] > 0) return SCM(playerid, COLOR_GREY, !"У данного игрока есть предупреждения");
 		if(PI[id][pMilitaryID] == 0 && PI[playerid][pMember] == 3) return SCM(playerid, COLOR_GREY, !"У игрока нет военного билета");
 
 		new Float:x,Float:y,Float:z;
 		GetPlayerPos(id,x,y,z);
 		if(!PlayerToPoint(5.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Данный игрок слишком далеко от Вас");
 
-		SetPVarInt(playerid, "to_player", id);
-		new str_invite[83 + MAX_PLAYER_NAME];
-		format(str_invite, sizeof(str_invite), "{FFFFFF}- Отлично! Я думаю мы сработаемся {FF99CC}- сказал %s, взяв пакет с формой", getName(playerid));
-		ProxDetector(25.0, playerid, str_invite, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF ,0xFF99CCFF);
-
-		pCurrectMessage[playerid]++;
-		pTimerMessage[playerid] = gettime() + 1;
+		SendRequestForPlayer(playerid, id, 1);
 	}
 	return 1;
 }
@@ -339,7 +333,7 @@ callback: InsertBlackList(playerid, PlayerName[])
 }
 CMD:allleaders(playerid,params[]) 
 {
-    if(CheckAdmin(playerid, 5)) return 1;
+    if(CheckAccess(playerid, 5)) return 1;
 	mysql_function_query(mysql, "SELECT * FROM `accounts` WHERE `leader` != '0'", true, "LoadAllLeaders", "d", playerid);
 	return 1;
 }

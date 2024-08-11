@@ -18,7 +18,7 @@ callback: OnCefBrowserCreated(player_id, browser_id, status_code)
 	else if(status_code == 200)
 	{
 		SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}Загрузка прошла успешно! Если интерфейсы не появились, воспользуйтесь командой /reload.");
-		SendAdminsMessagef(COLOR_GREEN, "CEF: Игрока %s[%d] успешно подключился к Web-серверу.", getName(player_id), player_id);
+		SendAdminsMessagef(COLOR_GREEN, "CEF: Игрок %s[%d] успешно подключился к Web-серверу.", getName(player_id), player_id);
 		PI[player_id][LoadCefInformation] = SetTimerEx("CefLoad", 3200, false, "d", player_id);
 	}
 	return 1;
@@ -38,7 +38,6 @@ callback: OnCefInitialize(player_id, success)
 }
 callback: CefLoad(playerid) 
 {
-	cef_emit_event(playerid, "cef:hud:active", CEFINT(1));
 	KillTimer(PI[playerid][LoadCefInformation]);
 	CheckGangWar(playerid);
 }

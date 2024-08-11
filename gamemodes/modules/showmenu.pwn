@@ -56,13 +56,13 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if(!response) return ShowShopMenu(playerid);
 		    if(response)
 		    {
-				if(BizInfo[b][bProduct] <= 0  || BizInfo[b][bOwned] == 0) return SendClientMessage(playerid, COLOR_GREY, !"У бизнеса недостаточно продуктов");
+				if(BizInfo[b][bProduct] <= 0) return SendClientMessage(playerid, COLOR_GREY, !"У бизнеса недостаточно продуктов");
 
 				if(GetPlayerMoneyID(playerid) < PHONE) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
-				if(PI[playerid][data_PHONE] == 1) return SCM(playerid, COLOR_GREY, !"У Вас уже есть телефон");
+				if(PI[playerid][pPhone] == 1) return SCM(playerid, COLOR_GREY, !"У Вас уже есть телефон");
 				GivePlayerMoneyLog(playerid, -PHONE);
 
-                PI[playerid][data_PHONE] = 1;
+                PI[playerid][pPhone] = 1;
 
 				UpdateBusinessData(b);
 				cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка мобильного телефона"), CEFSTR("fb4949"), CEFSTR("-5500P"));
@@ -76,12 +76,12 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if(!response) return ShowShopMenu(playerid);
 		    if(response)
 		    {
-                if(BizInfo[b][bProduct] <= 0  || BizInfo[b][bOwned] == 0) return SendClientMessage(playerid, COLOR_GREY, !"У бизнеса недостаточно продуктов");
+                if(BizInfo[b][bProduct] <= 0) return SendClientMessage(playerid, COLOR_GREY, !"У бизнеса недостаточно продуктов");
 
 				if(strlen(inputtext) == 0) return ShowPlayerDialog(playerid, 6990, DIALOG_STYLE_INPUT, "{ee3366}Покупка номера телефона", "{FFFFFF}Введите желаем {3366cc}6-значный{FFFFFF} номер телефона\nНовая SIM-карта заменит текущую (при eё наличии).\n{696969}Отменить это действие будет невозможно", "Купить", "Назад");
 				if(strlen(inputtext) < 6 || strlen(inputtext) > 6) return SCM(playerid, COLOR_GREY, !"Длина номера 6 символа"), ShowPlayerDialog(playerid, 6990, DIALOG_STYLE_INPUT, "{ee3366}Покупка номера телефона", "Введите желаем {3366cc}6-значный{FFFFFF} номер телефона\nНовая SIM-карта заменит текущую (при eё наличии).\n{696969}Отменить это действие будет невозможно", "Купить", "Назад");
 
-                if(PI[playerid][data_PHONE] == 0) return SCM(playerid, COLOR_GREY, !"Сначала купите телефон");
+                if(PI[playerid][pPhone] == 0) return SCM(playerid, COLOR_GREY, !"Сначала купите телефон");
 				if(GetPlayerMoneyID(playerid) < PHONE) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 				SetPVarInt(playerid, "simcard", strval(inputtext));
 
@@ -152,11 +152,11 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		}
         case 3520: 
 		{
-		    new b = GetPVarInt(playerid,"business");
+		    new b = GetPVarInt(playerid, "business");
 		    if(!response) return 1;
 			if(response) 
 			{
-                if(BizInfo[b][bProduct] <= 0  || BizInfo[b][bOwned] == 0) return SendClientMessage(playerid, COLOR_GREY, !"У бизнеса недостаточно продуктов");
+                if(BizInfo[b][bProduct] <= 0) return SendClientMessage(playerid, COLOR_GREY, !"У бизнеса недостаточно продуктов");
 			    switch(listitem) 
 				{
 			        case 0: 
@@ -182,7 +182,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 3:
 					{
-					    if(PI[playerid][pHealPack] == 3) return SCM(playerid, COLOR_GREY, !"Вы можете купить не более 3х аптечек");
+					    if(PI[playerid][pHealPack] == 3) return SCM(playerid, COLOR_GREY, !"У Вас уже есть три аптечки");
 						if(GetPlayerMoneyID(playerid) < HEALPACK) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 						GivePlayerMoneyLog(playerid,-HEALPACK);
 						PI[playerid][pHealPack]++;
@@ -270,11 +270,11 @@ callback: CheckSimCard(playerid)
 	else
 	{
 		new b = GetPVarInt(playerid,"business");
-        if(BizInfo[b][bProduct] <= 0  || BizInfo[b][bOwned] == 0) return SendClientMessage(playerid, COLOR_GREY, !"У бизнеса недостаточно продуктов");
+        if(BizInfo[b][bProduct] <= 0) return SendClientMessage(playerid, COLOR_GREY, !"У бизнеса недостаточно продуктов");
         
 		GivePlayerMoneyLog(playerid,-SIM_CARD);
-		PI[playerid][data_NUMBER] = GetPVarInt(playerid,"simcard");
-		UpdatePlayerDataInt(playerid, "number", PI[playerid][data_NUMBER]);
+		PI[playerid][pNumber] = GetPVarInt(playerid,"simcard");
+		UpdatePlayerDataInt(playerid, "number", PI[playerid][pNumber]);
 		cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка сим-карты"), CEFSTR("fb4949"), CEFSTR("-300P"));
 		ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Покупка SIM-карты", "Закрыть", "Назад", "{FFFFFF}Поздравляем!\nВы купили SIM-карту c номером {3377cc}%d", GetPVarInt(playerid,"simcard"));
 		UpdateBusinessData(b);
