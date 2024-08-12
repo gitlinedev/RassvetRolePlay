@@ -192,7 +192,7 @@ callback: CheckBlackList(playerid, name[])
 	cache_get_data(rows, fields);
 	if(rows) 
     {
-        mysql_tqueryf(mysql, "DELETE FROM `fractions_blacklist` WHERE `bl_name` = '%s' AND `bl_fraction` = '%d'", name, PI[playerid][pMember]);
+        mysql_tqueryf(mysql, "DELETE FROM `fractions_blacklist` WHERE `bl_name` = '%e' AND `bl_fraction` = '%d'", name, PI[playerid][pMember]);
 		SCMf(playerid, COLOR_GREENNEW, "Вы убрали из чёрного списка {FFFF33}%s.", name);
 
 		switch(PI[playerid][pMember]) 

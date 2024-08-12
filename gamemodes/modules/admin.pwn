@@ -856,7 +856,7 @@ CMD:offleader(playerid,params[])
 {
     if(CheckAccess(playerid, 5)) return 1;
 	if(sscanf(params, "s[24]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /offleader [имя]");
-	mysql_string[0] = EOS, f(mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%s'",params[0]);
+	mysql_string[0] = EOS, f(mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'",params[0]);
 	mysql_tquery(mysql, mysql_string, "OffLeader", "is", playerid, params[0]);
 	return 1;
 }
@@ -1086,7 +1086,7 @@ callback: UnbanAccount(playerid,name[])
     cache_get_data(rows, fields);
     if(rows) 
 	{
-	    mysql_tqueryf(mysql, "DELETE FROM `banlist` WHERE `name` = '%s'", name);
+	    mysql_tqueryf(mysql, "DELETE FROM `banlist` WHERE `name` = '%e'", name);
 		SendAdminsMessagef(COLOR_YELLOW, "[%s #%d] %s[%d] разбанил аккаунт %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid,name);
 	}
 	else SCM(playerid, COLOR_GREY, !"Данный аккаунт не найден в базе данных");

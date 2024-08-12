@@ -49,6 +49,7 @@ new
 
 #define SCM SendClientMessage
 #define SCMf SendClientMessagef
+#define mf mysql_format
 #define f format
 
 #define mysql_tqueryf(%0,%1,%2)         	SQL_STRING[0] = EOS, mysql_format(%0, SQL_STRING, sizeof(SQL_STRING), %1, %2) && mysql_tquery(%0, SQL_STRING)// && printf(%1,%2)
@@ -1714,9 +1715,8 @@ stock LoadOrgCars()
 }
 stock SaveGZ(gzopg1, gz)
 {
-    new str_q[90];
-    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `gangzone` SET `gzopg` = '%d' WHERE `gzid` = '%d'", gzopg1, gz_info[gz][gzid]);
-	mysql_function_query(mysql, str_q, false, "", "");
+    mysql_string[0] = EOS, mf(mysql, mysql_string, 65, "UPDATE `gangzone` SET `gzopg` = '%d' WHERE `gzid` = '%d'", gzopg1, gz_info[gz][gzid]);
+	mysql_function_query(mysql, mysql_string, false, "", "");
 	return 1;
 }
 stock GivePlayerHealth(playerid, Float:health) 
@@ -2175,7 +2175,7 @@ public OnPlayerConnect(playerid)
 	AdminFly[playerid] = 0;
 	ClearPlayerData(playerid);
 
-	mysql_string[0] = EOS, f(mysql_string, 150, "SELECT `ID`, `Password`, `VkontakteID` FROM accounts WHERE Name = '%s' LIMIT 1;", getName(playerid));
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT `ID`, `Password`, `VkontakteID` FROM accounts WHERE Name = '%e' LIMIT 1;", getName(playerid));
     mysql_tquery(mysql, mysql_string, "GetPlayerDataMysql", "d", playerid);
 
 	RemoveBuild(playerid);
@@ -2191,7 +2191,7 @@ stock CheckStatus(playerid)
 	TogglePlayerControllable(playerid, false);
 	SetPlayerVirtualWorld(playerid, playerid+10);
 
-	mysql_string[0] = EOS, f(mysql_string, 76, "SELECT * FROM `banlist` WHERE `name` = '%s' LIMIT 1", getName(playerid));
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 76, "SELECT * FROM `banlist` WHERE `name` = '%e' LIMIT 1", getName(playerid));
     mysql_tquery(mysql, mysql_string, "CheckBan", "d", playerid);
 	return 1;
 }
@@ -4551,7 +4551,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			
 			new Premium, Float: X, Float: Y, Float: Z, Cache: result, query[140];
 
-			mysql_format(mysql, query, sizeof query, "SELECT * FROM ownable WHERE ID='%d'", carid);
+			mf(mysql, query, sizeof query, "SELECT * FROM ownable WHERE ID='%d'", carid);
 			result = mysql_query(mysql, query, true);
 
 			if(cache_num_rows())
@@ -4588,7 +4588,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 				new Float: X, Float: Y, Float: Z, Cache: result, query[140];
 
-				mysql_format(mysql, query, sizeof query, "SELECT * FROM ownable WHERE ID='%d'", carid);
+				mf(mysql, query, sizeof query, "SELECT * FROM ownable WHERE ID='%d'", carid);
 				result = mysql_query(mysql, query, true);
 
 				if(cache_num_rows())
@@ -4618,7 +4618,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				new carid = GetPVarInt(playerid, "LoadCar");
 				new Cache: result, query[140];
 
-				mysql_format(mysql, query, sizeof query, "SELECT * FROM ownable WHERE ID='%d'", carid);
+				mf(mysql, query, sizeof query, "SELECT * FROM ownable WHERE ID='%d'", carid);
 				result = mysql_query(mysql, query, true);
 
 				if(cache_num_rows())
@@ -4923,7 +4923,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			}
 			strmid(PI[playerid][pPassword], inputtextsave, 0, strlen(inputtextsave), 30);
 
-			mysql_string[0] = EOS, f(mysql_string, 115, "SELECT * FROM `accounts` WHERE `Name` = '%s' AND `Password` = md5('%s')", PI[playerid][pName], inputtextsave);
+			mysql_string[0] = EOS, mf(mysql, mysql_string, 115, "SELECT * FROM `accounts` WHERE `Name` = '%e' AND `Password` = md5('%s')", PI[playerid][pName], inputtextsave);
 			mysql_tquery(mysql, mysql_string, "LoadPlayerData", "i", playerid);
 		}
   		case dialog_SEX: 
@@ -5094,7 +5094,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				strmid(CHANGE_NAME[playerid], inputtext, 0, strlen(inputtext), MAX_PLAYER_NAME);
 				SetPVarInt(playerid, "change_name_status", 1);
 
-				mysql_string[0] = EOS, f(mysql_string, 71, "SELECT * FROM `accounts` WHERE `Name` = '%e'", CHANGE_NAME[playerid]);
+				mysql_string[0] = EOS, mf(mysql, mysql_string, 71, "SELECT * FROM `accounts` WHERE `Name` = '%e'", CHANGE_NAME[playerid]);
 				mysql_tquery(mysql, mysql_string, "CheckNameDonate", "ds", playerid, CHANGE_NAME[playerid]);
 			}
 		}
@@ -5425,7 +5425,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 						new Cache: result, query[140];
 
-						mysql_format(mysql, query, sizeof query, "SELECT * FROM ownable WHERE Owner='%e' AND Premium='0'", getName(playerid));
+						mf(mysql, query, sizeof query, "SELECT * FROM ownable WHERE Owner='%e' AND Premium='0'", getName(playerid));
 						result = mysql_query(mysql, query, true);
 
 						if(cache_num_rows() >= 2)
@@ -7489,6 +7489,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if(!response) return 1;
 		    if(response) 
 			{
+				if(!IsPlayerLogged{playerid}) return 1;
 			    switch(listitem) 
 				{
 			        case 0: ShowStats(playerid);
@@ -7502,15 +7503,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			        case 8: ChangeNameMenu(playerid);
                     case 9: 
 					{
-						if(!IsPlayerLogged{playerid}) return 1;
-						f(mysql_string, 86, "SELECT * FROM `fractions_blacklist` WHERE bl_name = '%e'",PI[playerid][pName]);
+						mf(mysql, mysql_string, 86, "SELECT * FROM `fractions_blacklist` WHERE bl_name = '%e'",PI[playerid][pName]);
 						mysql_tquery(mysql, mysql_string, "CheckBlackListPlayer", "d", playerid);
 					}
 					case 10: 
 					{
-						new str_q[68];
-						mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'",PI[playerid][pName]);
-						mysql_function_query(mysql, str_q, true, "LoadDonate", "i", playerid);
+						mf(mysql, mysql_string, 66, "SELECT * FROM `accounts` WHERE `Name` = '%e'",PI[playerid][pName]);
+						mysql_function_query(mysql, mysql_string, true, "LoadDonate", "i", playerid);
 					}
 			    }
 			}
@@ -7935,17 +7934,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				}
 			}
 		}
-		case dialog_SETNAME: {
+		case dialog_SETNAME:
+		{
 			if(!response) return ChangeNameMenu(playerid);
-			if(response) {
+			if(response) 
+			{
 				new name[24];
 				GetPVarString(playerid,"randomame", name, sizeof(name));
 				FixSVarString(name);
 				strmid(CHANGE_NAME[playerid], name, 0, strlen(name), MAX_PLAYER_NAME);
 				SetPVarInt(playerid, "change_name_status", 1);
-				new str_q[98];
-				mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'", CHANGE_NAME[playerid]);
-				mysql_function_query(mysql, str_q, true, "CheckName", "ds", playerid, CHANGE_NAME[playerid]);
+
+				mf(mysql, mysql_string, 66, "SELECT * FROM `accounts` WHERE `Name` = '%e'", CHANGE_NAME[playerid]);
+				mysql_function_query(mysql, mysql_string, true, "CheckName", "ds", playerid, CHANGE_NAME[playerid]);
 			}
 		}
 		case dialog_MAKEGUN:
@@ -8292,9 +8293,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					case 'А'..'Я', 'а'..'я', ',', '`', '=': return SCM(playerid, COLOR_HINT, "[Подсказка]: {FFFFFF}Разрешено использовать {6699ff}только{FFFFFF} латинские буквы и цифры"),ShowPlayerDialog(playerid, dialog_SETTING_2, DIALOG_STYLE_INPUT, !"{ee3366}Изменение пароля","Введите в поле ниже новый пароль от аккаунта\n{FFFF99}Пример: 12345qwe", "Далее", "Назад");
 				}
 				strmid(PI[playerid][pPassword], inputtextsave, 0, strlen(inputtextsave), 30);
-				new str_q[115];
-				mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `Password` = md5('%e') WHERE `Name` = '%e'",PI[playerid][pPassword],PI[playerid][pName]);
-    			mysql_function_query(mysql, str_q, false, "", "");
+				mf(mysql, mysql_string, 130, "UPDATE `accounts` SET `Password` = md5('%e') WHERE `Name` = '%e'",PI[playerid][pPassword],PI[playerid][pName]);
+    			mysql_function_query(mysql, mysql_string, false, "", "");
 				SCMf(playerid, COLOR_HINT, "[Внимание]: {FFFFFF}Ваш новый пароль: %s. Обязательно сделайте скриншот {6699ff}'F8'", inputtextsave);
 
             }
@@ -8311,10 +8311,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					case 'А'..'Я', 'а'..'я': return SCM(playerid, COLOR_HINT, "[Подсказка]: {FFFFFF}Разрешено использовать {FFFF33}только{FFFFFF} латинские буквы и цифры"),ShowPlayerDialog(playerid, dialog_SETTING_1, DIALOG_STYLE_INPUT, !"{ee3366}Изменение пароля","Введите в поле ниже свой нынешний пароль\n{FFFF99}Пример: 123qwe", "Далее", "Назад");
 				}
-				new str_q[150];
     			strmid(PI[playerid][pPassword], inputtextsave, 0, strlen(inputtextsave), 30);
-				mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e' AND `Password` = md5('%e')",PI[playerid][pName],PI[playerid][pPassword]);
-				mysql_function_query(mysql, str_q, true, "ChangePassword", "d", playerid);
+				mf(mysql, mysql_string, 130, "SELECT * FROM `accounts` WHERE `Name` = '%e' AND `Password` = md5('%e')",PI[playerid][pName],PI[playerid][pPassword]);
+				mysql_function_query(mysql, mysql_string, true, "ChangePassword", "d", playerid);
 			}
 		}
 		case 1250:
@@ -9139,7 +9138,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
       				}
       				case 4: 
 					{
-						mysql_string[0] = EOS, f(mysql_string, 85, "SELECT * FROM `phonebook` WHERE name_add = '%e'",PI[playerid][pName]);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 72, "SELECT * FROM `phonebook` WHERE name_add = '%e'",PI[playerid][pName]);
 	                    mysql_tquery(mysql, mysql_string, "PhoneBook", "i", playerid);
 					}
 				  	case 5: SCM(playerid, COLOR_YELLOW, !"Данная функция ещё не была добавлена");
@@ -9184,7 +9183,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				        new _text[24];
 		                sscanf(inputtext, "s", _text);
 
-						mysql_string[0] = EOS, mysql_format(mysql, mysql_string, 100, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], _text);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 100, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], _text);
 						mysql_function_query(mysql, mysql_string, true, "SetGroupPlayer", "i", playerid);
 				    }
 			    }
@@ -9450,17 +9449,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 				    case 0: 
 					{
-						mysql_string[0] = EOS, f(mysql_string, 130, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 72, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
 	                    mysql_tquery(mysql, mysql_string, "InfoGroup", "i", playerid);
 					}
 					case 1: 
 					{
-					    mysql_string[0] = EOS, f(mysql_string, 130, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+					    mysql_string[0] = EOS, mf(mysql, mysql_string, 72, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
 	                    mysql_tquery(mysql, mysql_string, "IDGroup", "i", playerid);
 					}
 					case 2: 
 					{
-						mysql_string[0] = EOS, f(mysql_string, 130, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 72, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
 	                    mysql_tquery(mysql, mysql_string, "CheckStandart", "i", playerid);
 					}
 					case 3: 
@@ -9494,7 +9493,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					case 5: ShowPlayerDialog(playerid, 3452, DIALOG_STYLE_INPUT, !"{ee3366}Изменить название группы", !"{FFFFFF}Новое название группы", !"Далее", !"Закрыть");
 					case 6: 
 					{
-						mysql_string[0] = EOS, mysql_format(mysql, mysql_string, 130, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 130, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
 						mysql_function_query(mysql, mysql_string, true, "CheckDelete", "i", playerid);
 					}
 					default: return 1;
@@ -9590,7 +9589,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				GetPVarString(playerid,"gtext", grouptext, sizeof(grouptext));
 				FixSVarString(grouptext);
 
-				mysql_string[0] = EOS, mysql_format(mysql, mysql_string, 130, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+				mysql_string[0] = EOS, mf(mysql, mysql_string, 130, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
 				mysql_function_query(mysql, mysql_string, true, "ChangeSkinG", "i", playerid);
 
 				DeletePVar(playerid, "gtext");
@@ -9709,7 +9708,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				GetPVarString(playerid,"gtext", grouptext, sizeof(grouptext));
 				FixSVarString(grouptext);
 
-				mysql_string[0] = EOS, mysql_format(mysql, mysql_string, 130, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+				mysql_string[0] = EOS, mf(mysql, mysql_string, 130, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
 				mysql_function_query(mysql, mysql_string, true, "ChangeSkinM", "i", playerid);
 
 				DeletePVar(playerid, "gtext");
@@ -9757,7 +9756,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						GetPVarString(playerid,"pb_namecont", text, sizeof(text));
 						FixSVarString(text);
 
-				    	mysql_string[0] = EOS, mysql_format(mysql, mysql_string, 120, "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
+				    	mysql_string[0] = EOS, mf(mysql, mysql_string, 120, "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
 						mysql_function_query(mysql, mysql_string, true, "InfoPhoneBook", "i", playerid);
 				    }
 				    case 1: 
@@ -9766,7 +9765,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						GetPVarString(playerid,"pb_namecont", text, sizeof(text));
 						FixSVarString(text);
 
-				    	mysql_string[0] = EOS, mysql_format(mysql, mysql_string, 120, "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'", PI[playerid][pName], text);
+				    	mysql_string[0] = EOS, mf(mysql, mysql_string, 120, "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'", PI[playerid][pName], text);
 						mysql_function_query(mysql, mysql_string, true, "CallPhoneBook", "i", playerid);
 				    }
 				    case 2: ShowPlayerDialog(playerid, 7322, DIALOG_STYLE_INPUT, "{ee3366}Отправить SMS", "Введите текст сообщения:", "Отправить", "Назад");
@@ -9790,9 +9789,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			new text[24];
 			GetPVarString(playerid,"pb_namecont", text, sizeof(text));
 			FixSVarString(text);
-			new str_q[256];
-			mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
-			mysql_function_query(mysql, str_q, true, "DeletePhoneBook", "i", playerid);
+
+			mysql_string[0] = EOS, mf(mysql, mysql_string, 115, "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
+			mysql_function_query(mysql, mysql_string, true, "DeletePhoneBook", "i", playerid);
 		}
 		case 7324:
 		{
@@ -9801,9 +9800,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			new text[24];
 			GetPVarString(playerid,"pb_namecont", text, sizeof(text));
 			FixSVarString(text);
-			new str_q[130];
-			mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
-			mysql_function_query(mysql, str_q, true, "ChangeNumberPhoneBook", "i", playerid);
+
+			mysql_string[0] = EOS, mf(mysql, mysql_string, 115, "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
+			mysql_function_query(mysql, mysql_string, true, "ChangeNumberPhoneBook", "i", playerid);
 		}
 		case 7323:
 		{
@@ -9811,9 +9810,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			SetPVarString(playerid, "c_name", inputtext);
 			new text[24];
 			GetPVarString(playerid,"pb_namecont", text, sizeof(text));
-			new str_q[256];
-			mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
-			mysql_function_query(mysql, str_q, true, "ChangeNamePhoneBook", "i", playerid);
+
+			mysql_string[0] = EOS, mf(mysql, mysql_string, 115, "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
+			mysql_function_query(mysql, mysql_string, true, "ChangeNamePhoneBook", "i", playerid);
 		}
 		case 7322:
 		{
@@ -9822,18 +9821,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			new text[24];
 			GetPVarString(playerid,"pb_namecont", text, sizeof(text));
 			FixSVarString(text);
-			new str_q[256];
-			mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
-			mysql_function_query(mysql, str_q, true, "SmsPhoneBook", "i", playerid);
+			
+			mysql_string[0] = EOS, mf(mysql, mysql_string, 115, "SELECT * FROM `phonebook` WHERE `name_add` = '%e' AND `name` = '%e'",PI[playerid][pName], text);
+			mysql_function_query(mysql, mysql_string, true, "SmsPhoneBook", "i", playerid);
 		}
 		case 7321:
 		{
 		    if(!response) return callcmd::phone(playerid);
 			new number,name[24];
 			if(sscanf(inputtext, "p<,>s[23]d", name, number)) return 1;
-			new str_q[256];
-		    mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `phonebook` WHERE name = '%e' AND name_add = '%e'", name, PI[playerid][pName]);
-			mysql_function_query(mysql, str_q, true, "PhoneBookAddCheck", "d", playerid);
+
+			mysql_string[0] = EOS, mf(mysql, mysql_string, 115, "SELECT * FROM `phonebook` WHERE name = '%e' AND name_add = '%e'", name, PI[playerid][pName]);
+			mysql_function_query(mysql, mysql_string, true, "PhoneBookAddCheck", "d", playerid);
+
 		    SetPVarString(playerid, "name_pb", name);
 		    SetPVarInt(playerid, "number_pb", number);
 		}
@@ -9841,11 +9841,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		{
             if(strval(inputtext) == 777) return SCM(playerid, COLOR_GREY,"Разработка");
             if(strval(inputtext) == 999) return SCM(playerid, COLOR_GREY,"Разработка");
-		    if(strval(inputtext) == 102) {
+		    if(strval(inputtext) == 102) 
+			{
 		        if(PI[playerid][data_911_1] > 0) return SCM(playerid, COLOR_GREY,"Вы уже вызывали сотрудников Полиция");
 				return ShowPlayerDialog(playerid, 9111, DIALOG_STYLE_INPUT, "{ee3366}Вызов полиции", "Вы позвонили на гарячую линию вызова полции.\nПожалуйста, оставайтесь на месте и опишите Ваше местоположение:", "Вызов", "Отмена");
 		    }
-		    if(strval(inputtext) == 103) {
+		    if(strval(inputtext) == 103) 
+			{
 		        if(PI[playerid][data_911_2] > 0) return SCM(playerid, COLOR_GREY,"Вы уже вызывали сотрудников БЦРБ");
 				return ShowPlayerDialog(playerid, 9112, DIALOG_STYLE_INPUT, "{ee3366}Вызов скорой помощи", "Вы позвонили на гарячую линию вызова скорой помощи.\nПожалуйста, оставайтесь на месте и опишите Ваше местоположение:", "Вызов", "Отмена");
 		    }
@@ -10030,7 +10032,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					PI[id][pRang] = 0;
 					PI[id][pAdmin] = 0;
 				 	new str_q[256];
-				    mysql_format(mysql,str_q, sizeof(str_q), "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '1', 'Оскорбление игры (п 1.37)', '%e')",PI[id][pName],PI[playerid][pName],PI[id][pLoginIP]);
+				    mf(mysql,str_q, sizeof(str_q), "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '1', 'Оскорбление игры (п 1.37)', '%e')",PI[id][pName],PI[playerid][pName],PI[id][pLoginIP]);
 				    mysql_function_query(mysql, str_q, false, "", "");
 					SCMf(playerid, COLOR_TOMATO, "Вы заблокировали игрока %s на 1 дн. Причина: Оскорбление игры (п 1.37)", PI[id][pName]);
 					SCM(id, COLOR_TOMATO, "Ваш персонаж заблокирован на 1 дн. Причина: Оскорбление игры (п 1.37)");
@@ -10054,7 +10056,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					PI[id][pRang] = 0;
 					PI[id][pAdmin] = 0;
 				 	new str_q[256];
-				    mysql_format(mysql,str_q, sizeof(str_q), "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '1', 'Реклама (п 2.6)', '%e')",PI[id][pName],PI[playerid][pName],PI[id][pLoginIP]);
+				    mf(mysql,str_q, sizeof(str_q), "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '1', 'Реклама (п 2.6)', '%e')",PI[id][pName],PI[playerid][pName],PI[id][pLoginIP]);
 				    mysql_function_query(mysql, str_q, false, "", "");
 					SCMf(playerid, COLOR_TOMATO, "Вы заблокировали игрока %s на 1 дн. Причина: Реклама (п 2.6)", PI[id][pName]);
 					SCM(id, COLOR_TOMATO, "Ваш персонаж заблокирован на 1 дн. Причина: Реклама (п 2.6)");
@@ -10402,7 +10404,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				new year, month, day;
 				getdate(year, month, day);
 				new str_q[370];
-				mysql_format(mysql,str_q, sizeof str_q, "INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`,`w_dal`,`w_reas`,`w_dalrank`) VALUES ('%d','%d','%s','Увольнение','%d','%d','%d','%d','%s','%s','%s')", PI[GetPVarInt(playerid, "uninviteid")][pID], PI[GetPVarInt(playerid, "uninviteid")][pMember], PI[GetPVarInt(playerid, "uninviteid")][pName], PI[GetPVarInt(playerid, "uninviteid")][pRang], day, month, year, PI[playerid][pRang], text, name);
+				mf(mysql,str_q, sizeof str_q, "INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`,`w_dal`,`w_reas`,`w_dalrank`) VALUES ('%d','%d','%s','Увольнение','%d','%d','%d','%d','%s','%s','%s')", PI[GetPVarInt(playerid, "uninviteid")][pID], PI[GetPVarInt(playerid, "uninviteid")][pMember], PI[GetPVarInt(playerid, "uninviteid")][pName], PI[GetPVarInt(playerid, "uninviteid")][pRang], day, month, year, PI[playerid][pRang], text, name);
 				mysql_function_query(mysql, str_q, false, "", "");
 				new str[145];
 				if(PI[playerid][pMember] == 2) {
@@ -10449,42 +10451,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				ClearGroup(GetPVarInt(playerid, "uninviteid"));
 			}
 		}
-		case 9250: {
-		    if(!response) return 1;
-		    if(response) {
-			    switch(listitem) {
-                    case 0: {
-						new str_q[90];
-                		mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `inventory` WHERE `name` = '%e'", PI[playerid][pName]);
-						mysql_function_query(mysql, str_q, true, "InvSkin", "d", playerid);
-                    }
-                    case 1: {
-                    	new str_q[90];
-                		mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `inventory` WHERE `name` = '%e'", PI[playerid][pName]);
-						mysql_function_query(mysql, str_q, true, "InvMoney", "d", playerid);
-                    }
-                    case 2: {
-                    	new str_q[90];
-                		mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `inventory` WHERE `name` = '%e'", PI[playerid][pName]);
-						mysql_function_query(mysql, str_q, true, "InvCar", "d", playerid);
-                    }
-                    case 3: {
-                    	new str_q[90];
-                		mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `inventory` WHERE `name` = '%e'", PI[playerid][pName]);
-						mysql_function_query(mysql, str_q, true, "InvRub", "d", playerid);
-                    }
-                    case 4: {
-                    	new str_q[90];
-                		mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `inventory` WHERE `name` = '%e'", PI[playerid][pName]);
-						mysql_function_query(mysql, str_q, true, "InvBoost", "d", playerid);
-                    }
-			    }
-			}
-		}
-		case 7515: {
-  		  		if(!response) return 1;
-		 		if(response) {
-			    switch(listitem) {
+		case 7515: 
+		{
+			if(!response) return 1;
+			if(response) 
+			{
+			    switch(listitem) 
+				{
    					case 0: ShowPlayerDialog(playerid, 9315, DIALOG_STYLE_LIST, "Государственная волна", "Запланировать за 30 минут", "Выбрать", "Назад");
       				case 1: ShowPlayerDialog(playerid, 9316, DIALOG_STYLE_LIST, "Государственная волна", "Запланировать за 15 минут", "Выбрать", "Назад");
       				case 2: ShowPlayerDialog(playerid, 9323, DIALOG_STYLE_LIST, "Государственная волна", "Запланировать за 5 минут", "Выбрать", "Назад");
@@ -10496,10 +10469,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				}
 			}
 		}
-		case 7788: {
-  		  		if(!response) return 1;
-		 		if(response) {
-			    switch(listitem) {
+		case 7788: 
+		{
+			if(!response) return 1;
+			if(response) 
+			{
+			    switch(listitem) 
+				{
    					case 0: ShowPlayerDialog(playerid, 9315, DIALOG_STYLE_LIST, "Государственная волна", "Запланировать за 30 минут", "Выбрать", "Назад");
       				case 1: ShowPlayerDialog(playerid, 9316, DIALOG_STYLE_LIST, "Государственная волна", "Запланировать за 15 минут", "Выбрать", "Назад");
       				case 2: ShowPlayerDialog(playerid, 9323, DIALOG_STYLE_LIST, "Государственная волна", "Запланировать за 5 минут", "Выбрать", "Назад");
@@ -10651,7 +10627,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					    if(PI[playerid][pRang] < 10) return SCM(playerid, COLOR_GREY, !"Данная команда доступна лидерам организаций");
 						if(!IsPlayerLogged{playerid}) return 1;
 						new str_q[110];
-						mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `fraction` = '%d'", PI[playerid][pMember]);
+						mf(mysql,str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `fraction` = '%d'", PI[playerid][pMember]);
 						mysql_function_query(mysql, str_q, true, "EditGroup", "d", playerid);
       				}
       				case 1: 
@@ -10689,7 +10665,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					    if(PI[playerid][pRang] < 10) return SCM(playerid, COLOR_GREY, !"Данная команда доступна лидерам организаций");
 						if(!IsPlayerLogged{playerid}) return 1;
 						new str_q[110];
-						mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `fraction` = '%d'", PI[playerid][pMember]);
+						mf(mysql,str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `fraction` = '%d'", PI[playerid][pMember]);
 						mysql_function_query(mysql, str_q, true, "EditGroup", "d", playerid);
       				}
       				case 1: callcmd::allmembers(playerid);
@@ -10957,9 +10933,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if(response) {
 				if(strval(inputtext) == playerid) return SCM(playerid, COLOR_GREY, !"Нельзя использовать на самом себе");
 				SetPVarInt(playerid, "Invite", strval(inputtext));
-				new str_q[180];
-			    mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `fractions_blacklist` WHERE bl_name = '%e' AND bl_fraction = '%d'", PI[strval(inputtext)][pName], PI[playerid][pMember]);
-				mysql_function_query(mysql, str_q, true, "CheckBlackListInvite", "d", playerid);
+
+				mysql_string[0] = EOS, mf(mysql, mysql_string, 108, "SELECT * FROM `fractions_blacklist` WHERE bl_name = '%e' AND bl_fraction = '%d'", PI[strval(inputtext)][pName], PI[playerid][pMember]);
+				mysql_function_query(mysql, mysql_string, true, "CheckBlackListInvite", "d", playerid);
 			}
 		}
 		case 7511: 
@@ -11068,7 +11044,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				new year, month, day ;
 				getdate(year, month, day);
 				new str_q[256];
-				mysql_format(mysql, str_q, sizeof str_q, "INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`) VALUES ('%d','%d','%s','Собственное желание','%d','%d','%d','%d')", PI[playerid][pID], PI[playerid][pMember], PI[playerid][pName], PI[playerid][pRang], day, month, year);
+				mf(mysql, str_q, sizeof str_q, "INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`) VALUES ('%d','%d','%s','Собственное желание','%d','%d','%d','%d')", PI[playerid][pID], PI[playerid][pMember], PI[playerid][pName], PI[playerid][pRang], day, month, year);
 				mysql_function_query(mysql, str_q, false, "", "");
 				PI[playerid][pMember] = 0;
 				PI[playerid][pRang] = 0;
@@ -11170,9 +11146,8 @@ public OnPlayerSpawn(playerid)
 alias:donate("donat", "adon", "don");
 cmd:donate(playerid) 
 {
-	new str_q[68];
-    mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'",PI[playerid][pName]);
-    mysql_function_query(mysql, str_q, true, "LoadDonate", "i", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 68, "SELECT * FROM `accounts` WHERE `Name` = '%e'",PI[playerid][pName]);
+    mysql_function_query(mysql, mysql_string, true, "LoadDonate", "i", playerid);
 }
 callback: LoadDonate(playerid) 
 {
@@ -11549,10 +11524,10 @@ callback: LoadPlayerData(playerid)
 			SendPlayerHudNotify(playerid, 21, "mute", "Блокировка текстового чата", PI[playerid][pMuteTime]);
 		}
 
-		mysql_queryf(mysql, "SELECT `Name` FROM `accounts` WHERE `Referal` = '%s' LIMIT 10", true, getName(playerid));
+		mysql_queryf(mysql, "SELECT `Name` FROM `accounts` WHERE `Referal` = '%e' LIMIT 10", true, getName(playerid));
 		if(cache_num_rows() > 0) SCM(playerid, COLOR_HINT, !"[Подсказка] {FFFFFF}Для просмотра приглашённых игроков воспользуйтесь: {FFFF33}/ref");
 		else SCM(playerid, COLOR_HINT, !"[Подсказка] {FFFFFF}Приглашайте своих друзей на сервер и зарабатывайте деньги с помощью нашей реферальной системы {FFFF33}(/ref){FFFFFF}!");
-		mysql_queryf(mysql, "UPDATE `accounts` SET `LoginDate` = CURRENT_TIMESTAMP WHERE `Name` = '%s'", false, getName(playerid));
+		mysql_queryf(mysql, "UPDATE `accounts` SET `LoginDate` = CURRENT_TIMESTAMP WHERE `Name` = '%e'", false, getName(playerid));
 	
 		if(!IsPlayerOPG(playerid)) 
 		{
@@ -11580,7 +11555,7 @@ callback: LoadPlayerData(playerid)
 		PlayerLogin(playerid);
 	}
 	new str_q[45];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `id` = '%d'", PI[playerid][pGroupID]);
+	mf(mysql, str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `id` = '%d'", PI[playerid][pGroupID]);
 	mysql_function_query(mysql, str_q, true, "PlayerGroup", "d", playerid);
 	return 1;
 }
@@ -11801,13 +11776,13 @@ callback: CheckNameDonate(playerid, inputtext[])
 	else 
 	{
 		new sql[256];
-		mysql_format(mysql, sql, sizeof(sql), "INSERT INTO `nickname_history` ( `nh_owner`, `nh_oldname`, `nh_newname`, `nh_date`) VALUES ( '%d','%s' ,'%s', NOW())", PI[playerid][pID], PI[playerid][pName], CHANGE_NAME[playerid]);
+		mf(mysql, sql, sizeof(sql), "INSERT INTO `nickname_history` ( `nh_owner`, `nh_oldname`, `nh_newname`, `nh_date`) VALUES ( '%d','%s' ,'%s', NOW())", PI[playerid][pID], PI[playerid][pName], CHANGE_NAME[playerid]);
 		mysql_function_query(mysql, sql, false, "", "");
 
 		SetPVarInt(playerid, "change_name_status", 0);
 
 		mysql_queryf(mysql, "UPDATE `accounts` SET `Name` = '%e' WHERE `Name` = '%e'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
-		mysql_queryf(mysql, "UPDATE `punishment` SET `name` = '%s' WHERE `name` = '%s'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
+		mysql_queryf(mysql, "UPDATE `punishment` SET `name` = '%e' WHERE `name` = '%e'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
 		mysql_queryf(mysql, "UPDATE `fractions_blacklist` SET `bl_name2` = '%e' WHERE `bl_name` = '%e'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
 		mysql_queryf(mysql, "UPDATE `ownable` SET `Owner` = '%e' WHERE `Owner` = '%e'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
 
@@ -11863,20 +11838,18 @@ callback: CheckName(playerid, inputtext[])
 	{
 		if(PI[playerid][pAdmin] == 0)
 		{
-			new str_q[144];
-			mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `punishment` SET `name` = '%s' WHERE `name` = '%s'", CHANGE_NAME[playerid], PI[playerid][pName]);
-			mysql_function_query(mysql, str_q, false, "", "");
+			mysql_string[0] = EOS, mf(mysql, mysql_string, 106, "UPDATE `punishment` SET `name` = '%e' WHERE `name` = '%e'", CHANGE_NAME[playerid], PI[playerid][pName]);
+			mysql_function_query(mysql, mysql_string, false, "", "");
 		}
 		else SendAdminsMessagef(COLOR_GREY, "<Random Name> Игрок %s[%d] сменил ник на %s",PI[playerid][pName], playerid, CHANGE_NAME[playerid]);
 
-		new sql[256];
-		mysql_format(mysql, sql, sizeof(sql), "INSERT INTO `nickname_history` ( `nh_owner`, `nh_oldname`, `nh_newname`, `nh_date`) VALUES ( '%d','%s' ,'%s', NOW())", PI[playerid][pID], PI[playerid][pName], CHANGE_NAME[playerid]);
-		mysql_function_query(mysql, sql, false, "", "");
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 200, "INSERT INTO `nickname_history` ( `nh_owner`, `nh_oldname`, `nh_newname`, `nh_date`) VALUES ( '%d','%s' ,'%s', NOW())", PI[playerid][pID], PI[playerid][pName], CHANGE_NAME[playerid]);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 		
 		SetPVarInt(playerid,"change_name_status", 0);
 		
 		mysql_queryf(mysql, "UPDATE `accounts` SET `Name` = '%e' WHERE `Name` = '%e'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
-		mysql_queryf(mysql, "UPDATE `punishment` SET `name` = '%s' WHERE `name` = '%s'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
+		mysql_queryf(mysql, "UPDATE `punishment` SET `name` = '%e' WHERE `name` = '%e'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
 		mysql_queryf(mysql, "UPDATE `fractions_blacklist` SET `bl_name2` = '%e' WHERE `bl_name` = '%e'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
 		mysql_queryf(mysql, "UPDATE `ownable` SET `Owner` = '%e' WHERE `Owner` = '%e'", false, CHANGE_NAME[playerid], PI[playerid][pName]);
 
@@ -11941,9 +11914,8 @@ callback: OffLeader(playerid,name[])
 			cache_get_field_content(i, "rank", temp), rankk = strval(temp);
 			if(rankk != 10) 
 			{
-				new str_q[144];
- 				mysql_format(mysql,str_q, sizeof(str_q),"UPDATE `accounts` SET `leader` = '0', `member` = '0', `rank` = '0' WHERE `Name` = '%e'", name);
-				mysql_function_query(mysql, str_q, false, "", "");
+				mysql_string[0] = EOS, mf(mysql, mysql_string, 110, "UPDATE `accounts` SET `leader` = '0', `member` = '0', `rank` = '0' WHERE `Name` = '%e'", name);
+				mysql_function_query(mysql, mysql_string, false, "", "");
 				SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял с лидерства оффлайн %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid,name);
 			}
 			SCM(playerid, COLOR_GREY, !"Данный игрок не лидер");
@@ -12101,14 +12073,14 @@ callback: LoadBans()
 			TotalBans++;
    			if(BANS_DATA[b][data_DAY] <= 0) {
 				new str_q[144];
-			    mysql_format(mysql,str_q, sizeof(str_q), "DELETE FROM `banlist` WHERE `id` = '%d'", BANS_DATA[b][data_ID]);
+			    mf(mysql,str_q, sizeof(str_q), "DELETE FROM `banlist` WHERE `id` = '%d'", BANS_DATA[b][data_ID]);
 	    		mysql_function_query(mysql, str_q, false, "", "");
 	    		banac++;
 			}
 			else {
        			BANS_DATA[b][data_DAY]--;
 				new str_q[144];
-			    mysql_format(mysql,str_q, sizeof(str_q),"UPDATE `banlist` SET `day` = '%d' WHERE `id` = '%d'",BANS_DATA[b][data_DAY],BANS_DATA[b][data_ID]);
+			    mf(mysql,str_q, sizeof(str_q),"UPDATE `banlist` SET `day` = '%d' WHERE `id` = '%d'",BANS_DATA[b][data_DAY],BANS_DATA[b][data_ID]);
 			    mysql_function_query(mysql, str_q, false, "", "");
 			}
 		}
@@ -12178,7 +12150,7 @@ public OnPlayerClickTextDraw(playerid, Text:clickedid)
 		{ 
 			new Cache: result, query[140];
 
-			mysql_format(mysql, query, sizeof query, "SELECT * FROM ownable WHERE Owner='%e'", getName(playerid));
+			mf(mysql, query, sizeof query, "SELECT * FROM ownable WHERE Owner='%e'", getName(playerid));
 			result = mysql_query(mysql, query, true);
 
 			if(cache_num_rows() >= 10)
@@ -13613,7 +13585,7 @@ stock acc_float_strcat(query[], len, name[], Float:number) {
 }
 stock acc_str_strcat(query[], len, name[], str[]) {
     new stringer[64];
- 	format(stringer, sizeof(stringer), "`%s` = '%s',",name, str);
+ 	format(stringer, sizeof(stringer), "`%s` = '%e',",name, str);
  	strcat(query, stringer, len);
  	return 1;
 }
@@ -13692,7 +13664,7 @@ stock AddHouse(playerid)
 	}
 	TotalHouses++;
 	new str_q[712];
-   	mysql_format(mysql,str_q, sizeof str_q, "INSERT INTO `houses` ( `enterx`, `entery`, `enterz`, `exitx`, `exity`, `exitz`, `carx`, `cary`, `carz`, `cara`, `int`, `class`, `price`) VALUES ( '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%d', '%d', '%d')",a1,a2,a3,a4,a5,a6,a10,a11,a12,a13,a7,a8,a9);
+   	mf(mysql,str_q, sizeof str_q, "INSERT INTO `houses` ( `enterx`, `entery`, `enterz`, `exitx`, `exity`, `exitz`, `carx`, `cary`, `carz`, `cara`, `int`, `class`, `price`) VALUES ( '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%f', '%d', '%d', '%d')",a1,a2,a3,a4,a5,a6,a10,a11,a12,a13,a7,a8,a9);
     mysql_function_query(mysql, str_q, false, "", "");
 	return 1;
 }
@@ -13841,9 +13813,8 @@ CMD:change(playerid,params[])
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	if(GetPVarInt(params[0],"change_name_status") != 1) return SCM(playerid, COLOR_GREY, !"Данный игрок подавал заявку на смену никнейма");
-	new str_q[256];
-	mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'", CHANGE_NAME[params[0]]);
-	mysql_function_query(mysql, str_q, true, "CheckName", "ds", params[0], CHANGE_NAME[params[0]]);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 69, "SELECT * FROM `accounts` WHERE `Name` = '%e'", CHANGE_NAME[params[0]]);
+	mysql_function_query(mysql, mysql_string, true, "CheckName", "ds", params[0], CHANGE_NAME[params[0]]);
 	return 1;
 }
 CMD:warn(playerid,params[]) 
@@ -13879,7 +13850,7 @@ CMD:warn(playerid,params[])
 	if(PI[params[0]][pWarn] >= 3) 
 	{
 		new str_q[512];
-	    mysql_format(mysql,str_q, sizeof(str_q), "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '7', '%e', '%e')",getName(params[0]),getName(playerid),params[2],PI[params[0]][pLoginIP]);
+	    mf(mysql,str_q, sizeof(str_q), "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '7', '%e', '%e')",getName(params[0]),getName(playerid),params[2],PI[params[0]][pLoginIP]);
 	    mysql_function_query(mysql, str_q, false, "", "");
 		Kick(params[0]);
 		SendAdminsMessagef(COLOR_TOMATO, "[%s #%d] %s заблокировал %s на 7 дней. Причина: 3 предупреждения", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),getName(params[0]));
@@ -14327,7 +14298,7 @@ CMD:members(playerid)
 {
     if(PI[playerid][pMember] == 0) return  SCM(playerid, COLOR_GREY, !"Вы не состоите во организации");
 	new str_q[144];
-	mysql_format(mysql,str_q,sizeof(str_q),"SELECT * FROM `accounts` WHERE `member` = '%d'",PI[playerid][pMember]);
+	mf(mysql,str_q,sizeof(str_q),"SELECT * FROM `accounts` WHERE `member` = '%d'",PI[playerid][pMember]);
 	mysql_function_query(mysql, str_q, true, "LoadMembers", "d", playerid);
 	return 1;
 }
@@ -14335,7 +14306,7 @@ CMD:allmembers(playerid)
 {
     if(PI[playerid][pLeader] == 0) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
 	new str_q[144];
-	mysql_format(mysql,str_q,sizeof(str_q),"SELECT * FROM `accounts` WHERE `member` = '%d'",PI[playerid][pMember]);
+	mf(mysql,str_q,sizeof(str_q),"SELECT * FROM `accounts` WHERE `member` = '%d'",PI[playerid][pMember]);
 	mysql_function_query(mysql, str_q, true, "LoadAllMembers", "d", playerid);
 	return 1;
 }
@@ -14913,7 +14884,7 @@ CMD:ginfo(playerid)
 {
 	if(!IsPlayerOPG(playerid)) return SCM(playerid, COLOR_GREY, !"Вы не состоите в ОПГ");
 	new str_q[144];
- 	mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `gangzone` WHERE `gzid` != '101'");
+ 	mf(mysql,str_q, sizeof(str_q), "SELECT * FROM `gangzone` WHERE `gzid` != '101'");
  	mysql_function_query(mysql, str_q, true, "GzInfo", "i", playerid);
     return true;
 }
@@ -15129,13 +15100,13 @@ stock GetGZFrac(gznum){
 
 stock UpdatePlayerDataIntName(const playerid, const field[], data) 
 {
-	mysql_tqueryf(mysql, "UPDATE `accounts` SET `%e` = '%i' WHERE `Name` = '%s' LIMIT 1", field, data, getName(playerid));
+	mysql_tqueryf(mysql, "UPDATE `accounts` SET `%e` = '%i' WHERE `Name` = '%e' LIMIT 1", field, data, getName(playerid));
 }
 stock UpdatePlayerDataInt(const playerid, const field[], data) 
 {
 	if(PI[playerid][pID] == -1) 
 	{
-		mysql_tqueryf(mysql, "UPDATE `accounts` SET `%s` = '%i' WHERE `Name` = '%s' LIMIT 1", field, data, getName(playerid));
+		mysql_tqueryf(mysql, "UPDATE `accounts` SET `%s` = '%i' WHERE `Name` = '%e' LIMIT 1", field, data, getName(playerid));
 	}
 	else 
 	{
@@ -15150,7 +15121,7 @@ stock UpdatePlayerDataIntNoLog(playerid, field[], data[])
 }
 stock MysqlUpdatePlayerStr(const playerid, const field[], data[]) 
 {
-	mysql_tqueryf(mysql, "UPDATE `accounts` SET `%s` = '%s' WHERE `id` = '%i' LIMIT 1", field, data, PI[playerid][pID]);
+	mysql_tqueryf(mysql, "UPDATE `accounts` SET `%s` = '%e' WHERE `id` = '%i' LIMIT 1", field, data, PI[playerid][pID]);
 	return 1;
 }
 CMD:twarn(playerid, params[])
@@ -15178,7 +15149,7 @@ CMD:twarn(playerid, params[])
         PI[targetID][TWARN] = 0;
         new year, month, day, str_q[365];
         getdate(year, month, day);
-        mysql_format(mysql, str_q, sizeof str_q, "INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`,`w_dal`,`w_reas`,`w_dalrank`) VALUES ('%d','%d','%s','Увольнение','%d','%d','%d','%d','%s','%s','%s')", PI[targetID][pID], PI[targetID][pMember], getName(targetID), PI[targetID][pRang], day, month, year, PI[playerid][pRang], reason, NameRang(playerid));
+        mf(mysql, str_q, sizeof str_q, "INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`,`w_dal`,`w_reas`,`w_dalrank`) VALUES ('%d','%d','%s','Увольнение','%d','%d','%d','%d','%s','%s','%s')", PI[targetID][pID], PI[targetID][pMember], getName(targetID), PI[targetID][pRang], day, month, year, PI[playerid][pRang], reason, NameRang(playerid));
         mysql_function_query(mysql, str_q, false, "", "");
 
         SendFractionMessagef(PI[playerid][pMember], COLOR_TOMATO, "%s %s[%d] выдал выговор %s %s[%d] [3|3]. Причина: %s", NameRang(playerid), getName(playerid), playerid, NameRang(targetID), getName(targetID), targetID, reason);
@@ -15248,9 +15219,8 @@ CMD:offtwarn(playerid, params[])
     if (strcmp(name, getName(playerid)) == 0) 
         return SCM(playerid, COLOR_GREY, !"Вы не можете снять выговор себе");
     
-    new str_q[176];
-    mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'", name);
-    mysql_function_query(mysql, str_q, true, "OffTwarn", "i", playerid);
+    mysql_string[0] = EOS, mf(mysql, mysql_string, 69, "SELECT * FROM `accounts` WHERE `Name` = '%e'", name);
+    mysql_function_query(mysql, mysql_string, true, "OffTwarn", "i", playerid);
     
     return 1;
 }
@@ -15299,15 +15269,13 @@ callback: OffTwarn(playerid)
             format(res, sizeof(res), "Получение 3 выговоров");
             SetPVarString(playerid, "text_wbook", res);
             
-            new str_q[176];
-            mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE name = '%e'", names);
-            mysql_function_query(mysql, str_q, true, "WbookOff", "is", playerid, names);
+            mysql_string[0] = EOS, mf(mysql, mysql_string, 69, "SELECT * FROM `accounts` WHERE name = '%e'", names);
+            mysql_function_query(mysql, mysql_string, true, "WbookOff", "is", playerid, names);
         }
         
-        new str_q[200];
-        mysql_format(mysql, str_q, sizeof(str_q), "UPDATE `accounts` SET `member` = '%d', `rank` = '%d', `leader` = '%d', `twarn` = '%d', `GroupID` = '%d' WHERE `Name` = '%e'",
+        mysql_string[0] = EOS, mf(mysql, mysql_string, 240, "UPDATE `accounts` SET `member` = '%d', `rank` = '%d', `leader` = '%d', `twarn` = '%d', `GroupID` = '%d' WHERE `Name` = '%e'",
             members, ranks, leaders, twarn, groupid, names);
-        mysql_function_query(mysql, str_q, false, "", "");
+        mysql_function_query(mysql, mysql_string, false, "", "");
     }
     else SCM(playerid, COLOR_GREY, !"Игрок не найден");
     
@@ -15332,9 +15300,8 @@ CMD:offmute(playerid, params[])
     }
 	SetPVarString(playerid, "roffmute",param_reason);
 	SetPVarInt(playerid, "offmutetime", param_time);
-	new str_q[144];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
-    mysql_function_query(mysql, str_q, true, "OffMute", "i", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_function_query(mysql, mysql_string, true, "OffMute", "i", playerid);
 	return 1;
 }
 callback: OffMute(playerid) 
@@ -15355,9 +15322,9 @@ callback: OffMute(playerid)
         SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s заблокировал чат игроку %s(оффлайн) на %d минут. Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), names, time, reason);
         mute = 1;
         mutetime += GetPVarInt(playerid, "offmutetime");
-        new str_q[74 + 5 + 1 + MAX_PLAYER_NAME];
-	    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `mute` = '%d', `mutetime` = '%d' WHERE `Name` = '%s'", mute, mutetime, names);
-		mysql_function_query(mysql, str_q, false, "", "");
+
+        mysql_string[0] = EOS, mf(mysql, mysql_string, 125, "UPDATE `accounts` SET `mute` = '%d', `mutetime` = '%d' WHERE `Name` = '%e'", mute, mutetime, names);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 	}
 	return 1;
 }
@@ -15375,9 +15342,9 @@ CMD:offjail(playerid, params[])
     }
 	SetPVarString(playerid, "roffjail",param_reason);
 	SetPVarInt(playerid, "offjailtime", param_time);
-	new str_q[144];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
-    mysql_function_query(mysql, str_q, true, "OffJail", "i", playerid);
+
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_function_query(mysql, mysql_string, true, "OffJail", "i", playerid);
 	return 1;
 }
 callback: OffJail(playerid)
@@ -15398,9 +15365,9 @@ callback: OffJail(playerid)
         SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s посадил в деморган игрока %s(оффлайн) на %d минут. Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], names, time, reason);
         demorgan = 1;
         demorgan_time += GetPVarInt(playerid, "offjailtime");
-        new str_q[256];
-	    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `demorgan` = '%d', `demorgan_time` = '%d', `hospital` = '0' WHERE `Name` = '%s'", demorgan, demorgan_time, names);
-		mysql_function_query(mysql, str_q, false, "", "");
+
+        mysql_string[0] = EOS, mf(mysql, mysql_string, 143, "UPDATE `accounts` SET `demorgan` = '%d', `demorgan_time` = '%d', `hospital` = '0' WHERE `Name` = '%e'", demorgan, demorgan_time, names);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 	}
 	return 1;
 }
@@ -15417,9 +15384,9 @@ CMD:offvmute(playerid, params[])
     }
 	SetPVarString(playerid, "roffvmute",param_reason);
 	SetPVarInt(playerid, "offvmutetime", param_time);
-	new str_q[110];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
-    mysql_function_query(mysql, str_q, true, "OffVMute", "i", playerid);
+
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 75, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_function_query(mysql, mysql_string, true, "OffVMute", "i", playerid);
 	return 1;
 }
 callback: OffVMute(playerid) {
@@ -15439,9 +15406,9 @@ callback: OffVMute(playerid) {
         SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s заблокировал голосовой чат игрока %s(оффлайн) на %d минут. Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), names, time, reason);
         vmute = 1;
         vmutetime += GetPVarInt(playerid, "offvmutetime");
-        new str_q[176];
-	    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `vmute` = '%d', `vmutetime` = '%d' WHERE `Name` = '%s'", vmute, vmutetime, names);
-		mysql_function_query(mysql, str_q, false, "", "");
+
+        mysql_string[0] = EOS, mf(mysql, mysql_string, 129, "UPDATE `accounts` SET `vmute` = '%d', `vmutetime` = '%d' WHERE `Name` = '%e'", vmute, vmutetime, names);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 	}
 	return 1;
 }
@@ -15457,9 +15424,8 @@ CMD:offunvmute(playerid, params[])
         if(!strcmp(param_name, szName, false)) return SCM(playerid, COLOR_GREY, !"Этот игрок в сети, используйте /unvmute");
     }
 	SetPVarString(playerid, "roffvmute",param_reason);
-	new str_q[144];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
-    mysql_function_query(mysql, str_q, true, "OffUnVMute", "i", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_function_query(mysql, mysql_string, true, "OffUnVMute", "i", playerid);
 	return 1;
 }
 callback: OffUnVMute(playerid) {
@@ -15478,9 +15444,9 @@ callback: OffUnVMute(playerid) {
         SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s разблокировал голосовой чат игрока %s(оффлайн). Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), names, reason);
         vmute = 0;
         vmutetime = 0;
-        new str_q[185];
-	    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `vmute` = '%d', `vmutetime` = '%d' WHERE `Name` = '%s'", vmute, vmutetime, names);
-		mysql_function_query(mysql, str_q, false, "", "");
+
+        mysql_string[0] = EOS, mf(mysql, mysql_string, 110, "UPDATE `accounts` SET `vmute` = '%d', `vmutetime` = '%d' WHERE `Name` = '%e'", vmute, vmutetime, names);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 	}
 	return 1;
 }
@@ -15496,9 +15462,9 @@ CMD:offunjail(playerid, params[])
         if(!strcmp(param_name, szName, false)) return SCM(playerid, COLOR_GREY, !"Этот игрок в сети, используйте /unjail");
     }
 	SetPVarString(playerid, "roffjail",param_reason);
-	new str_q[185];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
-    mysql_function_query(mysql, str_q, true, "OffUnJail", "i", playerid);
+
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_function_query(mysql, mysql_string, true, "OffUnJail", "i", playerid);
 	return 1;
 }
 callback: OffUnJail(playerid) 
@@ -15517,9 +15483,9 @@ callback: OffUnJail(playerid)
         SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s выпустил из деморгана игрока %s(оффлайн). Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), names, reason);
         demorgan = 0;
         demorgan_time = 0;
-        new str_q[144];
-	    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `demorgan` = '%d', `demorgan_time` = '%d' WHERE `Name` = '%s'", demorgan, demorgan_time, names);
-		mysql_function_query(mysql, str_q, false, "", "");
+
+        mysql_string[0] = EOS, mf(mysql, mysql_string, 145, "UPDATE `accounts` SET `demorgan` = '%d', `demorgan_time` = '%d' WHERE `Name` = '%e'", demorgan, demorgan_time, names);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 	}
 	return 1;
 }
@@ -15535,9 +15501,9 @@ CMD:offunmute(playerid, params[])
         if(!strcmp(param_name, szName, false)) return SCM(playerid, COLOR_GREY, !"Этот игрок в сети, используйте /unmute");
     }
 	SetPVarString(playerid, "roffmute",param_reason);
-	new str_q[144];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
-    mysql_function_query(mysql, str_q, true, "OffUnMute", "i", playerid);
+
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 69, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_function_query(mysql, mysql_string, true, "OffUnMute", "i", playerid);
 	return 1;
 }
 callback: OffUnMute(playerid) {
@@ -15555,9 +15521,9 @@ callback: OffUnMute(playerid) {
         SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s разблокировал чат игроку %s(оффлайн). Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), names, reason);
         mute = 0;
         mutetime = 0;
-        new str_q[185];
-	    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `mute` = '%d', `mutetime` = '%d' WHERE `Name` = '%s'", mute, mutetime, names);
-		mysql_function_query(mysql, str_q, false, "", "");
+
+        mysql_string[0] = EOS, mf(mysql, mysql_string, 115, "UPDATE `accounts` SET `mute` = '%d', `mutetime` = '%d' WHERE `Name` = '%e'", mute, mutetime, names);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 	}
 	return 1;
 }
@@ -15573,9 +15539,8 @@ CMD:offwarn(playerid, params[])
         if(!strcmp(param_name, szName, false)) return SCM(playerid, COLOR_GREY, !"Этот игрок в сети, используйте /warn");
     }
 	SetPVarString(playerid, "roffwarn",param_reason);
-	new str_q[144];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
-    mysql_function_query(mysql, str_q, true, "OffWarn", "i", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_function_query(mysql, mysql_string, true, "OffWarn", "i", playerid);
 	return 1;
 }
 callback: OffWarn(playerid) 
@@ -15596,9 +15561,10 @@ callback: OffWarn(playerid)
 		if(warn >= 2) return SCM(playerid, COLOR_GREY, !"Игрок имеет 2 предупреждения, используйте /offban");
 		GetPVarString(playerid,"roffwarn", reason, 32);
 		SetPVarString(playerid, "text_wbook", reason);
-		new query5[144];
-		mysql_format(mysql, query5, sizeof(query5), "SELECT * FROM `accounts` WHERE name = '%e'", names);
-		mysql_function_query(mysql, query5, true, "WbookOff", "is", playerid, names);
+
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE name = '%e'", names);
+		mysql_function_query(mysql, mysql_string, true, "WbookOff", "is", playerid, names);
+
 		warn++;
         SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s выдал предупреждение игроку %s[%d/3](оффлайн). Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), names, warn, reason);
         warntime += 1200;
@@ -15606,9 +15572,8 @@ callback: OffWarn(playerid)
         leader = 0;
         rank = 0;
         admin = 0;
-        new str_q[256];
-	    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `warn` = '%d', `warntime` = '%d', `member` = '%d', `rank` = '%d', `leader` = '%d', `Admin` = '%d' WHERE `Name` = '%s'", warn, warntime, member1, leader, rank, admin, names);
-		mysql_function_query(mysql, str_q, false, "", "");
+        mysql_string[0] = EOS, mf(mysql, mysql_string, 240, "UPDATE `accounts` SET `warn` = '%d', `warntime` = '%d', `member` = '%d', `rank` = '%d', `leader` = '%d', `Admin` = '%d' WHERE `Name` = '%e'", warn, warntime, member1, leader, rank, admin, names);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 	}
 	return 1;
 }
@@ -15624,9 +15589,10 @@ CMD:offunwarn(playerid, params[])
         if(!strcmp(param_name, szName, false)) return SCM(playerid, COLOR_GREY, !"Этот игрок в сети, используйте /unwarn");
     }
 	SetPVarString(playerid, "roffwarn",param_reason);
-	new str_q[185];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
-    mysql_function_query(mysql, str_q, true, "OffUnWarn", "i", playerid);
+
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 75, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_function_query(mysql, mysql_string, true, "OffUnWarn", "i", playerid);
+
 	return 1;
 }
 callback: OffUnWarn(playerid) {
@@ -15647,9 +15613,9 @@ callback: OffUnWarn(playerid) {
         SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s снял предупреждение игроку %s[%d/3](оффлайн). Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), names, warn, reason);
         if(warn == 0) warntime = 0;
         if(warn == 1) warntime = 1200;
-        new str_q[256];
-	    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `warn` = '%d', `warntime` = '%d' WHERE `Name` = '%s'", warn, warntime, names);
-		mysql_function_query(mysql, str_q, false, "", "");
+
+        mysql_string[0] = EOS, mf(mysql, mysql_string, 120, "UPDATE `accounts` SET `warn` = '%d', `warntime` = '%d' WHERE `Name` = '%e'", warn, warntime, names);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 	}
 	return 1;
 }
@@ -15667,9 +15633,9 @@ CMD:offban(playerid, params[])
     }
 	SetPVarString(playerid, "roffban",param_reason);
 	SetPVarInt(playerid, "offbantime", param_time);
-	new str_q[185];
-	mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
-    mysql_function_query(mysql, str_q, true, "OffBan", "i", playerid);
+
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_function_query(mysql, mysql_string, true, "OffBan", "i", playerid);
 	return 1;
 }
 callback: OffBan(playerid) 
@@ -15698,11 +15664,11 @@ callback: OffBan(playerid)
 		GetPVarString(playerid,"roffban", reason, 32);
 
 		new str_q[512];
-	    mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `member` = '%d', `leader` = '%d', `rank` = '%d', `Admin` = '%d' WHERE `Name` = '%s'", member1, leader, rank, admin, names);
+	    mf(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `member` = '%d', `leader` = '%d', `rank` = '%d', `Admin` = '%d' WHERE `Name` = '%e'", member1, leader, rank, admin, names);
 		mysql_function_query(mysql, str_q, false, "", "");
 
 		new str_q2[300];
-	    mysql_format(mysql,str_q2, sizeof(str_q2), "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '%d', '%s', '%e')",names,getName(playerid),GetPVarInt(playerid, "offbantime"),reason,ip);
+	    mf(mysql,str_q2, sizeof(str_q2), "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '%d', '%s', '%e')",names,getName(playerid),GetPVarInt(playerid, "offbantime"),reason,ip);
 	    mysql_function_query(mysql, str_q2, false, "", "");
 	}
 	return 1;
@@ -15885,7 +15851,7 @@ CMD:punishment(playerid, params[])
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Данного ID нет на сервере");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Данный игрок не прошел авторизацию");
 	new str_q[256];
- 	mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `punishment` WHERE `name` = '%s'", getName(params[0]));
+ 	mf(mysql,str_q, sizeof(str_q), "SELECT * FROM `punishment` WHERE `name` = '%e'", getName(params[0]));
  	mysql_function_query(mysql, str_q, true, "GetPunishment", "d", playerid);
 	return 1;
 }
@@ -16176,7 +16142,7 @@ CMD:UninviteInOffline(playerid,params[])
     }
 	if(GetString(param_name, getName(playerid))) return SCM(playerid, COLOR_GREY, !"Вы не можете уволить себя");
 
-	mysql_string[0] = EOS, f(mysql_string, 68, "SELECT * FROM `accounts` WHERE `Name` = '%s'", param_name);
+	mysql_string[0] = EOS, f(mysql_string, 68, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
     mysql_tquery(mysql, mysql_string, "UninviteInOffline", "is", playerid, param_name);
 	return 1;
 }
@@ -16199,7 +16165,7 @@ callback: UninviteInOffline(playerid, PlayerName[])
 
         SendFractionMessagef(PI[playerid][pMember], COLOR_TOMATO, "(( %s %s[%d] уволил оффлайн %s ))", NameRang(playerid), getName(playerid), playerid, PlayerName);
 
-		mysql_queryf(mysql, "UPDATE `accounts` SET `member` = '0', `rank` = '0', `leader` = '0', `GroupID` = '0', `twarn` = '0' WHERE `Name` = '%s'", false, PlayerName);
+		mysql_queryf(mysql, "UPDATE `accounts` SET `member` = '0', `rank` = '0', `leader` = '0', `GroupID` = '0', `twarn` = '0' WHERE `Name` = '%e'", false, PlayerName);
 	}
 	else SCM(playerid, COLOR_GREY, !"Игрок не найден");
 	return 1;
@@ -16209,7 +16175,7 @@ CMD:unofftwarn(playerid, params[])
 	if(sscanf(params, "s[24]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unofftwarn [имя]");
  	if(params[0] == getName(playerid)) return SCM(playerid, COLOR_GREY, !"Вы не можете снять выговор себе");
 
-	mysql_string[0] = EOS, f(mysql_string, 68, "SELECT * FROM `accounts` WHERE `Name` = '%s'", params[0]);
+	mysql_string[0] = EOS, f(mysql_string, 68, "SELECT * FROM `accounts` WHERE `Name` = '%e'", params[0]);
     mysql_tquery(mysql, mysql_string, "UnOffTwarn", "i", playerid);
 	return 1;
 }
@@ -16231,7 +16197,7 @@ callback: UnOffTwarn(playerid)
 
 		Warns--;
         SendFractionMessagef(PI[playerid][pMember], COLOR_TOMATO, "(( %s %s[%d] снял выговор оффлайн %s [%d/3] ))", NameRang(playerid), getName(playerid), playerid, PlayerName, Warns);
-		mysql_queryf(mysql, "UPDATE `accounts` SET `twarn` = '%d' WHERE `Name` = '%s'", false, Warns, PlayerName);
+		mysql_queryf(mysql, "UPDATE `accounts` SET `twarn` = '%d' WHERE `Name` = '%e'", false, Warns, PlayerName);
 	}
 	else SCM(playerid, COLOR_GREY,"Игрок не найден");
 	return 1;
@@ -16268,7 +16234,7 @@ callback: CheckWbook(playerid) {
     cache_get_data(rows, fields);
     if(rows) {
 		new str_q[256];
-		mysql_format(mysql,str_q,sizeof(str_q),"SELECT * FROM `wbook` WHERE `w_name` = '%e'",getName(playerid));
+		mf(mysql,str_q,sizeof(str_q),"SELECT * FROM `wbook` WHERE `w_name` = '%e'",getName(playerid));
 		mysql_function_query(mysql, str_q, true, "WorkBook", "i", playerid, getName(playerid));
 	}
 	else SCM(playerid, COLOR_GREY, !"У вас нет истории в трудовой книге.");
@@ -16296,7 +16262,7 @@ CMD:wbook(playerid, params[])
         return SCM(playerid, COLOR_GREY, "Игрок находится слишком далеко");
 
     new str_q[256];
-    mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `wbook` WHERE `w_name` = '%e'", getName(targetPlayer));
+    mf(mysql, str_q, sizeof(str_q), "SELECT * FROM `wbook` WHERE `w_name` = '%e'", getName(targetPlayer));
     mysql_function_query(mysql, str_q, true, "WorkBook", "dd", playerid, targetPlayer);
 
     return 1;
@@ -16556,7 +16522,7 @@ callback: WbookOff(playerid, name[])
 		new year, month, day ;
 		getdate(year, month, day);
 		new str_q[512];
-		mysql_format(mysql,str_q, sizeof str_q, "INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`) VALUES ('%d','%d','%s','%s','%d','%d','%d','%d')", w_player, PI[playerid][pMember], name, text, w_rank, day, month, year);
+		mf(mysql,str_q, sizeof str_q, "INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`) VALUES ('%d','%d','%s','%s','%d','%d','%d','%d')", w_player, PI[playerid][pMember], name, text, w_rank, day, month, year);
 		mysql_function_query(mysql, str_q, false, "", "");
 	}
 	return 1;
@@ -16584,7 +16550,7 @@ callback: PhoneBookAddCheck(playerid, name[]) {
 		GetPVarString(playerid,"name_pb", text, sizeof(text));
 		FixSVarString(text);
 		new str_q[256];
-		mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'", text);
+		mf(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'", text);
 	    mysql_function_query(mysql, str_q, true, "PhoneBookAdd", "ds", playerid, text);
 	}
 	return 1;
@@ -16599,7 +16565,7 @@ callback: PhoneBookAdd(playerid, name[]) {
 		new year,month,day;
 		getdate(year, month, day);
 		new str_q[512];
-		mysql_format(mysql,str_q, sizeof str_q, "INSERT INTO `phonebook`(`name`,`number`,`name_add`,`day`,`mounth`,`year`,`data`) VALUES ('%s','%d','%s','%d','%d','%d',NOW())",text,GetPVarInt(playerid, "number_pb"),getName(playerid),getName(playerid),day,month,year);
+		mf(mysql,str_q, sizeof str_q, "INSERT INTO `phonebook`(`name`,`number`,`name_add`,`day`,`mounth`,`year`,`data`) VALUES ('%s','%d','%s','%d','%d','%d',NOW())",text,GetPVarInt(playerid, "number_pb"),getName(playerid),getName(playerid),day,month,year);
 		mysql_function_query(mysql, str_q, false, "", "");
 		SCMf(playerid, 0x3399ffFF, "Вы добавили {ffff33}т. %d{3399ff} в свою телефонную книгу (имя: {ffff33}'%s'{3399ff})", GetPVarInt(playerid, "number_pb"), text);
 		DeletePVar(playerid, "name_pb");
@@ -16649,7 +16615,7 @@ callback: ChangeNumberPhoneBook(playerid) {
 	GetPVarString(playerid,"pb_namecont", name, sizeof(name));
 	FixSVarString(name);
 	new str_q[256];
-	mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `phonebook` SET `number` = '%d' WHERE `name` = '%e' AND `name_add` = '%e'", GetPVarInt(playerid, "number_pb"), name, getName(playerid));
+	mf(mysql,str_q, sizeof(str_q), "UPDATE `phonebook` SET `number` = '%d' WHERE `name` = '%e' AND `name_add` = '%e'", GetPVarInt(playerid, "number_pb"), name, getName(playerid));
 	mysql_function_query(mysql, str_q, false, "", "");
 	SCMf(playerid, 0x3399ffFF, "Номер кантакта изменён на {ffff33}%d", GetPVarInt(playerid, "number_pb"));
 	DeletePVar(playerid, "pb_namecont");
@@ -16664,7 +16630,7 @@ callback: ChangeNamePhoneBook(playerid) {
 	GetPVarString(playerid,"c_name", text, sizeof(text));
 	FixSVarString(text);
 	new str_q[256];
-	mysql_format(mysql,str_q, sizeof(str_q), "UPDATE `phonebook` SET `name` = '%e' WHERE `name` = '%e' AND `name_add` = '%e'", text, name, getName(playerid));
+	mf(mysql,str_q, sizeof(str_q), "UPDATE `phonebook` SET `name` = '%e' WHERE `name` = '%e' AND `name_add` = '%e'", text, name, getName(playerid));
 	mysql_function_query(mysql, str_q, false, "", "");
 	SCMf(playerid, 0x3399ffFF, "Имя контакта изменено на {ffff33}'%s'", text);
 	DeletePVar(playerid, "pb_namecont");
@@ -16677,7 +16643,7 @@ callback: DeletePhoneBook(playerid)
 	GetPVarString(playerid,"pb_namecont", name, sizeof(name));
 	FixSVarString(name);
 	new str_q[256];
-	mysql_format(mysql,str_q, sizeof(str_q), "DELETE FROM `phonebook` WHERE `name` = '%e' AND `name_add` = '%e'", name, getName(playerid));
+	mf(mysql,str_q, sizeof(str_q), "DELETE FROM `phonebook` WHERE `name` = '%e' AND `name_add` = '%e'", name, getName(playerid));
 	mysql_function_query(mysql, str_q, false, "", "");
 	SCM(playerid, COLOR_TOMATO, "Вы удалили контакт из телефонной книги");
 	DeletePVar(playerid, "pb_namecont");
@@ -16744,12 +16710,12 @@ callback: LoadBang()
    			if(G_DATA[g][data_DAY] >= 1) 
 			{
 				G_DATA[g][data_DAY]--;
-			    mysql_format(mysql,str_q, sizeof(str_q),"UPDATE `accounts` SET `bangun` = '%d' WHERE `id` = '%d'",G_DATA[g][data_DAY],G_DATA[g][data_ID]);
+			    mf(mysql,str_q, sizeof(str_q),"UPDATE `accounts` SET `bangun` = '%d' WHERE `id` = '%d'",G_DATA[g][data_DAY],G_DATA[g][data_ID]);
 			    mysql_function_query(mysql, str_q, false, "", "");
 			}
 			else 
 			{
-			    mysql_format(mysql,str_q, sizeof(str_q),"UPDATE `accounts` SET `bangun` = '0' WHERE `id` = '%d'",G_DATA[g][data_ID]);
+			    mf(mysql,str_q, sizeof(str_q),"UPDATE `accounts` SET `bangun` = '0' WHERE `id` = '%d'",G_DATA[g][data_ID]);
 	    		mysql_function_query(mysql, str_q, false, "", "");
 	    		gunb++;
 			}
@@ -16912,7 +16878,7 @@ CMD:lname(playerid, params[]) {
     if(PI[playerid][pRang] < 10) return 1;
 	if(sscanf(params, "s[30]", params[0]))return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /lname [имя]");
 	new str_q[256];
-	mysql_format(mysql, str_q, sizeof str_q, "SELECT `id` FROM `accounts` WHERE `Name` = '%e' LIMIT 1", params[0]);
+	mf(mysql, str_q, sizeof str_q, "SELECT `id` FROM `accounts` WHERE `Name` = '%e' LIMIT 1", params[0]);
 	mysql_tquery(mysql, str_q, "nameleader_check", "i", playerid);
 	return 1 ;
 }
@@ -17418,7 +17384,7 @@ stock RandomName(playerid)
 	new rand = random(sizeof(nname));
 	SetPVarString(playerid, "randomame", nname[rand]);
 	new query[100+MAX_PLAYER_NAME];
-	mysql_format(mysql,query, sizeof(query), "SELECT * FROM `accounts` WHERE `Name` = '%e'", nname[rand]);
+	mf(mysql,query, sizeof(query), "SELECT * FROM `accounts` WHERE `Name` = '%e'", nname[rand]);
 	mysql_function_query(mysql, query, true, "NameCallback", "d", playerid);
 }
 callback: NameCallback(playerid)
@@ -17459,7 +17425,7 @@ CMD:aname(playerid, params[])
         return SCM(playerid, COLOR_LIGHTGREY, "Используйте: /aname [имя]");
 
     new query_string[128];
-    mysql_format(mysql, query_string, sizeof(query_string), "SELECT `id` FROM `accounts` WHERE `Name` = '%e' LIMIT 1", name);
+    mf(mysql, query_string, sizeof(query_string), "SELECT `id` FROM `accounts` WHERE `Name` = '%e' LIMIT 1", name);
     mysql_tquery(mysql, query_string, "namestore_callback", "i", playerid);
     return 1;
 }
@@ -17475,7 +17441,7 @@ public namestore_callback(playerid)
 
     new db_increment = cache_get_field_content_int(0, "id");
     new query_string[128];
-    mysql_format(mysql, query_string, sizeof(query_string), "SELECT * FROM `nickname_history` WHERE `nh_owner` = %d", db_increment);
+    mf(mysql, query_string, sizeof(query_string), "SELECT * FROM `nickname_history` WHERE `nh_owner` = %d", db_increment);
     mysql_tquery(mysql, query_string, "_namestore_callback", "i", playerid);
     return 1;
 }
@@ -18119,7 +18085,7 @@ stock CheckNextLevel(playerid)
 			if(PI[playerid][pLevel] == 3)
 			{
 				static str[85];
-			    format(str, sizeof(str), "SELECT `Referal` FROM `accounts` WHERE `Name` = '%s'", getName(playerid));
+			    format(str, sizeof(str), "SELECT `Referal` FROM `accounts` WHERE `Name` = '%e'", getName(playerid));
 			    mysql_tquery(mysql, str, "MysqlReferal", "d", false, playerid);
 			}
 		}
@@ -18413,7 +18379,7 @@ CMD:checkoff(playerid,params[])
     if(CheckAccess(playerid, 5)) return 0;
     if(sscanf(params,"s[24]",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /checkoff [имя]");
 	new str_q[144];
- 	mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'",params[0]);
+ 	mf(mysql,str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'",params[0]);
  	mysql_function_query(mysql, str_q, true, "CheckPlayerOffline", "i", playerid);
    	return 1;
 }
@@ -18672,7 +18638,7 @@ CMD:cars(playerid)
 	if(PI[playerid][pLoadVehicleID] == INVALID_VEHICLE_ID) 
 	{			
 		new sql[80];
-		format(sql, sizeof sql, "SELECT * FROM `ownable` WHERE `Owner` = '%s'", getName(playerid));
+		format(sql, sizeof sql, "SELECT * FROM `ownable` WHERE `Owner` = '%e'", getName(playerid));
 		mysql_tquery(mysql, sql, "LoadOwnableCars", "i", playerid);
 	}
 	else 
@@ -18792,7 +18758,7 @@ CMD:sellcar(playerid)
 stock SetPlayerOwnable(playerid, model, cost, fuel, color_1, color_2, premium)
 {
 	new str_q[256];
-	mysql_format(mysql, str_q, sizeof(str_q), "\
+	mf(mysql, str_q, sizeof(str_q), "\
 	INSERT INTO `ownable` (`ID`, `Owner`, `Model`, `Cost`, `Fuel`, `Color_1`, `Color_2`, `Premium`, `Temp`) VALUES ('', '%e', '%d', '%d', '%d', '%d', '%d', '%d', '-1')",
 					PI[playerid][pName],
 					model,
@@ -18807,7 +18773,7 @@ stock SetPlayerOwnable(playerid, model, cost, fuel, color_1, color_2, premium)
 stock GivePlayerOwnable(playerid, model, cost, fuel, color_1, color_2, premium, temp = -1)
 {
 	new str_q[256];
-	mysql_format(mysql, str_q, sizeof(str_q), "\
+	mf(mysql, str_q, sizeof(str_q), "\
 	INSERT INTO `ownable` (`ID`, `Owner`, `Model`, `Cost`, `Fuel`, `Color_1`, `Color_2`, `Premium`, `Temp`) VALUES ('', '%e', '%d', '%d', '%d', '%d', '%d', '%d', '%d')",
 					PI[playerid][pName],
 					model,
@@ -18823,14 +18789,14 @@ stock GivePlayerOwnable(playerid, model, cost, fuel, color_1, color_2, premium, 
 stock DeleteOwnable(id)
 {
 	new str_q[256];
-	mysql_format(mysql, str_q, sizeof(str_q), "DELETE FROM `ownable` WHERE `ID` = '%d'", id);
+	mf(mysql, str_q, sizeof(str_q), "DELETE FROM `ownable` WHERE `ID` = '%d'", id);
     mysql_function_query(mysql, str_q, false, "", "");
 	return 1;
 }
 stock CreatePunishment(playerid, player, type, reason[])
 {
 	new str_q[512];
-	mysql_format(mysql,str_q, sizeof(str_q), "INSERT INTO `punishment` ( `name`, `type`, `admin`, `reason`) VALUES ( '%s', '2', '%d', '%s')", getName(player), type, getName(playerid), reason);
+	mf(mysql,str_q, sizeof(str_q), "INSERT INTO `punishment` ( `name`, `type`, `admin`, `reason`) VALUES ( '%s', '2', '%d', '%s')", getName(player), type, getName(playerid), reason);
 	mysql_function_query(mysql, str_q, false, "", "");
 }
 stock ShowSellCar(playerid)
@@ -18951,7 +18917,7 @@ stock ShowMainMenu(playerid)
 CMD:vk(playerid)
 {
 	new Cache: result, query[144], TempCode, TempVKID, TempVKName[50];
-	mysql_format(mysql, query, sizeof query, "SELECT * FROM accounts WHERE ID='%d'", PI[playerid][pID]);
+	mf(mysql, query, sizeof query, "SELECT * FROM accounts WHERE ID='%d'", PI[playerid][pID]);
 	result = mysql_query(mysql, query, true);
 
 	if(cache_num_rows())
@@ -19103,7 +19069,7 @@ stock SaveBusinessData(b)
     mysql_string[0] = EOS;
     
     format(mysql_string, 512, "\
-		UPDATE `business` SET `owner` = '%s', `owned` = %d, `name` = '%s', `prod` = %d, `DayRent` = %d, `clients` = %d, `lock` = %d,\
+		UPDATE `business` SET `owner` = '%e', `owned` = %d, `name` = '%e', `prod` = %d, `DayRent` = %d, `clients` = %d, `lock` = %d,\
 		`cena` = %d, `price_prod` = %d, `bank` = %d, `SealedDays` = %d WHERE `id` = %d LIMIT 1",
         BizInfo[b][bOwner],
         BizInfo[b][bOwned],
@@ -19549,8 +19515,7 @@ stock AccountCreate(playerid)
     PI[playerid][pDemorgan] = 0;
 	PI[playerid][pHospital] = 0;
 
-	new str_q[590];
-	mysql_format(mysql, str_q, sizeof(str_q), "\
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 440, "\
 	INSERT INTO `accounts` (`id`,`Name`, `licb`, `licg`, `Respect`, `CarThiefLvl`, `HealthPoints`, `Money`, `Password`, `Email`, `RegIP`, `Referal`, `sex`, `skin`, `Level`) VALUES ('','%e', '1', '1', '1', '1', '160', '5000', md5('%e'), '%e', '%s', '%s', '%d', '%d', '1')",
 		PI[playerid][pName],
 		PI[playerid][pPassword],
@@ -19559,10 +19524,10 @@ stock AccountCreate(playerid)
 		PI[playerid][pReferal],
 		PI[playerid][pSex],
 		PI[playerid][pSkin]);
-    mysql_function_query(mysql, str_q, false, "", "");
+    mysql_function_query(mysql, mysql_string, false, "", "");
 
 	new query[110];
-	mysql_format(mysql, query, sizeof(query), "SELECT * FROM `accounts` WHERE `Name` = '%e' AND `Password` = md5('%s')", PI[playerid][pName], PI[playerid][pPassword]);
+	mf(mysql, query, sizeof(query), "SELECT * FROM `accounts` WHERE `Name` = '%e' AND `Password` = md5('%s')", PI[playerid][pName], PI[playerid][pPassword]);
 	mysql_function_query(mysql, query, true, "LoadPlayerData", "d", playerid);
 
 	SendAdminsMessagef(COLOR_GREY, "[NewPlayer] %s[%d] только что создал аккаунт | {ff6633}RegIP: %s", getName(playerid), playerid, PI[playerid][pRegIP]);
