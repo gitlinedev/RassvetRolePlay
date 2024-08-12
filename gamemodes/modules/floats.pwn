@@ -54,11 +54,11 @@ stock kv_OnDialogResponse(playerid, dialogid, response, listitem)
 			        new kv;
 			        if(PlayerToPoint(3.0, playerid, kvData[kv][kvEnterPosX][k], kvData[kv][kvEnterPosY][k], kvData[kv][kvEnterPosZ][k])) 
                     {
-			            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY,"У Вас уже есть недвижимость");
+			            if(PI[playerid][pFloat] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY,"У Вас уже есть недвижимость");
 			            if(kvData[kv][kvOwned][k] == 1) return SCM(playerid, COLOR_GREY,"У данной квартиры уже есть владелец");
 						if(GetPlayerMoneyID(playerid) < kvData[kv][kvCost]) return SCM(playerid, COLOR_GREY,"У Вас недостаточно денег на руках");
 						PI[playerid][data_PADIK] = kv;
-						PI[playerid][data_KV] = k;
+						PI[playerid][pFloat] = k;
 			            kvData[kv][kvOwned][k] = 1;
 			            kvData[kv][kvDays][k] = 3;
 			            switch(k) 
@@ -94,11 +94,11 @@ stock kv_OnDialogResponse(playerid, dialogid, response, listitem)
 			        new kv;
 			        if(PlayerToPoint(3.0, playerid, kvData[kv][kvEnterPosX][k], kvData[kv][kvEnterPosY][k], kvData[kv][kvEnterPosZ][k])) 
                     {
-			            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
+			            if(PI[playerid][pFloat] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
 			            if(kvData[kv][kvOwned][k] == 1) return SCM(playerid, COLOR_GREY, !"У данной квартиры уже есть владелец");
 						if(GetPlayerMoneyID(playerid) < kvData[kv][kvCost]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 						PI[playerid][data_PADIK] = kv;
-						PI[playerid][data_KV] = k;
+						PI[playerid][pFloat] = k;
 			            kvData[kv][kvOwned][k] = 1;
 			            kvData[kv][kvDays][k] = 3;
 			            switch(k)
@@ -129,7 +129,7 @@ stock kv_OnDialogResponse(playerid, dialogid, response, listitem)
 			if(response) 
             {
 			    new kv = PI[playerid][data_PADIK];
-				new k = PI[playerid][data_KV];
+				new k = PI[playerid][pFloat];
 			    switch(listitem) 
                 {
 			        case 0: 
@@ -194,10 +194,10 @@ stock kv_OnDialogResponse(playerid, dialogid, response, listitem)
 			if(response) 
 			{
 		    	new kv = PI[playerid][data_PADIK];
-				new k = PI[playerid][data_KV];
+				new k = PI[playerid][pFloat];
 		      	kvData[kv][kvOwned][k] = 0;
 		      	kvData[kv][kvDays][k] = 0;
-		      	PI[playerid][data_KV] = INVALID_KV_ID;
+		      	PI[playerid][pFloat] = INVALID_KV_ID;
 		      	PI[playerid][data_PADIK] = INVALID_KV_ID;
 		      	switch(k) 
                 {
@@ -282,7 +282,7 @@ stock kv_OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 //======================================================================
 CMD:home(playerid) 
 {
-    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
 	if(PI[playerid][pHouse] != INVALID_HOUSE_ID) ShowPlayerDialog(playerid, dialog_HOUSE, DIALOG_STYLE_LIST, "{ee3366}Дом", "Информация\nОткрыть/закрыть дом\nПродать дом", "Выбрать", "Отмена");
 	else ShowPlayerDialog(playerid, 4507, DIALOG_STYLE_LIST, "{ee3366}Квартира", "Информация\nОткрыть/закрыть квартиру\nПродать квартиру", "Выбрать", "Отмена");
 	return 1;
@@ -296,11 +296,11 @@ CMD:buykv(playerid)
         if(kv == -1) break;
         if(PlayerToPoint(3.0, playerid, kvData[kv][kvEnterPosX][k], kvData[kv][kvEnterPosY][k], kvData[kv][kvEnterPosZ][k]))
         {
-            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
+            if(PI[playerid][pFloat] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY, !"У Вас уже есть недвижимость");
             if(kvData[kv][kvOwned][k] == 1) return SCM(playerid, COLOR_GREY, !"У данной квартиры уже есть владелец");
 			if(GetPlayerMoneyID(playerid) < kvData[kv][kvCost]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 			PI[playerid][data_PADIK] = kv;
-			PI[playerid][data_KV] = k;
+			PI[playerid][pFloat] = k;
             kvData[kv][kvOwned][k] = 1;
             kvData[kv][kvDays][k] = 3;
             switch(k)

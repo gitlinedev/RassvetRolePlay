@@ -7,8 +7,8 @@ callback: OnCefBrowserCreated(player_id, browser_id, status_code)
 	{
 		SCM(player_id, COLOR_HINT, !"[CEF-client] {FFFFFF}Произошла ошибка загрузки. Повторная попытка..");
 		SendAdminsMessagef(COLOR_GREEN, "CEF: У игрока %s[%d] возникла ошибка [code: 0], возможное решение (/reload или переустановка сборки)", getName(player_id), player_id);
-		cef_load_url(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/huds/index.html");
-		cef_load_url(player_id, DIALOG_CEF, "https://api.s-project.xyz/_rassvet/dialogs/dialog.html");
+		cef_load_url(player_id, MAIN_CEF, "https://cdn.rassvet-rp.fun/Interface/MainHud/index.html");
+		cef_load_url(player_id, DIALOG_CEF, "https://cdn.rassvet-rp.fun/Interface/Dialogs/dialog.html");
 	}
 	else if(status_code == 404)
 	{
@@ -27,8 +27,8 @@ callback: OnCefInitialize(player_id, success)
 {
 	if(success == 1)
 	{
-		cef_create_browser(player_id, MAIN_CEF, "https://api.s-project.xyz/_rassvet/huds/index.html", false, false);
-		cef_create_browser(player_id, DIALOG_CEF, "https://api.s-project.xyz/_rassvet/dialogs/dialog.html", false, false);
+		cef_create_browser(player_id, MAIN_CEF, "https://cdn.rassvet-rp.fun/Interface/MainHud/index.html", false, false);
+		cef_create_browser(player_id, DIALOG_CEF, "https://cdn.rassvet-rp.fun/Interface/Dialogs/dialog.html", false, false);
 		cef_always_listen_keys(player_id, DIALOG_CEF, true);
 		cef_always_listen_keys(player_id, MAIN_CEF, true);
         return;
@@ -43,8 +43,8 @@ callback: CefLoad(playerid)
 }
 CMD:reload(playerid) 
 {
-	cef_load_url(playerid, DIALOG_CEF, "https://api.s-project.xyz/_rassvet/dialogs/dialog.html");
-	cef_load_url(playerid, MAIN_CEF, "https://api.s-project.xyz/_rassvet/huds/index.html");
+	cef_load_url(playerid, DIALOG_CEF, "https://cdn.rassvet-rp.fun/Interface/Dialogs/dialog.html");
+	cef_load_url(playerid, MAIN_CEF, "https://cdn.rassvet-rp.fun/Interface/MainHud/index.html");
 	return 1;
 }
 stock SendPlayerOfferNotify(playerid, message[], button1[], button2[], time) 

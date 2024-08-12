@@ -195,6 +195,7 @@ new ShowCar[MAX_PLAYERS][15];
 new AccessCar[MAX_PLAYERS][15];
 //
 new	bool:IsPlayerLogged[MAX_PLAYERS char];
+new	bool:RegisterNow[MAX_PLAYERS char];
 
 new const monthNames[12][9] = {
     "январь", "февраль", "март", "апрель",
@@ -736,8 +737,8 @@ new rang_hospital[10][frInfo] = {
     {"Ортопед"},
     {"Хирург"},
     {"Онколог"},
-    {"Зам.Глав.Врача"},
-    {"Глав.Врач"}
+    {"Зам.Главного Врача"},
+    {"Главный Врач"}
 };
 new rang_skinhead[10][frInfo] = {
     {"Чмо"},
@@ -1092,7 +1093,7 @@ enum P_DATA
 	pSkillRifle,
 	data_JOB,
 	data_PADIK,
-	data_KV,
+	pFloat,
 	pSchoolTestLvl[10],
 	pProgressMetall,
 	pProgressDrugs,
@@ -1104,6 +1105,9 @@ enum P_DATA
 	pProgressCapture,
 	pPromoCodeUse,
 	pPromoCode,
+	Float:pLeavePosX,
+	Float:pLeavePosY,
+	Float:pLeavePosZ,
 	// NO SAVE
 	pAdminChat,
 	pAdminWatherDriver,
@@ -1149,10 +1153,9 @@ enum P_DATA
 	data_PUTMET,
 	data_VIP,
 	data_TIME,
-	data_TIMERANK,
 	pVkontakteID,
 	pMilitaryID,
-	data_MEDCARD,
+	pMedCard,
 	Float:pOnMPX,
 	Float:pOnMPY,
 	Float:pOnMPZ,
@@ -1310,7 +1313,6 @@ static PedMale[5] = {14,20,21,22,24};
 static PedFeMale[6] = {10,12,13,31,38,39};
 //=============================== [ МОДУЛЬНАЯ СИСТЕМА ] ====================================//
 #include "modules/anticheat.pwn"
-#include "modules/organisation.pwn"
 #include "modules/proposition.pwn"
 #include "modules/quest.pwn"
 #include "modules/blacklist.pwn"
@@ -1328,6 +1330,7 @@ static PedFeMale[6] = {10,12,13,31,38,39};
 #include "modules/admin_fly.pwn"
 #include "modules/mapping.pwn"
 #include "modules/game_moder.pwn"
+#include "modules/organisation.pwn"
 //#include "modules/stamina.pwn"
 //=========================================================================================//
 forward Float:GetDistanceBetweenPlayers(p1,p2);
@@ -2222,6 +2225,8 @@ public OnPlayerEnterDynamicCP(playerid,checkpointid)
 }
 public OnPlayerDisconnect(playerid, reason) 
 {
+	GetPlayerPos(playerid, PI[playerid][pLeavePosX], PI[playerid][pLeavePosY], PI[playerid][pLeavePosZ]);
+
 	cef_destroy_browser(playerid, MAIN_CEF);
 	cef_destroy_browser(playerid, DIALOG_CEF);
 	capture_OnPlayerDisconnect(playerid);
@@ -3053,7 +3058,7 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
     }
 	if(pickupid == CRBPickCard) 
 	{
-		if(PI[playerid][data_MEDCARD] != 0) return SCM(playerid, COLOR_GREY, !"У Вас уже есть медицинская карта");
+		if(PI[playerid][pMedCard] != 0) return SCM(playerid, COLOR_GREY, !"У Вас уже есть медицинская карта");
 		ShowPlayerDialog(playerid, 5413, DIALOG_STYLE_MSGBOX, !"{ee3366}Покупка медицинской карты", "\
 		{FFFFFF}Вы действительно хотите преобрести медицинскую карту за {FFFF99}750 рублей?", "Да", "Нет");
 	}
@@ -3173,8 +3178,8 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 	}	
 	if(pickupid == spawn_vhod) 
 	{
-	    SetPlayerVirtualWorld(playerid, -1);
-	    SetPlayerInterior(playerid, -1);
+	    SetPlayerVirtualWorld(playerid, 0);
+	    SetPlayerInterior(playerid, 0);
 	    SetPlayerPos(playerid, 1600.1017,2024.5760,-55.7341);
 		SetPlayerFacingAngle(playerid,180.1992);
 		SetCameraBehindPlayer(playerid);
@@ -4487,6 +4492,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext);
 	kv_OnDialogResponse(playerid, dialogid, response, listitem);
 	gm_OnDialogResponse(playerid, dialogid, response, listitem);
+	org_OnDialogResponse(playerid, dialogid, response);
 
 	switch(dialogid) 
 	{
@@ -4567,7 +4573,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 			if(Premium == 0) 
 			{
-				if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID && AccessCar[playerid][listitem] == 1) 
+				if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID && AccessCar[playerid][listitem] == 1) 
 					return SendClientMessage(playerid, COLOR_GREY, !"Доступ к машине ограничен, купите дом или квартиру чтобы загрузить это транспортное средство.");
 			}
 
@@ -4730,7 +4736,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 				    case 0: 
 					{
-						if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) 
+						if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) 
 							return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
 
 						GivePlayerMoneyLog(playerid, 750);
@@ -5245,7 +5251,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 							/leaders - лидеры онлайн", "Закрыть", "");
 					case 1: 
 					{
-	 				    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+	 				    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
 						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX,"{ee3366}Недвижимость","\
 						{FFFFFF}/home - панель управления дома/квартиры\n\
 						/car - доставить транспорт к дому", "Закрыть", "");
@@ -5319,52 +5325,27 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 			        case 6: 
 					{
-			            if(PI[playerid][pLeader] == 0) return SCM(playerid, COLOR_GREY, !"Вы не являетесь лидером организации");
-						switch(PI[playerid][pLeader]) 
-						{
-						    case 1,2,4: 
-							{
-								ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Лидерство", "\
-								{FFFFFF}/gov - Гос.Новости\n\
-								/invite - принять\n\
-								/uninvite - уволить\n\
-								/setrang - изменить ранг\n\
-								/setskin - изменить скин\n\
-								/allmembers - список членов организации\n\
-								/UninviteInOffline - уволить оффлайн\n\
-								/twarn - выдать выговор сотруднику\n\
-								/untwarn - снять выговор сотруднику\n\
-								/offtwarn - выдать выговор в оффлайне (доступно заместителям)", "Закрыть", "");
-							}
-							case 3: 
-							{
-							    ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Лидерство", "\
-								{FFFFFF}/gov - Гос.Новости\n\
-								/invite - принять\n\
-								/uninvite - уволить\n\
-								/setrang - изменить ранг\n\
-								/setskin - изменить скин\n\
-								/allmembers - список членов организации\n\
-								/UninviteInOffline - уволить оффлайн\n\
-								/twarn - выдать выговор сотруднику\n\
-								/untwarn - снять выговор сотруднику\n\
-								/offtwarn - выдать выговор в оффлайне (доступно заместителям)", "Закрыть", "");
-							}
-                            case 5,6,7: 
-							{
-
-								ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Лидерство", "\
-								{FFFFFF}/invite - принять\n\
-								/uninvite - уволить\n\
-								/setrang - изменить ранг\n\
-								/setskin - изменить скин\n\
-								/allmembers - список членов организации\n\
-								/UninviteInOffline - уволить оффлайн\n\
-								/twarn - выдать выговор сотруднику\n\
-								/untwarn - снять выговор сотруднику\n\
-								/offtwarn - выдать выговор в оффлайне (доступно заместителям)", "Закрыть", "");
-							}
-						}
+						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_TABLIST_HEADERS, !"{ee3366}Лидеры и заместители", "\
+								Команда\tОписание\n\
+								{FFFFFF}/l\tРация лидеров\n\
+								/ll (/lb)\tOOC рация лидеров\n\
+								/bl\tЧёрный список организации\n\
+								/lname\tНайти игрока по старому никнейму\n\
+								/twarn\tВыдать выговор\n\
+								/clead\tНазначить на должность смотрящего за стрелой\n\
+								/invite\tПринять игрока в организацию\n\
+								/setskin\tИзменить ранг игрока\n\
+								/setrang\tИзменить ранг игрока\n\
+								/untwarn\tСнять выговор\n\
+								/uninvite\tУволить игрока из организации\n\
+								/offtwarn\tВыдать выговор оффлайн\n\
+								/setgroup\tИзменить группу игрока\n\
+								/transfers\tСписок заявок на перевод\n\
+								/promotion\tУзнать информацию о заданиях игрока\n\
+								/offuntwarn\tСнять выговор оффлайн\n\
+								/allmembers\tПоказать всех участников организации\n\
+								/uninviteoff\tУволить оффлайн игрока из организации\n\
+								/offpromotion\tУзнать информацию о заданиях игрока оффлайн", "Закрыть", "");
 					}
 			    }
 			}
@@ -5421,7 +5402,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				    }
 				    case 1: 
 					{
-						if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+						if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
 
 						new Cache: result, query[140];
 
@@ -5796,7 +5777,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			        case 4: ShowPlayerDialog(playerid, 9001, DIALOG_STYLE_INPUT, "{ee3366}Банк", "{FFFFFF}Введите сумму которую желаете положить на счет телефона", "Выполнить", "Назад");
 			        case 5: 
 					{
-					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
 						if(PI[playerid][pHouse] != INVALID_HOUSE_ID) 
 						{
 							new h = PI[playerid][pHouse];
@@ -5806,9 +5787,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 								{FFFF99}Квартплата - 1499 руб / день\n\n\
 								{FFFFFF}Введите количество дней для оплаты", HOUSE_DATA[h][data_ID], HOUSE_DATA[h][data_DAY]);
 				        }
-				        else if(PI[playerid][data_KV] != INVALID_KV_ID) 
+				        else if(PI[playerid][pFloat] != INVALID_KV_ID) 
 						{
-							new kv = PI[playerid][data_PADIK],k = PI[playerid][data_KV];
+							new kv = PI[playerid][data_PADIK],k = PI[playerid][pFloat];
 						 	ShowPlayerDialogf(playerid, 7951, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", "Далее", "Назад", "\
 								{FFFFFF}Номер квартиры: %d\n\
 								{FFFFFF}Статус оплаты: %d / 30 дн\n\
@@ -6023,10 +6004,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
         case 7951: {
             if(!response) return 1;
 			if(response) {
-				if(PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У вас нет квартиры");
+				if(PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У вас нет квартиры");
 				if(strval(inputtext) <= 0) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
 				new h_class;
-				new kv = PI[playerid][data_PADIK],k = PI[playerid][data_KV];
+				new kv = PI[playerid][data_PADIK],k = PI[playerid][pFloat];
                 h_class = strval(inputtext)*1299;
 				if(h_class > GetPlayerMoneyID(playerid)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 				if(kvData[kv][kvDays][k]+strval(inputtext) > 30) return SCM(playerid, COLOR_GREY, !"Нельзя оплатить квартиру на более 30 суток");
@@ -6148,7 +6129,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    {
 				if(GetPlayerMoneyID(playerid) < 750) return SCM(playerid, COLOR_GREY,"У Вас не хватает денег");
 				SCM(playerid, 0x33dd66FF, "Вы оформили медицинскую справку за 750 руб");
-				PI[playerid][data_MEDCARD] = 1;
+				PI[playerid][pMedCard] = 1;
 				GivePlayerMoneyLog(playerid, -750);
 				if(PI[playerid][data_MEDNUM] == 0) PI[playerid][data_MEDNUM] = RandomEX(1111111, 6666666);
 		    }
@@ -7945,7 +7926,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				strmid(CHANGE_NAME[playerid], name, 0, strlen(name), MAX_PLAYER_NAME);
 				SetPVarInt(playerid, "change_name_status", 1);
 
-				mf(mysql, mysql_string, 66, "SELECT * FROM `accounts` WHERE `Name` = '%e'", CHANGE_NAME[playerid]);
+				mysql_string[0] = EOS, mf(mysql, mysql_string, 66, "SELECT * FROM `accounts` WHERE `Name` = '%e'", CHANGE_NAME[playerid]);
 				mysql_function_query(mysql, mysql_string, true, "CheckName", "ds", playerid, CHANGE_NAME[playerid]);
 			}
 		}
@@ -10214,7 +10195,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 			        case 0: 
 					{
-					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
 						if(PI[playerid][pHouse] != INVALID_HOUSE_ID) 
 						{
 							new h = PI[playerid][pHouse];
@@ -10226,9 +10207,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 							{FFFFFF}Введите количество дней для оплаты", HOUSE_DATA[h][data_ID], HOUSE_DATA[h][data_DAY]);
 						 	ShowPlayerDialog(playerid, 7950, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", str_1, "Выполнить", "Назад");
 				        }
-				        else if(PI[playerid][data_KV] != INVALID_KV_ID) 
+				        else if(PI[playerid][pFloat] != INVALID_KV_ID) 
 						{
-							new kv = PI[playerid][data_PADIK],k = PI[playerid][data_KV];
+							new kv = PI[playerid][data_PADIK],k = PI[playerid][pFloat];
 							new str_1[256];
 							format(str_1,sizeof(str_1),"\
 							{FFFFFF}Номер квартиры: %d\n\
@@ -10274,7 +10255,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if(response) {
 			    switch(listitem) {
 			        case 0: {
-					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
 						if(PI[playerid][pHouse] != INVALID_HOUSE_ID) {
 							new h = PI[playerid][pHouse];
 							new str_1[256];
@@ -10285,8 +10266,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 							{FFFFFF}Введите количество дней для оплаты", HOUSE_DATA[h][data_ID], HOUSE_DATA[h][data_DAY]);
 						 	ShowPlayerDialog(playerid, 7950, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", str_1, "Выполнить", "Назад");
 				        }
-				        else if(PI[playerid][data_KV] != INVALID_KV_ID) {
-							new kv = PI[playerid][data_PADIK],k = PI[playerid][data_KV];
+				        else if(PI[playerid][pFloat] != INVALID_KV_ID) {
+							new kv = PI[playerid][data_PADIK],k = PI[playerid][pFloat];
 							new str_1[256];
 							format(str_1,sizeof(str_1),"\
 							Номер квартиры: %d\n\
@@ -10315,7 +10296,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if(response) {
 		        for(new h = 0; h < TotalHouses; h++) {
 		        	if(PlayerToPoint(3.0, playerid, HOUSE_DATA[h][data_ENTERX], HOUSE_DATA[h][data_ENTERY], HOUSE_DATA[h][data_ENTERZ])) {
-			            if(PI[playerid][data_KV] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY,"У Вас уже есть недвижимость");
+			            if(PI[playerid][pFloat] != INVALID_KV_ID || PI[playerid][pHouse] != INVALID_HOUSE_ID) return SCM(playerid, COLOR_GREY,"У Вас уже есть недвижимость");
 			            if(HOUSE_DATA[h][data_OWNED] == 1) return SCM(playerid, COLOR_GREY,"Данный дом уже куплен");
 						if(GetPlayerMoneyID(playerid) < HOUSE_DATA[h][data_PRICE]) return SCM(playerid, COLOR_GREY,"У Вас недостаточно денег на руках");
 						PI[playerid][pHouse] = h;
@@ -10387,68 +10368,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				ProxDetector(30.0, GetPVarInt(playerid, "from_player"), string, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
 				SetPlayerChatBubble(GetPVarInt(playerid, "from_player"), "передал(а) оружие", 0xFF99CCFF, 20.0, 4000);
 				SCMf(GetPVarInt(playerid, "from_player"), 0xFF99CCFF, "%s взял у Вас %s (%d пт)",PI[playerid][pName], weapon_names[gun], GetPVarInt(playerid, "value_1"));
-			}
-		}
-		case 9800: {
-			if(!response) return 1;
-			if(response) {
-				new text[24];
-				GetPVarString(playerid,"uninvitereason", text, sizeof(text));
-				FixSVarString(text);
-				static name[24];
-				SetString(name, NameRang(playerid));
-				name = NameRang(playerid);
-				static name2[24];
-				SetString(name2, NameRang(GetPVarInt(playerid, "uninviteid")));
-				name2 = NameRang(GetPVarInt(playerid, "uninviteid"));
-				new year, month, day;
-				getdate(year, month, day);
-				new str_q[370];
-				mf(mysql,str_q, sizeof str_q, "INSERT INTO `wbook`(`w_player`,`w_fraction`,`w_name`,`w_reason`,`w_rank`,`w_day`,`w_mes`,`w_year`,`w_dal`,`w_reas`,`w_dalrank`) VALUES ('%d','%d','%s','Увольнение','%d','%d','%d','%d','%s','%s','%s')", PI[GetPVarInt(playerid, "uninviteid")][pID], PI[GetPVarInt(playerid, "uninviteid")][pMember], PI[GetPVarInt(playerid, "uninviteid")][pName], PI[GetPVarInt(playerid, "uninviteid")][pRang], day, month, year, PI[playerid][pRang], text, name);
-				mysql_function_query(mysql, str_q, false, "", "");
-				new str[145];
-				if(PI[playerid][pMember] == 2) {
-					if(PI[GetPVarInt(playerid, "uninviteid")][pRang] >= 4) {
-					    if(PI[GetPVarInt(playerid, "uninviteid")][pMilitaryID] == 0) {
-						    SCM(GetPVarInt(playerid, "uninviteid"), COLOR_GREEN, "Вы отслужили в армии и получили военный билет");
-						    PI[GetPVarInt(playerid, "uninviteid")][pMilitaryID] = 1;
-						}
-					}
-				}
-				if(PI[GetPVarInt(playerid, "uninviteid")][pOnCapture] == 1)
-				{
-					AutoKickCapture(GetPVarInt(playerid, "uninviteid"));
-					CheckCount(GetPVarInt(playerid, "uninviteid"));
-				}
-				format(str,sizeof(str),"[R] %s %s уволил из организации %s %s. Причина: %s", name,PI[playerid][pName],name2, PI[GetPVarInt(playerid, "uninviteid")][pName],text);
-				cef_emit_event(GetPVarInt(playerid, "uninviteid"), "hide_kill_list");
-				cef_emit_event(GetPVarInt(playerid, "uninviteid"), "hide-capture");
-				SendFractionMessage(PI[playerid][pMember], COLOR_TOMATO, str);
-				PI[GetPVarInt(playerid, "uninviteid")][pMember] = 0;
-				PI[GetPVarInt(playerid, "uninviteid")][pRang] = 0;
-				PI[GetPVarInt(playerid, "uninviteid")][TWARN] = 0;
-				PI[GetPVarInt(playerid, "uninviteid")][pLeader] = 0;
-				PI[GetPVarInt(playerid, "uninviteid")][pProgressMetall] = 0;
-	            PI[GetPVarInt(playerid, "uninviteid")][pProgressDrugs] = 0;
-	            PI[GetPVarInt(playerid, "uninviteid")][pProgressAmmo] = 0;
-	            PI[GetPVarInt(playerid, "uninviteid")][pProgressCarGrabber] = 0;
-	            PI[GetPVarInt(playerid, "uninviteid")][pProgressSellGun] = 0;
-	            PI[GetPVarInt(playerid, "uninviteid")][pProgressCapture] = 0;
-	            PI[GetPVarInt(playerid, "uninviteid")][pCaptureManager] = 0;
-				SetPlayerSkinAC(GetPVarInt(playerid, "uninviteid"),PI[GetPVarInt(playerid, "uninviteid")][pSkin]);
-				SetPlayerColorEx(GetPVarInt(playerid, "uninviteid"));
-				PI[GetPVarInt(playerid, "uninviteid")][data_MEDCARD] = 0;
-				for(new g; g <= totalgz; g++) GangZoneHideForPlayer(GetPVarInt(playerid, "uninviteid"), g);
-				GangZoneStopFlashForPlayer(GetPVarInt(playerid, "uninviteid"), WarZone);
-				SetPlayerTeam(GetPVarInt(playerid, "uninviteid"), NO_TEAM);
-				if(IsPlayerInAnyVehicle(GetPVarInt(playerid, "uninviteid")) && GetPlayerState(GetPVarInt(playerid, "uninviteid")) == PLAYER_STATE_DRIVER) {
-					new Float:x, Float:y, Float:z;
-				 	GetPlayerPos(GetPVarInt(playerid, "uninviteid"),x,y,z);
-				 	SetPlayerPosAC(GetPVarInt(playerid, "uninviteid"),x,y,z+2);
-				}
-				PI[GetPVarInt(playerid, "uninviteid")][data_TIMERANK] = 0;
-				SavePlayerData(GetPVarInt(playerid, "uninviteid"));
-				ClearGroup(GetPVarInt(playerid, "uninviteid"));
 			}
 		}
 		case 7515: 
@@ -10962,7 +10881,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		case 7508: 
 		{
 		    if(!response) return 1;
-			if(response) callcmd::unofftwarn(playerid,inputtext);
+			if(response) callcmd::offuntwarn(playerid,inputtext);
 		}
 		case 7507:
 		{
@@ -10985,7 +10904,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		case 7504:
 		{
 		    if(!response) return 1;
-			if(response) callcmd::UninviteInOffline(playerid,inputtext);
+			if(response) callcmd::uninviteoff(playerid,inputtext);
 		}
 		case 7502:
 		{
@@ -11092,7 +11011,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					    SCM(playerid, COLOR_YELLOW, !"Место спавна изменено");
 					}
 		            case 2: {
-					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
                         PI[playerid][data_SPAWN] = 2;
 					    SCM(playerid, COLOR_YELLOW, !"Место спавна изменено");
 					}
@@ -11421,6 +11340,11 @@ callback: LoadPlayerData(playerid)
 		cache_get_field_content(0, "phonebook", temp), PI[playerid][pPhoneBook] = strval (temp);
 		cache_get_field_content(0, "Satiety", temp), PI[playerid][pSatiety] = strval (temp);
 		cache_get_field_content(0, "HealthPoints", temp), PI[playerid][pHealthPoints] = strval (temp);
+
+		cache_get_field_content(0, "LeavePosX", temp), PI[playerid][pLeavePosX] = strval (temp);
+		cache_get_field_content(0, "LeavePosY", temp), PI[playerid][pLeavePosY] = strval (temp);
+		cache_get_field_content(0, "LeavePosZ", temp), PI[playerid][pLeavePosZ] = strval (temp);
+
 		cache_get_field_content(0, "arm", temp), PI[playerid][pArmour] = strval (temp);
 		cache_get_field_content(0, "med", temp), PI[playerid][data_MED] = strval (temp);
 		cache_get_field_content(0, "mednum", temp), PI[playerid][data_MEDNUM] = strval (temp);
@@ -11436,7 +11360,7 @@ callback: LoadPlayerData(playerid)
 	    cache_get_field_content(0, "job", temp), PI[playerid][data_JOB] = strval (temp);
 	    cache_get_field_content(0, "house", temp), PI[playerid][pHouse] = strval (temp);
 	    cache_get_field_content(0, "business", temp), PI[playerid][pBusiness] = strval (temp);
-	    cache_get_field_content(0, "kv", temp), PI[playerid][data_KV] = strval (temp);
+	    cache_get_field_content(0, "kv", temp), PI[playerid][pFloat] = strval (temp);
 	    cache_get_field_content(0, "padik", temp), PI[playerid][data_PADIK] = strval (temp);
 	    cache_get_field_content(0, "gun0", temp), PI[playerid][data_GUN][0] = strval (temp);
 		cache_get_field_content(0, "gun1", temp), PI[playerid][data_GUN][1] = strval (temp);
@@ -11471,9 +11395,8 @@ callback: LoadPlayerData(playerid)
 		cache_get_field_content(0, "VkontakteID", temp), PI[playerid][pVkontakteID] = strval (temp);
 		cache_get_field_content(0, "twarn", temp), PI[playerid][TWARN] = strval (temp);
 		cache_get_field_content(0, "fixnabor", temp), PI[playerid][data_FIXCOMPL] = strval (temp);
-        cache_get_field_content(0, "timerank", temp), PI[playerid][data_TIMERANK] = strval (temp);
         cache_get_field_content(0, "military", temp), PI[playerid][pMilitaryID] = strval (temp);
-        cache_get_field_content(0, "medcard", temp), PI[playerid][data_MEDCARD] = strval (temp);
+        cache_get_field_content(0, "medcard", temp), PI[playerid][pMedCard] = strval (temp);
 	    cache_get_field_content(0, "ProgressAmmo", temp), PI[playerid][pProgressAmmo] = strval (temp);
 	    cache_get_field_content(0, "ProgressMetall", temp), PI[playerid][pProgressMetall] = strval (temp);
 		cache_get_field_content(0, "PromoCodeUse", temp), PI[playerid][pPromoCodeUse] = strval (temp);
@@ -11545,7 +11468,8 @@ callback: LoadPlayerData(playerid)
 
 		cef_emit_event(playerid, "cef:hud:active", CEFINT(1));
 
-		PlayerSpawn(playerid);
+		if(RegisterNow[playerid] == true) PlayerSpawn(playerid);
+		else PlayerSpawn(playerid);
 	}
 	else 
 	{
@@ -11809,10 +11733,10 @@ callback: CheckNameDonate(playerid, inputtext[])
 			UpdateBusinessData(b);
 			SaveBusinessData(b);
 		}
-		if(PI[playerid][data_KV] != INVALID_KV_ID) 
+		if(PI[playerid][pFloat] != INVALID_KV_ID) 
 		{
 			new kv = PI[playerid][data_PADIK];
-			new k = PI[playerid][data_KV];
+			new k = PI[playerid][pFloat];
 			switch(k) 
 			{
 				case 0: strmid(kvData[kv][kvOwner_1], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
@@ -11871,10 +11795,10 @@ callback: CheckName(playerid, inputtext[])
 			UpdateBusinessData(b);
 			SaveBusinessData(b);
 		}
-		if(PI[playerid][data_KV] != INVALID_KV_ID) 
+		if(PI[playerid][pFloat] != INVALID_KV_ID) 
 		{
 			new kv = PI[playerid][data_PADIK];
-			new k = PI[playerid][data_KV];
+			new k = PI[playerid][pFloat];
 			switch(k) 
 			{
 				case 0: strmid(kvData[kv][kvOwner_1], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
@@ -12608,13 +12532,6 @@ stock SendDBMessage(color, text[]) {
 	}
 	return 1;
 }
-stock SendLeaderMessage(color, text[]) {
- 	for(new i = 0; i < MAX_PLAYERS; i++) {
-	    if(!IsPlayerConnected(i)) continue;
-		if(PI[i][pLeader] >= 1) SCM(i, color, text);
-	}
-	return 1;
-}
 stock SendAdminsMessage(color, text[]) 
 {
  	for(new i = 0; i < MAX_PLAYERS; i++) 
@@ -12989,10 +12906,10 @@ stock ShowStats(playerid, forid = -1)
 		case INVALID_KV_ID: kvs = "Бездомный";
 		default: format(kvs,sizeof(kvs),"№%d",PI[playerid][data_PADIK]+1);
 	}
-	switch(PI[playerid][data_KV]) 
+	switch(PI[playerid][pFloat]) 
 	{
 		case INVALID_KV_ID: kkvs = "Бездомный";
-		default: format(kkvs,sizeof(kkvs),"№%d",PI[playerid][data_KV]+1);
+		default: format(kkvs,sizeof(kkvs),"№%d",PI[playerid][pFloat]+1);
 	}
 	switch(PI[playerid][pHouse]) 
 	{
@@ -13101,7 +13018,7 @@ stock ShowStats(playerid, forid = -1)
 		format(str_1,sizeof(str_1),"Место жительства:\t\t%s\n",hous);
 		strcat(str_3,str_1);
 	}
-	else if(PI[playerid][data_KV] != INVALID_KV_ID) 
+	else if(PI[playerid][pFloat] != INVALID_KV_ID) 
 	{
 		format(str_1,sizeof(str_1),"Место жительства:\t\t%s\n",kkvs);
 		strcat(str_3,str_1);
@@ -13220,7 +13137,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pLoadVehicleID] = INVALID_VEHICLE_ID;
 	PI[playerid][pHouse] = INVALID_HOUSE_ID;
 	PI[playerid][pBusiness] = INVALID_BUSINESS_ID;
-	PI[playerid][data_KV] = INVALID_KV_ID;
+	PI[playerid][pFloat] = INVALID_KV_ID;
 	PI[playerid][data_PADIK] = INVALID_KV_ID;
 	PI[playerid][data_ASH_CAR] = INVALID_VEHICLE_ID;
 	PI[playerid][data_CHEK] = 0;
@@ -13239,6 +13156,8 @@ stock ClearPlayerData(playerid)
 	TimerForPlayer[playerid] = 0;
 	FollowBy[playerid] = 0;
 	PI[playerid][pDeathOnCapture] = 0;
+
+	RegisterNow[playerid] = false;
 
 	SetPVarInt(playerid, "TempFollowBy", -1);
 	SetPVarInt(playerid, "anim_load", 1);
@@ -13431,16 +13350,8 @@ stock SettingSpawn(playerid)
 			if(PI[playerid][pLevel] >= 1) 
 			{
 				SetSpawnInfoEx(playerid, skin, 1592.2090,2016.4080,-55.7341,359.1552);
-				SetPlayerVirtualWorld(playerid, -1);
-				SetPlayerInterior(playerid,-1);
-				Freeze(playerid);
-				return true;
-			}
-			if(PI[playerid][pLevel] >= 1) 
-			{
-				SetSpawnInfoEx(playerid, skin, 1592.2090,2016.4080,-55.7341,359.1552);
-				SetPlayerVirtualWorld(playerid, -1);
-				SetPlayerInterior(playerid,-1);
+				SetPlayerVirtualWorld(playerid, 3);
+				SetPlayerInterior(playerid, 3);
 				Freeze(playerid);
 				return true;
 			}
@@ -13512,7 +13423,7 @@ stock SettingSpawn(playerid)
 			if(PI[playerid][pHouse] == INVALID_HOUSE_ID)
 			{
 				new kv = PI[playerid][data_PADIK];
-				new k = PI[playerid][data_KV];
+				new k = PI[playerid][pFloat];
 				SetPVarInt(playerid, "padik",kv);
 				SetSpawnInfoEx(playerid, skin, kvData[kv][kvExit_X], kvData[kv][kvExit_Y], kvData[kv][kvExit_Z], kvData[kv][kvExit_A]);
 				SetPlayerInterior(playerid,0);
@@ -13521,7 +13432,7 @@ stock SettingSpawn(playerid)
 				SCMf(playerid, COLOR_GREEN, "Ваша квартира оплачена на %d дня/дней",kvData[kv][kvDays][k]);
 				return true;
 			}
-			else if(PI[playerid][data_KV] == INVALID_KV_ID)
+			else if(PI[playerid][pFloat] == INVALID_KV_ID)
 			{
 				new h = PI[playerid][pHouse];
 				SetSpawnInfoEx(playerid, skin, HOUSE_DATA[h][data_CARX],HOUSE_DATA[h][data_CARY],HOUSE_DATA[h][data_CARZ], HOUSE_DATA[h][data_CARANGLE]);
@@ -13789,7 +13700,9 @@ CMD:ans(playerid,params[])
 
     NotReklama(playerid, params[1]);
 
-    SCMf(params[0], COLOR_BLACKRED, "%s ответил Вам: {FFFFFF}%s", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", params[1]);
+    SCMf(params[0], 0x906868FF, "%s ответил Вам: {FFFFFF}%s", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор", params[1]);
+
+	cef_emit_event(params[0], "cef:capture:sound", CEFINT(1));
 
 	new senderName[MAX_PLAYER_NAME + 20];
 	if(PI[playerid][pAdmin]) format(senderName, sizeof(senderName), "%s #%d", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber]);
@@ -13802,8 +13715,6 @@ CMD:ans(playerid,params[])
 		PI[playerid][pAdminReports]++;
 		UpdatePlayerDataInt(playerid, "AdminReports", PI[playerid][pAdminReports]);
 	}
-
-    PlayerPlaySound(params[0], 1085, 0.0, 0.0, 0.0);
     return 1;
 }
 CMD:change(playerid,params[]) 
@@ -14002,7 +13913,7 @@ CMD:eject(playerid,params[])
 }
 CMD:card(playerid,params[]) 
 {
-    if(PI[playerid][data_MEDCARD] == 0) return SCM(playerid, COLOR_GREY, !"У Вас нет медицинской карты, получить её можно в здании БЦРБ.");
+    if(PI[playerid][pMedCard] == 0) return SCM(playerid, COLOR_GREY, !"У Вас нет медицинской карты, получить её можно в здании БЦРБ.");
     if(sscanf(params, "u", params[0])) 
 	{
 		return ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_LIST, "{ee3366}Лицензии", "Закрыть", "", "\
@@ -14083,13 +13994,6 @@ CMD:skill(playerid,params[])
 	if(!PlayerToPoint(10.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Игрок находится слишком далеко");
 	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 10);
 }
-CMD:setspawn(playerid) // +
-{
-    return ShowPlayerDialog(playerid, dialog_SETSPAWN, DIALOG_STYLE_LIST, !"{ee3366}Выберете место появления", !"\
-	1. База организации\n\
-	2. Автомобильный / железнодорожный вокзал\n\
-	3. Дом / квартира", !"Выбрать", !"Закрыть");
-}
 CMD:invite(playerid,params[]) 
 {
 	if(PI[playerid][pRang] < 9) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
@@ -14108,20 +14012,6 @@ CMD:leave(playerid,params[])
 	if(PI[playerid][pLeader] != 0) return SCM(playerid, COLOR_GREY, !"Для снятия с должности лидера по собственному желанию обратитесь к следящим");
 	ShowPlayerDialog(playerid, 7214, DIALOG_STYLE_MSGBOX, !"{ee3366}Увольнение", "Вы действительно хотите уволиться из организации по собственному желанию?\n{696969}Обратите внимание: информация о Вашем уходе будет видна в чате организации", "Да", "Нет");
 	return 1;
-}
-CMD:uninvite(playerid,params[]) 
-{
-	if(PI[playerid][pRang] < 9) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params,"us[60]",params[0],params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /uninvite [ID игрока] [причина]");
-    if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Нельзя использовать на самом себе");
-	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-    if(PI[playerid][pMember] != PI[params[0]][pMember]) return SCM(playerid, COLOR_GREY, !"Данный игрок не состоит в Вашей организации");
-	if(PI[params[0]][pLeader] != 0) return SCM(playerid, COLOR_GREY, !"Нельзя применить к лидеру");
-	if(PI[playerid][pRang] == PI[params[0]][pRang]) return SCM(playerid, COLOR_GREY, !"Нельзя применить к человеку у которого такой-же ранг");
-	SetPVarString(playerid, "uninvitereason", params[1]);
-	SetPVarInt(playerid, "uninviteid", params[0]);
-	return ShowPlayerDialogf(playerid, 9800, DIALOG_STYLE_MSGBOX, !"{ee3366}Уволить игрока", "Да", "Нет", "Вы хотите уволить {3377cc}%s %s\n{FFFFFF}Причина увольнения: {3377cc}%s\n\n{696969}Обратите внимание: отменить это действие будет невозможно!", NameRang(params[0]), getName(params[0]), params[1]);
 }
 CMD:setskin(playerid,params[]) 
 {
@@ -15161,7 +15051,7 @@ CMD:twarn(playerid, params[])
         ClearGroup(targetID);
         SetPlayerSkinAC(targetID, PI[targetID][pSkin]);
         SetPlayerColorEx(targetID);
-        PI[targetID][data_MEDCARD] = 0;
+        PI[targetID][pMedCard] = 0;
     }
 
     return 1;
@@ -15663,13 +15553,11 @@ callback: OffBan(playerid)
 
 		GetPVarString(playerid,"roffban", reason, 32);
 
-		new str_q[512];
-	    mf(mysql,str_q, sizeof(str_q), "UPDATE `accounts` SET `member` = '%d', `leader` = '%d', `rank` = '%d', `Admin` = '%d' WHERE `Name` = '%e'", member1, leader, rank, admin, names);
-		mysql_function_query(mysql, str_q, false, "", "");
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 210, "UPDATE `accounts` SET `member` = '%d', `leader` = '%d', `rank` = '%d', `Admin` = '%d' WHERE `Name` = '%e'", member1, leader, rank, admin, names);
+		mysql_function_query(mysql, mysql_string, false, "", "");
 
-		new str_q2[300];
-	    mf(mysql,str_q2, sizeof(str_q2), "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '%d', '%s', '%e')",names,getName(playerid),GetPVarInt(playerid, "offbantime"),reason,ip);
-	    mysql_function_query(mysql, str_q2, false, "", "");
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 250, "INSERT INTO `banlist` ( `name`,`admin`, `day`, `text`, `ip`) VALUES ( '%e', '%e', '%d', '%s', '%e')",names,getName(playerid),GetPVarInt(playerid, "offbantime"),reason,ip);
+	    mysql_function_query(mysql, mysql_string, false, "", "");
 	}
 	return 1;
 }
@@ -15850,9 +15738,8 @@ CMD:punishment(playerid, params[])
     if(sscanf(params, "d", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /punishment [ID игрока]");
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Данного ID нет на сервере");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Данный игрок не прошел авторизацию");
-	new str_q[256];
- 	mf(mysql,str_q, sizeof(str_q), "SELECT * FROM `punishment` WHERE `name` = '%e'", getName(params[0]));
- 	mysql_function_query(mysql, str_q, true, "GetPunishment", "d", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `punishment` WHERE `name` = '%e'", getName(params[0]));
+ 	mysql_function_query(mysql, mysql_string, true, "GetPunishment", "d", playerid);
 	return 1;
 }
 CMD:spawncars(playerid, params[])
@@ -16128,11 +16015,11 @@ cmd:lmenu(playerid)
     if(PI[playerid][pMember] == 5 || PI[playerid][pMember] == 6 || PI[playerid][pMember] == 7) return LMenuIllegal(playerid);
 	return 1;
 }
-CMD:UninviteInOffline(playerid,params[]) 
+CMD:uninviteoff(playerid,params[]) 
 {
     if(PI[playerid][pRang] < 10) return SCM(playerid, COLOR_GREY, !"Данная команда доступна лидерам организаций");
     new param_name[24];
-	if(sscanf(params, "s[144]", param_name)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /UninviteInOffline [имя]");
+	if(sscanf(params, "s[144]", param_name)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /uninviteoff [имя]");
     foreach(Player, i) 
 	{
 	    new szName[64];
@@ -16143,10 +16030,10 @@ CMD:UninviteInOffline(playerid,params[])
 	if(GetString(param_name, getName(playerid))) return SCM(playerid, COLOR_GREY, !"Вы не можете уволить себя");
 
 	mysql_string[0] = EOS, f(mysql_string, 68, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
-    mysql_tquery(mysql, mysql_string, "UninviteInOffline", "is", playerid, param_name);
+    mysql_tquery(mysql, mysql_string, "uninviteoff", "is", playerid, param_name);
 	return 1;
 }
-callback: UninviteInOffline(playerid, PlayerName[]) 
+callback: uninviteoff(playerid, PlayerName[]) 
 {
     new rows, fields, temp[32];
     cache_get_data(rows, fields);
@@ -16170,38 +16057,6 @@ callback: UninviteInOffline(playerid, PlayerName[])
 	else SCM(playerid, COLOR_GREY, !"Игрок не найден");
 	return 1;
 }
-CMD:unofftwarn(playerid, params[]) 
-{
-	if(sscanf(params, "s[24]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unofftwarn [имя]");
- 	if(params[0] == getName(playerid)) return SCM(playerid, COLOR_GREY, !"Вы не можете снять выговор себе");
-
-	mysql_string[0] = EOS, f(mysql_string, 68, "SELECT * FROM `accounts` WHERE `Name` = '%e'", params[0]);
-    mysql_tquery(mysql, mysql_string, "UnOffTwarn", "i", playerid);
-	return 1;
-}
-callback: UnOffTwarn(playerid) 
-{
-    new rows, fields, temp[32];
-    cache_get_data(rows, fields);
-    if(rows) 
-	{
-	    new PlayerName[24], Warns, members, ranks;
-	    cache_get_field_content(0, "Name", PlayerName, mysql);
-		cache_get_field_content(0, "twarn", temp), Warns = strval (temp);
-		cache_get_field_content(0, "member", temp), members = strval (temp);
-		cache_get_field_content(0, "rank", temp), ranks = strval (temp);
-
-	    if(ranks == 10 && PI[playerid][pRang] == 9) return SCM(playerid, COLOR_GREY, !"Вы не можете снять выговор лидеру");
-		if(members != PI[playerid][pMember]) return SCM(playerid, COLOR_GREY, !"Игрок должен состоять в Вашей организации");
-	    if(Warns == 0) return SCM(playerid, COLOR_GREY, !"Игрок не имеет выговоров");
-
-		Warns--;
-        SendFractionMessagef(PI[playerid][pMember], COLOR_TOMATO, "(( %s %s[%d] снял выговор оффлайн %s [%d/3] ))", NameRang(playerid), getName(playerid), playerid, PlayerName, Warns);
-		mysql_queryf(mysql, "UPDATE `accounts` SET `twarn` = '%d' WHERE `Name` = '%e'", false, Warns, PlayerName);
-	}
-	else SCM(playerid, COLOR_GREY,"Игрок не найден");
-	return 1;
-}
 cmd:transfer(playerid) 
 {
 	if(PI[playerid][pMember] == 5 || PI[playerid][pMember] == 6 || PI[playerid][pMember] == 7) return SCM(playerid, COLOR_GREY, !"Переводы доступны только в Государственых Организациях");
@@ -16222,20 +16077,13 @@ CMD:transfers(playerid)
 	}
 	return ShowPlayerDialog(playerid, (bugfix) ? (7890) : (0), DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Меню Переводов", (bugfix) ? (string) : ("В данный момент нет заявок на перевод"), "Одобрить", "");
 }
-callback: DialogTimerLeader(playerid) 
-{
-    new dialog[256];
-    format(dialog,sizeof(dialog),"{FFFFFF}Поздравляем! Вы были назначены лидером организации %s\n\nТеперь вам необходимо вступить в беседу лидеров ВКонтакте. Для этого напишите\nсо своей страницы любое сообщение нашему боту:{F7E19C}vk.com/"VK"", Fraction_Name[PI[playerid][pMember]]);
-    ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Подсказка", dialog, "Открыть", "Закрыть");
-    return 1;
-}
 callback: CheckWbook(playerid) {
 	new rows, fields;
     cache_get_data(rows, fields);
-    if(rows) {
-		new str_q[256];
-		mf(mysql,str_q,sizeof(str_q),"SELECT * FROM `wbook` WHERE `w_name` = '%e'",getName(playerid));
-		mysql_function_query(mysql, str_q, true, "WorkBook", "i", playerid, getName(playerid));
+    if(rows) 
+	{
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `wbook` WHERE `w_name` = '%e'",getName(playerid));
+		mysql_function_query(mysql, mysql_string, true, "WorkBook", "i", playerid, getName(playerid));
 	}
 	else SCM(playerid, COLOR_GREY, !"У вас нет истории в трудовой книге.");
 	return 1;
@@ -16261,9 +16109,8 @@ CMD:wbook(playerid, params[])
     if(!PlayerToPoint(10.0, playerid, x, y, z)) 
         return SCM(playerid, COLOR_GREY, "Игрок находится слишком далеко");
 
-    new str_q[256];
-    mf(mysql, str_q, sizeof(str_q), "SELECT * FROM `wbook` WHERE `w_name` = '%e'", getName(targetPlayer));
-    mysql_function_query(mysql, str_q, true, "WorkBook", "dd", playerid, targetPlayer);
+    mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `wbook` WHERE `w_name` = '%e'", getName(targetPlayer));
+    mysql_function_query(mysql, mysql_string, true, "WorkBook", "dd", playerid, targetPlayer);
 
     return 1;
 }
@@ -16541,32 +16388,36 @@ callback: PhoneBook(playerid) {
 	ShowPlayerDialog(playerid, 7229, DIALOG_STYLE_TABLIST, "{ee3366}Телефонная книга", str_1, "Далее", "Назад");
 	return 1;
 }
-callback: PhoneBookAddCheck(playerid, name[]) {
+callback: PhoneBookAddCheck(playerid, name[]) 
+{
 	new rows, fields;
     cache_get_data(rows, fields);
     if(rows) SCM(playerid, COLOR_GREY, !"Данное имя контакта уже используйется");
-	else {
+	else 
+	{
 	    new text[24];
 		GetPVarString(playerid,"name_pb", text, sizeof(text));
 		FixSVarString(text);
-		new str_q[256];
-		mf(mysql, str_q, sizeof(str_q), "SELECT * FROM `accounts` WHERE `Name` = '%e'", text);
-	    mysql_function_query(mysql, str_q, true, "PhoneBookAdd", "ds", playerid, text);
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'", text);
+	    mysql_function_query(mysql, mysql_string, true, "PhoneBookAdd", "ds", playerid, text);
 	}
 	return 1;
 }
-callback: PhoneBookAdd(playerid, name[]) {
+callback: PhoneBookAdd(playerid, name[]) 
+{
     new rows, fields;
     cache_get_data(rows, fields);
-    if(rows) {
+    if(rows) 
+	{
 		new text[24];
 		GetPVarString(playerid,"name_pb", text, sizeof(text));
 		FixSVarString(text);
 		new year,month,day;
 		getdate(year, month, day);
-		new str_q[512];
-		mf(mysql,str_q, sizeof str_q, "INSERT INTO `phonebook`(`name`,`number`,`name_add`,`day`,`mounth`,`year`,`data`) VALUES ('%s','%d','%s','%d','%d','%d',NOW())",text,GetPVarInt(playerid, "number_pb"),getName(playerid),getName(playerid),day,month,year);
-		mysql_function_query(mysql, str_q, false, "", "");
+
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 260, "INSERT INTO `phonebook`(`name`,`number`,`name_add`,`day`,`mounth`,`year`,`data`) VALUES ('%s','%d','%s','%d','%d','%d',NOW())",text,GetPVarInt(playerid, "number_pb"),getName(playerid),getName(playerid),day,month,year);
+		mysql_function_query(mysql, mysql_string, false, "", "");
+
 		SCMf(playerid, 0x3399ffFF, "Вы добавили {ffff33}т. %d{3399ff} в свою телефонную книгу (имя: {ffff33}'%s'{3399ff})", GetPVarInt(playerid, "number_pb"), text);
 		DeletePVar(playerid, "name_pb");
 	}
@@ -16610,13 +16461,15 @@ callback: SmsPhoneBook(playerid) {
 	}
 	return 1;
 }
-callback: ChangeNumberPhoneBook(playerid) {
+callback: ChangeNumberPhoneBook(playerid) 
+{
 	new name[24];
 	GetPVarString(playerid,"pb_namecont", name, sizeof(name));
 	FixSVarString(name);
-	new str_q[256];
-	mf(mysql,str_q, sizeof(str_q), "UPDATE `phonebook` SET `number` = '%d' WHERE `name` = '%e' AND `name_add` = '%e'", GetPVarInt(playerid, "number_pb"), name, getName(playerid));
-	mysql_function_query(mysql, str_q, false, "", "");
+
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 160, "UPDATE `phonebook` SET `number` = '%d' WHERE `name` = '%e' AND `name_add` = '%e'", GetPVarInt(playerid, "number_pb"), name, getName(playerid));
+	mysql_function_query(mysql, mysql_string, false, "", "");
+
 	SCMf(playerid, 0x3399ffFF, "Номер кантакта изменён на {ffff33}%d", GetPVarInt(playerid, "number_pb"));
 	DeletePVar(playerid, "pb_namecont");
 	DeletePVar(playerid, "number_pb");
@@ -16629,9 +16482,10 @@ callback: ChangeNamePhoneBook(playerid) {
 	new text[24];
 	GetPVarString(playerid,"c_name", text, sizeof(text));
 	FixSVarString(text);
-	new str_q[256];
-	mf(mysql,str_q, sizeof(str_q), "UPDATE `phonebook` SET `name` = '%e' WHERE `name` = '%e' AND `name_add` = '%e'", text, name, getName(playerid));
-	mysql_function_query(mysql, str_q, false, "", "");
+
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 155, "UPDATE `phonebook` SET `name` = '%e' WHERE `name` = '%e' AND `name_add` = '%e'", text, name, getName(playerid));
+	mysql_function_query(mysql, mysql_string, false, "", "");
+
 	SCMf(playerid, 0x3399ffFF, "Имя контакта изменено на {ffff33}'%s'", text);
 	DeletePVar(playerid, "pb_namecont");
 	DeletePVar(playerid, "name_pb");
@@ -16642,9 +16496,10 @@ callback: DeletePhoneBook(playerid)
 	new name[24];
 	GetPVarString(playerid,"pb_namecont", name, sizeof(name));
 	FixSVarString(name);
-	new str_q[256];
-	mf(mysql,str_q, sizeof(str_q), "DELETE FROM `phonebook` WHERE `name` = '%e' AND `name_add` = '%e'", name, getName(playerid));
-	mysql_function_query(mysql, str_q, false, "", "");
+
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 113, "DELETE FROM `phonebook` WHERE `name` = '%e' AND `name_add` = '%e'", name, getName(playerid));
+	mysql_function_query(mysql, mysql_string, false, "", "");
+
 	SCM(playerid, COLOR_TOMATO, "Вы удалили контакт из телефонной книги");
 	DeletePVar(playerid, "pb_namecont");
 	DeletePVar(playerid, "name_pb");
@@ -16767,25 +16622,6 @@ CMD:plus(playerid)
     ShowPlayerDialog(playerid, dialog_DONATE_VIP, DIALOG_STYLE_MSGBOX, !"{ee3366}Приобретение '"NAMEVIP"'", str_3, "Купить", "Отмена");
     return 1;
 }
-CMD:l(playerid,params[]) 
-{
-    if(PI[playerid][pLeader] < 1) return 1;
-    if(sscanf(params,"s[90]",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /l [текст]");
-    new string[145];
-    format(string, sizeof(string), "[L] %s %s[%d]: %s", Fraction_Name[PI[playerid][pMember]], getName(playerid),playerid,params[0]);
-    SendLeaderMessage(0xCD9B6AFF, string);
-    return 1;
-}
-alias:ll("lb");
-CMD:ll(playerid,params[]) 
-{
-    if(PI[playerid][pLeader] < 1) return 1;
-    if(sscanf(params,"s[90]",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /lb [текст]");
-    new string[145];
-    format(string, sizeof(string), "(( [L] %s %s[%d]: %s ))", Fraction_Name[PI[playerid][pMember]], getName(playerid),playerid,params[0]);
-    SendLeaderMessage(0xCD9B6AFF, string);
-    return 1;
-}
 stock IsPlayerGreenZone(playerid) 
 {
 	if(IsPlayerInRangeOfPoint(playerid, 100.0, 2085.7090,1819.6904,12.1208) && GetPlayerVirtualWorld(playerid) == 0 || // БЦРБ
@@ -16874,12 +16710,12 @@ callback: PayDay(playerid) //+
 
 	return 1;
 }
-CMD:lname(playerid, params[]) {
+CMD:lname(playerid, params[]) 
+{
     if(PI[playerid][pRang] < 10) return 1;
 	if(sscanf(params, "s[30]", params[0]))return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /lname [имя]");
-	new str_q[256];
-	mf(mysql, str_q, sizeof str_q, "SELECT `id` FROM `accounts` WHERE `Name` = '%e' LIMIT 1", params[0]);
-	mysql_tquery(mysql, str_q, "nameleader_check", "i", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 79, "SELECT `id` FROM `accounts` WHERE `Name` = '%e' LIMIT 1", params[0]);
+	mysql_tquery(mysql, mysql_string, "nameleader_check", "i", playerid);
 	return 1 ;
 }
 callback:nameleader_check(playerid) {
@@ -16887,9 +16723,8 @@ callback:nameleader_check(playerid) {
 	cache_get_data(rows, fields);
 	if (!rows) return SCM(playerid, COLOR_GREY,"Не удалось найти игроков с указанным никнеймом");
 	new db_increment = cache_get_field_content_int(0, "id", mysql);
-	new str_q[256];
-	format(str_q, sizeof str_q, "SELECT * FROM `nickname_history` WHERE `nh_owner` = '%d'", db_increment);
-	mysql_tquery(mysql, str_q, "sql_lname", "i", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 79, "SELECT * FROM `nickname_history` WHERE `nh_owner` = '%d'", db_increment);
+	mysql_tquery(mysql, mysql_string, "sql_lname", "i", playerid);
 	return 1 ;
 }
 callback:sql_lname(playerid) 
@@ -17383,9 +17218,8 @@ stock RandomName(playerid)
 {
 	new rand = random(sizeof(nname));
 	SetPVarString(playerid, "randomame", nname[rand]);
-	new query[100+MAX_PLAYER_NAME];
-	mf(mysql,query, sizeof(query), "SELECT * FROM `accounts` WHERE `Name` = '%e'", nname[rand]);
-	mysql_function_query(mysql, query, true, "NameCallback", "d", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'", nname[rand]);
+	mysql_function_query(mysql, mysql_string, true, "NameCallback", "d", playerid);
 }
 callback: NameCallback(playerid)
 {
@@ -17424,9 +17258,8 @@ CMD:aname(playerid, params[])
     if (sscanf(params, "s[30]", name)) 
         return SCM(playerid, COLOR_LIGHTGREY, "Используйте: /aname [имя]");
 
-    new query_string[128];
-    mf(mysql, query_string, sizeof(query_string), "SELECT `id` FROM `accounts` WHERE `Name` = '%e' LIMIT 1", name);
-    mysql_tquery(mysql, query_string, "namestore_callback", "i", playerid);
+    mysql_string[0] = EOS, mf(mysql, mysql_string, 80, "SELECT `id` FROM `accounts` WHERE `Name` = '%e' LIMIT 1", name);
+    mysql_tquery(mysql, mysql_string, "namestore_callback", "i", playerid);
     return 1;
 }
 
@@ -17901,8 +17734,8 @@ CMD:givecard(playerid, params[])
 {
     if(CheckAccess(playerid, 5)) return 1;
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givemedcard [ID игрока]");
-	else if(PI[params[0]][data_MEDCARD]) return SCM(playerid, COLOR_GREY,"У игрока уже имеется мед. карта!");
-	PI[params[0]][data_MEDCARD] = 1;
+	else if(PI[params[0]][pMedCard]) return SCM(playerid, COLOR_GREY,"У игрока уже имеется мед. карта!");
+	PI[params[0]][pMedCard] = 1;
 	SCM(params[0], COLOR_WHITE, "Игровой мастер выдал вам мед. карту. Теперь вы сможете устроится в организацию.");
 	SCMf(playerid, COLOR_GREY, "Вы выдали мед. карту игроку %s", getName(params[0]));
     return 1;
@@ -18116,7 +17949,7 @@ CMD:referal(playerid)
 stock ShowMySQLReferals(playerid)
 {
 	new Ref3LVL, Ref1LVL, Level, accounts;
-	static Name[24], string2[4096], str2[50], str[70];
+	static Name[24], string2[1048], str2[50], str[70];
 	mysql_queryf(mysql, "SELECT `Name`, `Level` FROM `accounts` WHERE `Referal` = '%e' LIMIT 10", true, getName(playerid));
 	accounts = cache_get_row_count(mysql);
 	if(!accounts) return SCM(playerid, COLOR_GREY, !"Больше вас никто не указывал как реферала");
@@ -18637,9 +18470,8 @@ CMD:cars(playerid)
 {
 	if(PI[playerid][pLoadVehicleID] == INVALID_VEHICLE_ID) 
 	{			
-		new sql[80];
-		format(sql, sizeof sql, "SELECT * FROM `ownable` WHERE `Owner` = '%e'", getName(playerid));
-		mysql_tquery(mysql, sql, "LoadOwnableCars", "i", playerid);
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 80, "SELECT * FROM `ownable` WHERE `Owner` = '%e'", getName(playerid));
+		mysql_tquery(mysql, mysql_string, "LoadOwnableCars", "i", playerid);
 	}
 	else 
 	{
@@ -18694,7 +18526,7 @@ callback: LoadOwnableCars(playerid)
 				}
 			}
 
-			if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][data_KV] == INVALID_KV_ID) NoAccess = 1;
+			if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) NoAccess = 1;
 							
 
 			ShowCar[playerid][cars] = ID;
@@ -19093,6 +18925,8 @@ callback: SavePlayerData(playerid)
 {
 	if(IsPlayerLogged{playerid} && IsPlayerConnected(playerid))
 	{
+		printf("Player %s saved", getName(playerid));
+
 		GetPlayerHealth(playerid, PI[playerid][pHealthPoints]);
 		GetPlayerArmour(playerid, PI[playerid][pArmour]);
 
@@ -19103,7 +18937,7 @@ callback: SavePlayerData(playerid)
 			member=%d, Leader=%d, transfer=%d, transfer_rang=%d, transfer_frac=%d, rank=%d, Admin=%d,\
 			AdminStatus=%d, CaptureKills=%d, CaptureValue=%d, LoginIP='%s', mute=%d, mutetime=%d,\
 			vmute=%d, vmutetime=%d, warn=%d, warntime=%d, salary=%d, bank=%d, licb=%d, licg=%d, business=%d,\
-			house=%d, time=%d, military=%d, medcard=%d, timerank=%d, vip=%d, patr=%d, drugs=%d, usedrugs=%d,\
+			house=%d, time=%d, military=%d, medcard=%d, vip=%d, patr=%d, drugs=%d, usedrugs=%d,\
 			mednum=%d, licnum=%d, met=%d, wanted=%d, Respect=%d, number=%d, number_m=%d, pstatus=%d, jail=%d,\
 			jailtime=%d, Donate=%d, phone=%d, phonebook=%d, Satiety=%d, HealthPoints=%f, arm=%f, med=%d,\
 			spawn=%d, hospital=%d, pistol_skill=%d, sdpistol_skill=%d, deagle_skill=%d, shotgun_skill=%d, mp5_skill=%d,\
@@ -19112,7 +18946,7 @@ callback: SavePlayerData(playerid)
 			ammo3=%d, ammo4=%d, ammo5=%d, ammo6=%d, ammo7=%d, ammo8=%d, ammo9=%d, ammo10=%d, ammo11=%d, ammo12=%d, demorgan=%d,\
 			demorgan_time=%d, twarn=%d, healthchest=%d, HEALPACKSKLAD=%d, Сanister=%d, mask=%d, fixnabor=%d,\
 			ProgressAmmo=%d, ProgressMetall=%d, PromoCodeUse=%d, ProgressDrugs=%d, ProgressCarGrabber=%d,\
-			CaptureManager=%d, ProgressSellGun=%d, ProgressCapture=%d, Moder=%d, AdminNumber=%d WHERE id=%d",
+			CaptureManager=%d, ProgressSellGun=%d, ProgressCapture=%d, Moder=%d, AdminNumber=%d, LeavePosX=%f, LeavePosY=%f, LeavePosZ=%f WHERE id=%d",
 			PI[playerid][pAdminEvents],
 			PI[playerid][pAdminReports],
 			PI[playerid][pSkin],
@@ -19146,8 +18980,7 @@ callback: SavePlayerData(playerid)
 			PI[playerid][pHouse],
 			PI[playerid][data_TIME],
 			PI[playerid][pMilitaryID],
-			PI[playerid][data_MEDCARD],
-			PI[playerid][data_TIMERANK],
+			PI[playerid][pMedCard],
 			PI[playerid][data_VIP],
 			PI[playerid][pAmmo],
 			PI[playerid][pDrugs],
@@ -19181,7 +19014,7 @@ callback: SavePlayerData(playerid)
 			PI[playerid][data_JOB],
 			PI[playerid][pHouse],
 			PI[playerid][pBusiness],
-			PI[playerid][data_KV],
+			PI[playerid][pFloat],
 			PI[playerid][data_PADIK],
 			PI[playerid][data_GUN][0],
 			PI[playerid][data_GUN][1],
@@ -19227,6 +19060,9 @@ callback: SavePlayerData(playerid)
 			PI[playerid][pProgressCapture], 
 			PI[playerid][pModer],
 			PI[playerid][pAdminNumber],
+			PI[playerid][pLeavePosX],
+			PI[playerid][pLeavePosY],
+			PI[playerid][pLeavePosZ],
 			PI[playerid][pID]
 		);
 		mysql_pquery(mysql, mysql_string);
@@ -19515,6 +19351,8 @@ stock AccountCreate(playerid)
     PI[playerid][pDemorgan] = 0;
 	PI[playerid][pHospital] = 0;
 
+	RegisterNow[playerid] = true;
+
 	mysql_string[0] = EOS, mf(mysql, mysql_string, 440, "\
 	INSERT INTO `accounts` (`id`,`Name`, `licb`, `licg`, `Respect`, `CarThiefLvl`, `HealthPoints`, `Money`, `Password`, `Email`, `RegIP`, `Referal`, `sex`, `skin`, `Level`) VALUES ('','%e', '1', '1', '1', '1', '160', '5000', md5('%e'), '%e', '%s', '%s', '%d', '%d', '1')",
 		PI[playerid][pName],
@@ -19526,9 +19364,8 @@ stock AccountCreate(playerid)
 		PI[playerid][pSkin]);
     mysql_function_query(mysql, mysql_string, false, "", "");
 
-	new query[110];
-	mf(mysql, query, sizeof(query), "SELECT * FROM `accounts` WHERE `Name` = '%e' AND `Password` = md5('%s')", PI[playerid][pName], PI[playerid][pPassword]);
-	mysql_function_query(mysql, query, true, "LoadPlayerData", "d", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 160, "SELECT * FROM `accounts` WHERE `Name` = '%e' AND `Password` = md5('%s')", PI[playerid][pName], PI[playerid][pPassword]);
+	mysql_function_query(mysql, mysql_string, true, "LoadPlayerData", "d", playerid);
 
 	SendAdminsMessagef(COLOR_GREY, "[NewPlayer] %s[%d] только что создал аккаунт | {ff6633}RegIP: %s", getName(playerid), playerid, PI[playerid][pRegIP]);
 

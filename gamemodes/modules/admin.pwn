@@ -285,7 +285,7 @@ CMD:dveh(playerid)
 }
 CMD:unmute(playerid,params[]) 
 {
-    if(CheckAccess(playerid, 2)) return 1;
+    if(CheckAccess(playerid, 2, 2)) return 1;
 	if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unmute [ID игрока]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -309,7 +309,7 @@ CMD:setarm(playerid,params[])
 }
 CMD:vmute(playerid,params[]) 
 {
-    if(CheckAccess(playerid, 2)) return 1;
+    if(CheckAccess(playerid, 2, 2)) return 1;
 	if(sscanf(params,"uds[32]",params[0],params[1],params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /vmute [ID игрока] [время] [причина]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -494,7 +494,7 @@ cmd:setmember(playerid, params[])
 }
 cmd:slap(playerid, params[])
 {
-	if(CheckAccess(playerid, 4, 1)) return 1;
+	if(CheckAccess(playerid, 2, 1)) return 1;
 	new id;
 	if(sscanf(params,"ud",id, params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /slap [ID игрока] [высота]");
 	//if(params[1] < 1 || params[1] > 30) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /slap [ID игрока] [высота]");
@@ -648,7 +648,7 @@ CMD:setleader(playerid,params[])
 }
 CMD:tp(playerid) 
 {
-    if(CheckAccess(playerid)) return 1;
+    if(CheckAccess(playerid, 1, 1)) return 1;
 	return ShowPlayerDialog(playerid, 4385, DIALOG_STYLE_LIST, "{ee3366}Телепортация", "\
 	{FFFF99}г. Лыткарино \n\
 	{FFFF99}пгт. Бусаево\n\
@@ -955,7 +955,8 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 
 				if(PI[id][pMember] == 5 || PI[id][pMember] == 6 || PI[id][pMember] == 7) for(new g; g <= totalgz; g++) GangZoneShowForPlayer(id, g, GetGZFrac(g));
 
-				DialogTimerLeader(id);
+    			ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Подсказка", "Открыть", "Закрыть", "{FFFFFF}Поздравляем! Вы были назначены лидером организации %s\n\nТеперь вам необходимо вступить в беседу лидеров ВКонтакте. Для этого напишите\nсо своей страницы любое сообщение нашему боту:{F7E19C}vk.com/"VK"", Fraction_Name[PI[playerid][pMember]]);
+
 				SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] назначил %s[%d] на должность лидера организации '%s'", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid,PI[id][pName], id, Fraction_Name[PI[id][pMember]]);
 
 				CheckGangWar(playerid);
