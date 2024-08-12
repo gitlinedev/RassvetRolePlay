@@ -768,7 +768,7 @@ CMD:luninvite(playerid, params[])
 }
 CMD:unjail(playerid,params[])
 {
-    if(CheckAccess(playerid)) return 1;
+    if(CheckAccess(playerid, 1, 2)) return 1;
 	if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unjail [ID игрока]");
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
