@@ -230,8 +230,13 @@ CMD:gethere(playerid,params[])
     SetPlayerInterior(params[0],GetPlayerInterior(playerid));
     SetPlayerVirtualWorld(params[0],GetPlayerVirtualWorld(playerid));
 	HidePlayerSpeedometer(params[0]);
-    SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] телепортировал к себе %s[%d]", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid, getName(params[0]), params[0]);
-    SCM(params[0], COLOR_GREY, !"Вы были телепортированы игровым мастером");
+
+	new senderName[MAX_PLAYER_NAME + 20];
+	if(PI[playerid][pAdmin]) format(senderName, sizeof(senderName), "%s #%d", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber]);
+	else format(senderName, sizeof(senderName), "%s", ModerName[PI[playerid][pModer]]);
+
+    SendAdminsMessagef(COLOR_ADMINCHAT, "[%s] %s[%d] телепортировал к себе %s[%d]", senderName, getName(playerid),playerid, getName(params[0]), params[0]);
+	SCMf(params[0], COLOR_GREY, "Вы были телепортированы %s",  PI[playerid][pAdmin] ? "игровым мастером" : "игровым модератором");
     return 1;
 }
 alias:goto("g");
@@ -430,7 +435,7 @@ CMD:astorage(playerid)
 	{FFFF99}Статистика склада: \n\
 	{FFFF99}Патроны %d шт\n\
 	{FFFF99}Металл %d кг", 
-	ArmyStorage ? ("{66cc66}(Открыт)") : ("{ff6633}(Закрыт)"), army_wh[1], army_wh[0]);
+	army_wh[2] ? ("{66cc66}(Открыт)") : ("{ff6633}(Закрыт)"), army_wh[1], army_wh[0]);
 	return 1;
 }
 CMD:giveownable(playerid,params[]) 
@@ -481,6 +486,7 @@ cmd:setmember(playerid, params[])
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	if(PI[params[0]][pOnCapture])return  SCM(playerid, COLOR_GREY, !"Игрок участвует в захвате территории");
+	if(PI[params[0]][pLeader] >= 1) return SCM(playerid, COLOR_LIGHTGREY, !"Данный игрок лидер, его нужно снять чтобы поставить на другой ранг {ff6633}(/luninvite)");
 	SetPVarInt(playerid, "setMember", params[0]);
 	ShowPlayerDialog(playerid, 2150, DIALOG_STYLE_LIST, "{ee3366}Выберете организацию", "\
 	1. Правительство\n\
@@ -496,18 +502,17 @@ cmd:slap(playerid, params[])
 {
 	if(CheckAccess(playerid, 2, 1)) return 1;
 	new id;
-	if(sscanf(params,"ud",id, params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /slap [ID игрока] [высота]");
-	//if(params[1] < 1 || params[1] > 30) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /slap [ID игрока] [высота]");
+	if(sscanf(params,"ud", id)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /slap [ID игрока]");
 	if(!IsPlayerConnected(id))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{id}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	new Float:X,Float:Y,Float:Z;
 	GetPlayerPos(id,X,Y,Z);
-	SetPlayerPos(id,X,Y,Z+params[1]);
-	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] подбросил игрока %s[%d] на %d.0 метров", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(id), id, params[1]);
-	SendClientMessage(params[0], -1, !"Игровой мастер подкинул Вас");
+	SetPlayerPos(id,X,Y,Z+3);
+	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] подбросил игрока %s[%d] на 3 метра", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(id), id);
+	SendClientMessage(id, -1, !"Игровой мастер подкинул Вас");
 	new Float: SlapHealth;
-    GetPlayerHealth(params[0], SlapHealth);
-    SetPlayerHealthAC(params[0], SlapHealth - 5);
+    GetPlayerHealth(id, SlapHealth);
+    SetPlayerHealthAC(id, SlapHealth - 5);
 	return true;
 }
 CMD:mparm(playerid,params[]) 
@@ -668,7 +673,9 @@ CMD:tp(playerid)
 	{FFFFFF}Склад Веществ\n\
 	{FFFFFF}Автомобильный рынок\n\
 	{FFFFFF}Спавн новичков\n\
-	{FFFFFF}Зона захвата", "Принять", "Закрыть");
+	{FFFFFF}Зона захвата\n\
+	{FFFF99}Админ зона\n\
+	{FFFF99}Место для обзвонов", "Принять", "Закрыть");
 }
 CMD:auninvite(playerid, params[]) 
 {
@@ -696,7 +703,7 @@ CMD:auninvite(playerid, params[])
 	SCMf(params[0], COLOR_YELLOW, "Игровой мастер уволил Вас из организации %s (%d ранг)",
 		Fraction_Name[PI[params[0]][pMember]], PI[params[0]][pRang]);
 
-	cef_emit_event(params[0], "hide-capture");
+	cef_emit_event(params[0], "cef:capture:visible", CEFINT(false));
 
 	PI[params[0]][pLeader] = 0;
 	PI[params[0]][pMember] = 0;
@@ -758,7 +765,8 @@ CMD:luninvite(playerid, params[])
 	SetPlayerSkinAC(params[0], PI[params[0]][pSkin]);
 	SetPlayerColorEx(params[0]);
 	SetPlayerTeam(params[0], NO_TEAM);
-	cef_emit_event(params[0], "hide-capture");
+
+	cef_emit_event(params[0], "cef:capture:visible", CEFINT(false));
 
 	for(new g; g <= totalgz; g++) GangZoneHideForPlayer(params[0], g);
 	GangZoneStopFlashForPlayer(params[0], WarZone);
@@ -769,15 +777,29 @@ CMD:luninvite(playerid, params[])
 CMD:unjail(playerid,params[])
 {
     if(CheckAccess(playerid, 1, 2)) return 1;
-	if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unjail [ID игрока]");
+	if(sscanf(params,"u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unjail [ID игрока]");
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	if(PI[params[0]][pDemorgan] == 0) return SCM(playerid, COLOR_GREY, !"Игрок не находиться в деморгане");
 	
-	PI[params[0]][pJail] = 0;
-	PI[params[0]][pJailTime] = 0;
 	PI[params[0]][pDemorgan]= 0;
 	PI[params[0]][pDemorganTime]= 0;
+
+	PlayerSpawn(params[0]);
+	SCMf(playerid, COLOR_TOMATO, "Вы выпустили игрока %s из деморгана", getName(params[0]));
+	SCMf(params[0], COLOR_TOMATO, "Игровой мастер выпустил Вас из деморгана.", PI[playerid][pAdminNumber]);
+	return SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] освободил игрока %s[%d] из деморгана", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]),params[0]);
+}
+CMD:unprison(playerid,params[])
+{
+    if(CheckAccess(playerid, 1, 2)) return 1;
+	if(sscanf(params,"u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unprison [ID игрока]");
+    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
+	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	if(PI[params[0]][pJail] == 0) return SCM(playerid, COLOR_GREY, !"Игрок не находиться в тюрьме");
+	
+	PI[params[0]][pJail] = 0;
+	PI[params[0]][pJailTime] = 0;
 
 	PlayerSpawn(params[0]);
 	SCMf(playerid, COLOR_TOMATO, "Вы выпустили игрока %s из тюрьмы", getName(params[0]));
@@ -873,10 +895,10 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
                 {
 					case 0: SetPlayerPos(playerid, -2496.6514,187.7827,55.7560);
                     case 1: SetPlayerPos(playerid, -506.5684,-1417.5021,56.2231);
-                    case 2: SetPlayerPos(playerid, 2254.5574,-1727.5728,61.1377);
+                    case 2: SetPlayerPos(playerid, 2303.4346,-1722.0289,36.8250);
                     case 3: SetPlayerPos(playerid, 1880.3647,1180.8679,38.8619);
                     case 4: SetPlayerPos(playerid, 2386.1399,-938.3940,14.3443);
-                    case 5: SetPlayerPos(playerid, 2306.2070,1757.4645,9.9055+2); // скин
+                    case 5: SetPlayerPos(playerid, 1429.7269,2343.9487,22.1195+2); // скин
                     case 6: SetPlayerPos(playerid, 2224.7097,-2611.0547,31.8857+2);
                     case 7: SetPlayerPos(playerid, -367.4405,-1198.3756,50.2112+2);
                     case 8: SetPlayerPos(playerid, 1907.1965,-2226.8005,43.2401+2);
@@ -887,9 +909,11 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
                     case 13: SetPlayerPos(playerid, 2336.7915,-1803.0875,33.1497+2);
                     case 14: SetPlayerPos(playerid, 2782.3528,2698.6128,16.7200+2);
                     case 15: SetPlayerPos(playerid, 1880.3647,1180.8679,38.8619+2);
-					case 16: SetPlayerPos(playerid, 2469.1038,-714.2072,24.5437+2);
+					case 16: SetPlayerPos(playerid, 2500.6553,-716.2165,28.3000+2);
 					case 17: SetPlayerPos(playerid, 1474.5935,2045.2124,24.0309+2);
-					case 18: SetPlayerPos(playerid, 1517.7395,-1213.6506,15.0275+2);
+					case 18: SetPlayerPos(playerid, 1581.1870,-1199.6599,14.9259+2);
+					case 19: SetPlayerPos(playerid, 2100.2429,1867.9214,-38.0100);
+					case 20: SetPlayerPos(playerid, -2634.9954,-2385.7825,14.0381);
                 }
 				SetPlayerVirtualWorld(playerid,0);
 				SetPlayerInterior(playerid,0);
@@ -955,7 +979,7 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 
 				if(PI[id][pMember] == 5 || PI[id][pMember] == 6 || PI[id][pMember] == 7) for(new g; g <= totalgz; g++) GangZoneShowForPlayer(id, g, GetGZFrac(g));
 
-    			ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Подсказка", "Открыть", "Закрыть", "{FFFFFF}Поздравляем! Вы были назначены лидером организации %s\n\nТеперь вам необходимо вступить в беседу лидеров ВКонтакте. Для этого напишите\nсо своей страницы любое сообщение нашему боту:{F7E19C}vk.com/"VK"", Fraction_Name[PI[playerid][pMember]]);
+    			ShowPlayerDialogf(id, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Подсказка", "Открыть", "Закрыть", "{FFFFFF}Поздравляем! Вы были назначены лидером организации %s\n\nТеперь вам необходимо вступить в беседу лидеров ВКонтакте. Для этого напишите\nсо своей страницы любое сообщение нашему боту:{F7E19C}vk.com/"VK"", Fraction_Name[PI[id][pMember]]);
 
 				SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] назначил %s[%d] на должность лидера организации '%s'", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid,PI[id][pName], id, Fraction_Name[PI[id][pMember]]);
 
@@ -1023,11 +1047,11 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 				{
 					case 0: 
 					{
-						if(ArmyStorage == 0) ArmyStorage = 1;
-						else ArmyStorage = 0;
+						if(army_wh[2] == 0) army_wh[2] = 1;
+						else army_wh[2] = 0;
 
 						SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] %s склад организации 'Воинская часть'",\
-							AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid, ArmyStorage ? ("открыл") : ("закрыл"));
+							AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid, army_wh[2] ? ("открыл") : ("закрыл"));
 					}
 					case 1:
 					{

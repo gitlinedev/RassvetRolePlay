@@ -36,7 +36,7 @@ stock gm_OnDialogResponse(playerid, dialogid, response, listitem)
 					{
 	                    PI[i][pModer] = 0;
 	                    SCM(playerid, COLOR_YELLOW, !"Вы были сняты с поста игрового модератора!");
-	                    SCMf(i, COLOR_YELLOW, !"Игровой мастер %s снял Вас с должности игрового модератора", getName(playerid));
+	                    SCMf(i, COLOR_YELLOW, "Игровой мастер %s снял Вас с должности игрового модератора", getName(playerid));
 	                    UpdatePlayerDataInt(i, "Admin", PI[i][pModer]);
 	                }
 	                case 1: 

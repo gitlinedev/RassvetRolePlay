@@ -13,9 +13,7 @@ new CommandKill[2],
 	PointCapture,
 	CaptZone;
 
-new EnterCaptureZone,
-	ExitCaptureZone,
-	EnterCaptureDoor_1,
+new EnterCaptureDoor_1,
 	ExitCaptureDoor_1,
 	EnterCaptureDoor_2,
 	ExitCaptureDoor_2,
@@ -36,20 +34,20 @@ enum gwInfo
 new GangWarInfo[14][gwInfo];
 
 new Float:SpawnPositions[14][4] = {
-    {1540.9475,-1268.9381,14.9656,356.0040}, // ОПГ 1
-    {1539.1700,-1268.3915,14.9656,356.5047},
-    {1537.4194,-1268.3647,14.9656,356.3199},
-    {1537.4728,-1270.2788,14.9656,358.6558},
-    {1539.0555,-1270.2362,14.9656,354.8898},
-    {1541.3853,-1270.3041,14.9656,352.4788},
-    {1541.4683,-1272.0131,14.9656,352.2399},
-    {1556.7186,-1228.5701,14.9656,182.5103}, // ОПГ 2
-    {1555.2203,-1228.6348,14.9656,177.2398},
-    {1553.3282,-1228.5397,14.9656,171.9693},
-    {1553.4354,-1226.6405,14.9656,166.6988},
-    {1555.3833,-1226.6838,14.9656,177.8266},
-    {1557.3243,-1226.5961,14.9656,172.5561},
-    {1554.0076,-1224.5449,14.9656,175.6308}
+    {1607.4351,-1260.8749,14.8756,359.1216}, // ОПГ 1
+    {1609.0990,-1260.8530,14.8756,359.3382},
+    {1610.5258,-1260.7863,14.8756,359.4837},
+    {1612.1359,-1260.7865,14.8756,357.1240},
+    {1611.6887,-1258.4590,14.8756,357.7011},
+    {1610.1909,-1258.3292,14.8756,357.5043},
+    {1607.9747,-1258.1593,14.8756,359.4154},
+    {1628.4666,-1215.5222,14.8756,180.5904}, // ОПГ 2
+    {1626.9211,-1215.5515,14.8756,179.4896},
+    {1625.6156,-1215.5645,14.8756,178.5987},
+    {1624.1788,-1215.5588,14.8756,176.8672},
+    {1627.3544,-1217.8766,14.8756,177.6221},
+    {1625.8696,-1217.8868,14.8756,176.0474},
+    {1624.3450,-1217.8693,14.8756,176.5790}
 };
 
 //========================== [ название орг ] ========================== //
@@ -97,6 +95,8 @@ stock capture_SecondTimer()
 						
 						cef_emit_event(i, "cef:capture:visible", CEFINT(false));
 
+						if(PI[i][pOnCapture] == 1) PI[i][pOnCapture] = 0;
+
 						SendClientMessagef(i, COLOR_YELLOW, "Попытка {%s}ОПГ %s{FFFF00} захватить территорию {%s}ОПГ %s{FFFF00} завершилась неуспешно", ColorTeam[Command[0]], Fraction_Name[Command[0]], ColorTeam[Command[1]], Fraction_Name[Command[1]]);
 						ClearCapture();
 					}
@@ -116,6 +116,8 @@ stock capture_SecondTimer()
 						SaveGZ(Command[0], WarZone);
 
 						cef_emit_event(i, "cef:capture:visible", CEFINT(false));
+
+						if(PI[i][pOnCapture] == 1) PI[i][pOnCapture] = 0;
 
 						SendClientMessagef(i, COLOR_YELLOW, "Попытка {%s}ОПГ %s{FFFF00} захватить территорию {%s}ОПГ %s{FFFF00} завершилась успешно", ColorTeam[Command[0]], Fraction_Name[Command[0]], ColorTeam[Command[1]], Fraction_Name[Command[1]]);
 						ClearCapture();
@@ -602,8 +604,8 @@ stock capture_SecondTimer()
 					{
 						if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 						{
-							SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
-							SetPlayerFacingAngle(i, 359.3068);
+							SetPlayerPos(i, 1612.1749,-1209.9526,15.0275);
+							SetPlayerFacingAngle(i, 1.0154);
 
 							PI[i][pOnCapture] = 0;
 							PI[i][pDeathOnCapture] = 0;
@@ -645,8 +647,8 @@ stock capture_SecondTimer()
 					{
 						if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 						{
-							SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
-							SetPlayerFacingAngle(i, 359.3068);
+							SetPlayerPos(i, 1612.1749,-1209.9526,15.0275);
+							SetPlayerFacingAngle(i, 1.0154);
 
 							PI[i][pOnCapture] = 0;
 							PI[i][pDeathOnCapture] = 0;
@@ -835,8 +837,8 @@ stock CheckCount(playerid)
 					{
 						if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 						{
-							SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
-							SetPlayerFacingAngle(i, 359.3068);
+							SetPlayerPos(i, 1612.1749,-1209.9526,15.0275);
+							SetPlayerFacingAngle(i, 1.0154);
 
 							PI[i][pOnCapture] = 0;
 							PI[i][pDeathOnCapture] = 0;
@@ -874,8 +876,8 @@ stock CheckCount(playerid)
 					{
 						if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
 						{
-							SetPlayerPos(i, 1540.8573,-1219.3041,15.0275);
-							SetPlayerFacingAngle(i, 359.3068);
+							SetPlayerPos(i, 1612.1749,-1209.9526,15.0275);
+							SetPlayerFacingAngle(i, 1.0154);
 
 							PI[i][pOnCapture] = 0;
 							PI[i][pDeathOnCapture] = 0;
@@ -1026,78 +1028,65 @@ stock ClearCapture()
 }
 stock capture_OnPlayerPickUpPickup(playerid, pickupid)
 {
-	if(pickupid == EnterCaptureZone)
-	{
-		SetPlayerPos(playerid, 1553.9015,-1225.0206,14.9656);
-		SetPlayerFacingAngle(playerid, 179.2438);
-	}
-	if(pickupid == ExitCaptureZone)
-	{
-		SetPlayerPos(playerid, 1554.2072,-1219.5502,15.0275);
-		SetPlayerFacingAngle(playerid, 356.7402);
-	}
 	if(pickupid == EnterCaptureDoor_1)
 	{
-		SetPlayerPos(playerid, 1532.5198,-1238.2073,19.4656);
-		SetPlayerFacingAngle(playerid, 177.8960);
+		SetPlayerPos(playerid, 1604.3113,-1226.3220,19.3756);
+		SetPlayerFacingAngle(playerid, 179.5126);
 	}
 	if(pickupid == ExitCaptureDoor_1)
 	{
-		SetPlayerPos(playerid, 1530.0110,-1231.6013,19.0355);
-		SetPlayerFacingAngle(playerid, 356.3745);
+		SetPlayerPos(playerid, 1601.1157,-1220.9907,18.9455);
+		SetPlayerFacingAngle(playerid, 0.0506);
 	}
 	if(pickupid == EnterCaptureDoor_2)
 	{
-		SetPlayerPos(playerid, 1532.2991,-1258.0167,19.4656);
-		SetPlayerFacingAngle(playerid, 356.7891);
+		SetPlayerPos(playerid, 1604.3705,-1248.8694,19.3756);
+		SetPlayerFacingAngle(playerid, 359.1553);
 	}
 	if(pickupid == ExitCaptureDoor_2)
 	{
-		SetPlayerPos(playerid, 1529.9167,-1259.8959,19.0281);
-		SetPlayerFacingAngle(playerid, 357.1078);
+		SetPlayerPos(playerid, 1601.3778,-1248.5814,18.9381);
+		SetPlayerFacingAngle(playerid, 357.6634);
 	}
 	//========
 	if(pickupid == EnterCaptureDoor_3)
 	{
-		SetPlayerPos(playerid, 1560.7437,-1237.8176,19.4656);
-		SetPlayerFacingAngle(playerid, 174.3279);
+		SetPlayerPos(playerid, 1631.7888,-1227.8033,19.3756);
+		SetPlayerFacingAngle(playerid, 179.8580);
 	}
 	if(pickupid == ExitCaptureDoor_3)
 	{
-		SetPlayerPos(playerid, 1563.2208,-1237.3262,19.0281);
-		SetPlayerFacingAngle(playerid, 179.9927);
+		SetPlayerPos(playerid, 1634.6638,-1226.7799,18.9381);
+		SetPlayerFacingAngle(playerid, 180.7958);
 	}
 	//========
 	if(pickupid == EnterCaptureDoor_4)
 	{
-		SetPlayerPos(playerid, 1560.4148,-1260.1898,19.4656);
-		SetPlayerFacingAngle(playerid, 0.0959);
+		SetPlayerPos(playerid, 1631.7452,-1249.8218,19.3756);
+		SetPlayerFacingAngle(playerid, 358.6725);
 	}
 	if(pickupid == ExitCaptureDoor_4)
 	{
-		SetPlayerPos(playerid, 1563.2253,-1260.3306,19.0355);
-		SetPlayerFacingAngle(playerid, 354.9521);
+		SetPlayerPos(playerid, 1634.6162,-1248.2965,18.9455);
+		SetPlayerFacingAngle(playerid, 359.9435);
 	}
 	return 1;
 }
 stock capture_OnGameModeInit()
 {
-	PointCapture = CreatePickup(1314, 23, 1510.0564,-1204.5079,14.9259, -1); // инвайт на капт
+	PointCapture = CreatePickup(1314, 23, 1581.4766,-1194.2380,14.9259, -1); // инвайт на капт
 	//======================================
-	EnterCaptureZone = CreatePickup(1318, 23, 1553.8845,-1221.9240,15.0275, -1);
-	ExitCaptureZone = CreatePickup(1318, 23, 1553.9001,-1223.2344,14.9656, -1);
-	//======================================
-	EnterCaptureDoor_1 = CreatePickup(1318, 23, 1530.8042,-1234.5511,19.4109, -1);
-	ExitCaptureDoor_1 = CreatePickup(1318, 23, 1532.0082,-1234.4371,19.4656, -1);
+	EnterCaptureDoor_1 = CreatePickup(1318, 23, 1602.2643,-1224.1396,19.3209, -1);
+	ExitCaptureDoor_1 = CreatePickup(1318, 23, 1603.4683,-1224.2054,19.3756, -1);
 
-	EnterCaptureDoor_2 = CreatePickup(1318, 23, 1530.8037,-1262.2297,19.4109, -1);
-	ExitCaptureDoor_2 = CreatePickup(1318, 23, 1532.0082,-1262.0437,19.4656, -1);
+	EnterCaptureDoor_2 = CreatePickup(1318, 23, 1602.2136,-1251.9309,18.9381, -1);
+	ExitCaptureDoor_2 = CreatePickup(1318, 23, 1603.4685,-1252.0131,19.3756, -1);
 
-	EnterCaptureDoor_3 = CreatePickup(1318, 23, 1562.3562,-1234.5476,19.4109, -1);
-	ExitCaptureDoor_3 = CreatePickup(1318, 23, 1561.3597,-1234.7960,19.4656, -1);
+	EnterCaptureDoor_3 = CreatePickup(1318, 23, 1633.8176,-1224.1461,19.3209, -1);
+	ExitCaptureDoor_3 = CreatePickup(1318, 23, 1632.8224,-1224.2566,19.3756, -1);
 
-	EnterCaptureDoor_4 = CreatePickup(1318, 23, 1562.3563,-1262.2466,19.4109, -1);
-	ExitCaptureDoor_4 = CreatePickup(1318, 23, 1561.3624,-1262.2516,19.4656, -1);
+	EnterCaptureDoor_4 = CreatePickup(1318, 23, 1633.8164,-1251.9113,19.3209, -1);
+	ExitCaptureDoor_4 = CreatePickup(1318, 23, 1632.8217,-1251.9086,19.3756, -1);
 }
 //===============================================================[ CMD ]===============================================================//
 cmd:capture(playerid) 
@@ -1147,7 +1136,7 @@ cmd:capture(playerid)
 
 	GangWarStatus = 1;
 	//
-	WarTime = 270;
+	WarTime = 300;
 	WarZone = gz;
 	//
 	CommandKill[0]= 0;

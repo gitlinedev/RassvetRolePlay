@@ -43,11 +43,9 @@ CMD:setrang(playerid, params[])
         SetRang("log_setrang", getName(playerid), PI[params[0]][pRang], getName(params[0]), "понизил");
     }
 	SendFractionMessagef(PI[playerid][pMember], 0x9eceffFF, "[R] %s %s[%d] %s ранг %s[%d] до %s[%d]",\
-		NameRang(playerid), getName(playerid), playerid, oldrang < PI[params[0]][pRang] ? ("понизил"):("повысил"),\
+		NameRang(playerid), getName(playerid), playerid, oldrang < PI[params[0]][pRang] ? ("повысил"):("понизил"),\
 		getName(params[0]), params[0], NameRang(params[0]), PI[params[0]][pRang]);
 
-	SCMf(params[0], 0x9eceffFF, "%s %s[%d] %s Ваш ранг до %s[%d]", NameRang(playerid), getName(playerid), playerid, oldrang < PI[params[0]][pRang] ? ("понизил"):("повысил"), NameRang(params[0]), PI[params[0]][pRang]);
-	SCMf(playerid, 0x9eceffFF, "Вы %s %s[%d] до %s[%d]", oldrang > PI[params[0]][pRang] ? ("понизили"):("повысили"), getName(params[0]), params[0], NameRang(params[0]), PI[params[0]][pRang]);
 	UpdatePlayerDataInt(params[0], "rank", PI[params[0]][pRang]);
 	UpdatePlayerDataInt(params[0], "RankUPTime", gettime()+86400);
 	SavePlayerData(params[0]);
@@ -56,8 +54,8 @@ CMD:setrang(playerid, params[])
 //================================ [ группы ] =================================//
 callback: EditGroup(playerid) 
 {
-    new rows, fields;
-    new gname[MAX_PLAYER_NAME];
+    new rows, fields, temp[5];
+    new GroupName[MAX_PLAYER_NAME], Default;
     new str_tablist[1024];
     cache_get_data(rows, fields);
 
@@ -65,8 +63,17 @@ callback: EditGroup(playerid)
 
     for(new i = 0; i < rows; i++) 
     {
-        cache_get_field_content(i, "group_name", gname, mysql, MAX_PLAYER_NAME);
-        format(str_tablist, sizeof(str_tablist), "%s%s\n", str_tablist, gname);
+        cache_get_field_content(i, "group_name", GroupName, mysql, MAX_PLAYER_NAME);
+		cache_get_field_content(i, "default", temp), Default = strval (temp);
+
+		if(Default == 1)
+		{
+			strcat(str_tablist, "{FFFF99}", sizeof(str_tablist));
+            strcat(str_tablist, GroupName, sizeof(str_tablist));
+            strcat(str_tablist, "[стандартная]{FFFFFF}", sizeof(str_tablist));
+		}
+
+        format(str_tablist, sizeof(str_tablist), "%s%s\n", str_tablist, GroupName);
     }
 
     ShowPlayerDialog(playerid, 3211, DIALOG_STYLE_LIST, "{ee3366}Управление группами", str_tablist, "Изменить", "");
@@ -101,7 +108,7 @@ CMD:setgroup(playerid,params[])
 callback: SetGroup(playerid) 
 {
     new rows, fields, temp[5];
-    new GroupName[45], str_1[512], str_3[640]; 
+    new GroupName[45], Default, str_1[512], str_3[640]; 
 
     cache_get_data(rows, fields);
     str_1[0] = EOS; 
@@ -111,6 +118,7 @@ callback: SetGroup(playerid)
     {
         new groupid;
 		cache_get_field_content(i, "id", temp), groupid = strval (temp);
+		cache_get_field_content(i, "default", temp), Default = strval (temp);
         cache_get_field_content(i, "group_name", GroupName, mysql, sizeof(GroupName) - 1);
 
         if (groupid == PlayerGroupID)
@@ -119,6 +127,12 @@ callback: SetGroup(playerid)
             strcat(str_1, GroupName, sizeof(str_1));
             strcat(str_1, "{FFFFFF}", sizeof(str_1));
         }
+		if(Default == 1)
+		{
+			strcat(str_1, "{FFFF99}", sizeof(str_1));
+            strcat(str_1, GroupName, sizeof(str_1));
+            strcat(str_1, "[стандартная]{FFFFFF}", sizeof(str_1));
+		}
         else
         {
             strcat(str_1, GroupName, sizeof(str_1));
@@ -144,7 +158,7 @@ callback: LoadGroups()
 	        cache_get_field_content(g, "group_name", group[g][g_NAME], mysql, 50);
 	        cache_get_field_content(g, "skin_m", temp), group[g][g_SKIN] = strval (temp);
 	        cache_get_field_content(g, "skin_g", temp), group[g][g_SKING] = strval (temp);
-	        cache_get_field_content(g, "standart", temp), group[g][g_STANDART] = strval (temp);
+	        cache_get_field_content(g, "default", temp), group[g][g_STANDART] = strval (temp);
 	    }
         printf("[INFO]  Load group. Load: %d g. Time: %d ms.",TotalGroup,GetTickCount()-time);
   	}
@@ -209,26 +223,31 @@ callback: PlayerGroup(playerid)
 	}
     return 1;
 }
-callback: InfoGroup(playerid) {
+callback: InfoGroup(playerid) 
+{
     new rows, fields,gname[32],temp[60],g,m,stand;
     cache_get_data(rows, fields);
-    for(new i = 0; i < rows; i++) {
+    for(new i = 0; i < rows; i++) 
+	{
 		cache_get_field_content(i, "group_name", gname, mysql, 32);
 		cache_get_field_content(g, "skin_m", temp), m = strval (temp);
 		cache_get_field_content(g, "skin_g", temp), g = strval (temp);
-		cache_get_field_content(g, "standart", temp), stand = strval (temp);
+		cache_get_field_content(g, "default", temp), stand = strval (temp);
 		new standart[64];
-		switch(stand) {
+		switch(stand) 
+		{
 			case 0: format(standart,sizeof(standart),"Нет");
 			case 1: format(standart,sizeof(standart),"Да");
 		}
 		new skinm[64];
-		switch(m) {
+		switch(m) 
+		{
 			case 0: format(skinm,sizeof(skinm),"Нет");
 			case 1..311: format(skinm,sizeof(skinm),"%d", m);
 		}
 		new sking[64];
-		switch(g) {
+		switch(g) 
+		{
 			case 0: format(sking,sizeof(sking),"Нет");
 			case 1..311: format(sking,sizeof(sking),"%d", g);
 		}
@@ -369,7 +388,7 @@ callback: CheckDelete(playerid)
     cache_get_data(rows, fields);
     for(new i = 0; i < rows; i++) 
     {
-		cache_get_field_content(i, "standart", temp), Default = strval(temp);
+		cache_get_field_content(i, "default", temp), Default = strval(temp);
 		cache_get_field_content(i, "group_name", GroupName, mysql, 32);
 		if(Default != 1) 
         {
@@ -468,6 +487,48 @@ CMD:uninvite(playerid,params[])
 
 	return ShowPlayerDialogf(playerid, 9800, DIALOG_STYLE_MSGBOX, !"{ee3366}Уволить игрока", "Да", "Нет", "Вы хотите уволить {3377cc}%s %s\n{FFFFFF}Причина увольнения: {3377cc}%s\n\n{696969}Обратите внимание: отменить это действие будет невозможно!", NameRang(params[0]), getName(params[0]), params[1]);
 }
+CMD:uninviteoff(playerid,params[]) 
+{
+    if(PI[playerid][pRang] < 10) return SCM(playerid, COLOR_GREY, !"Данная команда доступна лидерам организаций");
+    new param_name[24];
+	if(sscanf(params, "s[144]", param_name)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /uninviteoff [имя]");
+    foreach(Player, i) 
+	{
+	    new szName[64];
+	    if(!IsPlayerConnected(i)) continue;
+	    GetPlayerName(i,szName,64);
+	    if(!strcmp(param_name, szName, false)) return SCM(playerid, COLOR_GREY, !"Этот игрок в сети, используйте /uninvite");
+    }
+	if(GetString(param_name, getName(playerid))) return SCM(playerid, COLOR_GREY, !"Вы не можете уволить себя");
+
+	mysql_string[0] = EOS, f(mysql_string, 68, "SELECT * FROM `accounts` WHERE `Name` = '%e'", param_name);
+    mysql_tquery(mysql, mysql_string, "OfflineUnInvite", "is", playerid, param_name);
+	return 1;
+}
+callback: OfflineUnInvite(playerid, PlayerName[]) 
+{
+    new rows, fields, temp[32];
+    cache_get_data(rows, fields);
+    if(rows) 
+	{
+	    new members;
+		cache_get_field_content(0, "member", temp), members = strval (temp);
+		if(members != PI[playerid][pMember]) return SCM(playerid, COLOR_GREY, !"Игрок должен состоять в Вашей организации");
+
+		new res[18];
+	    format(res, sizeof(res), "Увольнение оффлайн");
+		SetPVarString(playerid, "text_wbook", res);
+
+		mysql_string[0] = EOS, f(mysql_string, 68, "SELECT * FROM `accounts` WHERE name = '%e'", PlayerName);
+    	mysql_tquery(mysql, mysql_string, "WbookOff", "is", playerid, PlayerName);
+
+        SendFractionMessagef(PI[playerid][pMember], COLOR_TOMATO, "(( %s %s[%d] уволил оффлайн %s ))", NameRang(playerid), getName(playerid), playerid, PlayerName);
+
+		mysql_queryf(mysql, "UPDATE `accounts` SET `member` = '0', `rank` = '0', `leader` = '0', `GroupID` = '0', `twarn` = '0' WHERE `Name` = '%e'", false, PlayerName);
+	}
+	else SCM(playerid, COLOR_GREY, !"Игрок не найден");
+	return 1;
+}
 
 stock org_OnDialogResponse(playerid, dialogid, response)
 {
@@ -483,7 +544,7 @@ stock org_OnDialogResponse(playerid, dialogid, response)
 			}
 			if(response) 
 			{
-				new id = GetPVarInt(playerid, "uninviteid");
+				new id = GetPVarInt(playerid, "IDUninvite");
 				
 				new text[24];
 				GetPVarString(playerid,"ReasonUninvite", text, sizeof(text));
@@ -523,7 +584,7 @@ stock org_OnDialogResponse(playerid, dialogid, response)
 
 				PI[id][pMember] = 0;
 				PI[id][pRang] = 0;
-				PI[id][TWARN] = 0;
+				PI[id][pTwarn] = 0;
 				PI[id][pLeader] = 0;
 				PI[id][pProgressMetall] = 0;
 	            PI[id][pProgressDrugs] = 0;

@@ -292,8 +292,8 @@ callback: GiveBlackList(playerid, name[])
     if(rows) SCM(playerid, COLOR_GREY, !"Данный игрок уже находится в чёрном списке вашей организации");
 	else 
 	{
-		mysql_string[0] = EOS, f(mysql_string, 69, "SELECT * FROM `accounts` WHERE `Name` = '%e'", name);
-	    mysql_tquery(mysql, mysql_string, "InsertBlackList", "ds", playerid, name);
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'", name);
+		mysql_function_query(mysql, mysql_string, true, "InsertBlackList", "ds", playerid, name);
 	}
 	return 1;
 }

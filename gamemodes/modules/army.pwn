@@ -1,17 +1,16 @@
-new ArmyStorage;
 new TimetTheftCartridges[MAX_PLAYERS];
 
 callback: TheftCartridges(playerid)
 {
 	if(!PlayerToPoint(1.7, playerid, 1567.5477,1823.2529,15.6548)) return KillTimer(TimetTheftCartridges[playerid]);
-    if(ArmyStorage == 0) return SendClientMessage(playerid, COLOR_GREY, !"Склад организации 'Воинская часть' закрыт игровым мастером"), KillTimer(TimetTheftCartridges[playerid]);
+    if(army_wh[2] == 0) return SendClientMessage(playerid, COLOR_GREY, !"Склад организации 'Воинская часть' закрыт игровым мастером"), KillTimer(TimetTheftCartridges[playerid]);
 	switch(PI[playerid][pMember]) 
 	{
 		case 5,6,7: 
 		{
 			if(army_wh[1] > 0) 
 			{
-				if(PI[playerid][data_VIP] == 0)
+				if(PI[playerid][pVIP] == 0)
 				{
 				    if(PI[playerid][pAmmo] < 400)
 					{
