@@ -314,7 +314,7 @@ callback: SetStandart(playerid)
     for(new i = 0; i < rows; i++) 
     {
 		cache_get_field_content(i, "group_name", GroupName, mysql, 32);
-        mysql_queryf(mysql, "UPDATE `group` SET `standart` = '1' WHERE `group_name` = '%e' AND `fraction` = '%d'", false, GroupName, PI[playerid][pMember]);
+        mysql_queryf(mysql, "UPDATE `group` SET `default` = '1' WHERE `group_name` = '%e' AND `fraction` = '%d'", false, GroupName, PI[playerid][pMember]);
 		SCMf(playerid, COLOR_GREENNEW, "Вы успешно сделали группу {FFFF00}('%s'){00aa33} стандартной", GroupName);
 	}
 	return 1;

@@ -6965,7 +6965,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				PassiveModeOff(playerid);
 			}
 
-			mysql_string[0] = EOS, f(mysql_string, 75, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `standart` = 1", PI[playerid][pMember]);
+			mysql_string[0] = EOS, f(mysql_string, 75, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `default` = 1", PI[playerid][pMember]);
 			mysql_tquery(mysql, mysql_string, "SetPlayerStandartGroup", "i", playerid);
 
 			SavePlayerData(playerid);
@@ -9344,17 +9344,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 				    case 0: 
 					{
-						mysql_string[0] = EOS, mf(mysql, mysql_string, 72, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
 	                    mysql_tquery(mysql, mysql_string, "InfoGroup", "i", playerid);
 					}
 					case 1: 
 					{
-					    mysql_string[0] = EOS, mf(mysql, mysql_string, 72, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+					    mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
 	                    mysql_tquery(mysql, mysql_string, "IDGroup", "i", playerid);
 					}
 					case 2: 
 					{
-						mysql_string[0] = EOS, mf(mysql, mysql_string, 72, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
 	                    mysql_tquery(mysql, mysql_string, "CheckStandart", "i", playerid);
 					}
 					case 3: 
@@ -18777,7 +18777,7 @@ callback: SaveHouseData(h)
 {
 	mysql_string[0] = EOS;
 
-	format(mysql_string, 140, "UPDATE houses SET owner=%s, owned=%d, lock=%d, day=%d WHERE id=%d",
+	format(mysql_string, 140, "UPDATE houses SET `owner`='%s', `owned`='%d', `lock`='%d', `day`='%d' WHERE `id`='%d'",
 		HOUSE_DATA[h][data_OWNER],
 		HOUSE_DATA[h][data_OWNED],
 		HOUSE_DATA[h][data_LOCK],
