@@ -47,9 +47,8 @@ CMD:reload(playerid)
 	cef_load_url(playerid, MAIN_CEF, "https://cdn.rassvet-rp.fun/Interface/MainHud/index.html");
 	return 1;
 }
-stock SendPlayerOfferNotify(playerid, message[], button1[], button2[], time) 
-{
-	cef_emit_event(playerid, "cef:send:notification:offer", CEFSTR(message), CEFSTR(button1), CEFSTR(button2), CEFINT(time));
+stock SendPlayerOfferNotify(playerid, type, message[], button1[], button2[], time) {
+	cef_emit_event(playerid, "cef:send:notification:offer", CEFINT(type), CEFSTR(message), CEFSTR(button1), CEFSTR(button2), CEFINT(time));
 	return 1;
 }
 stock SendPlayerHudNotify(playerid, id, type[], message[], time) 

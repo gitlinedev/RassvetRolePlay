@@ -1006,8 +1006,8 @@ enum P_DATA
 	pRegIP[32+1],
 	pLoginIP[32+1],
 	pPassword[32+1],
-	pEmail[50+1],
-	pGroupName[25],
+	pEmail[51],
+	pGroupName[30],
 	data_TAG[50+1],
 	pReferal[MAX_PLAYER_NAME],
 	pLogDateDat,
@@ -8751,19 +8751,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					{
 						if(PI[playerid][pAdminStatus] == 0) 
 						{
-							SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] включил режим бога", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid);
+							SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] включил скрытие никнейма", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid);
 			        	    PI[playerid][pAdminStatus] = 1;
 							SetPlayerHealthAC(playerid, 200.0);
 							UpdatePlayerDataInt(playerid, "AdminStatus", PI[playerid][pAdminStatus]);
-							for(new i = 0; i < MAX_PLAYERS; i++) ShowPlayerNameTagForPlayer(i,playerid, false);
+							for(new i = 0; i < MAX_PLAYERS; i++) ShowPlayerNameTagForPlayer(i, playerid, false);
 						}
 						else 
 						{
-							SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выключил режим бога", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid);
+							SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выключил скрытие никнейма", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid);
 			        	    PI[playerid][pAdminStatus] = 0;
-							SetPlayerHealthAC(playerid, 200.0);
+							SetPlayerHealthAC(playerid, 176.0);
 			        	    UpdatePlayerDataInt(playerid, "AdminStatus", PI[playerid][pAdminStatus]);
-							for(new i = 0; i < MAX_PLAYERS; i++) ShowPlayerNameTagForPlayer(i,playerid, false);
+							for(new i = 0; i < MAX_PLAYERS; i++) ShowPlayerNameTagForPlayer(i, playerid, true);
 						}
       				}
       				case 1: ShowPlayerDialog(playerid, 9827, DIALOG_STYLE_INPUT, !"{ee3366}Смена никнейма", !"Введите никнейм для смены в поле ниже", !"Изменить", !"Отмена");
@@ -14032,7 +14032,7 @@ callback: LoadMembers(playerid)
     cache_get_data(rows, fields);
 
     global_str[0] = EOS;
-    new afk_status[32], warn_status[32];
+    new afk_status[32], warn_status[32], str_group[30];
 
     for (new i = 0; i < MAX_PLAYERS; i++) 
     {
@@ -14052,9 +14052,14 @@ callback: LoadMembers(playerid)
             else 
                 format(warn_status, sizeof(warn_status), "{33d267}(0/3)");
 
+			if(PI[i][pGroupID] != -1)
+				format(str_group, sizeof(str_group), "нет");
+			else 
+				format(str_group, sizeof(str_group), "%s", PI[i][pGroupName]);
+
             format(global_str, sizeof(global_str), "%s%s[%d]%s%s\t%d\t%s\t%d\n", 
                    global_str, PI[i][pName], i, afk_status, warn_status, 
-                   PI[i][pRang], PI[i][pGroupName], PI[i][pNumber]);
+                   PI[i][pRang], str_group, PI[i][pNumber]);
         }
     }
     SCMf(playerid, 0x3366ccFF, "Участников организации: %d чел, онлайн: %d чел", rows, online_count);
@@ -14906,13 +14911,13 @@ CMD:twarn(playerid, params[])
     if (PI[targetID][pRang] == 10 && PI[playerid][pRang] == 9) return SCM(playerid, COLOR_GREY, !"Вы не можете выдать выговор лидеру");
     if (PI[targetID][pRang] == PI[playerid][pRang]) return SCM(playerid, COLOR_GREY, !"Вы не можете выдать выговор человеку, чей ранг схож с вашим");
 
-    if (PI[targetID][pTwarn]+1 < 3) 
+    if (PI[targetID][pTwarn] < 2) 
     {
         PI[targetID][pTwarn]++;
         SendFractionMessagef(PI[playerid][pMember], COLOR_TOMATO, "%s %s[%d] выдал выговор %s %s[%d] [%d|3]. Причина: %s", NameRang(playerid), getName(playerid), playerid, NameRang(targetID), getName(targetID), targetID, PI[targetID][pTwarn], reason);
     }
 
-    if (PI[targetID][pTwarn]+1 <= 3) 
+    if (PI[targetID][pTwarn] <= 2) 
     {
         PI[targetID][pTwarn] = 0;
         new year, month, day;
@@ -16591,16 +16596,16 @@ cmd:givegod(playerid, params[])
 		case 0: 
 		{
     	    PI[params[0]][pAdminStatus] = 1;
-			SetPlayerHealthAC(params[0], 100);
-			SCMf(playerid, COLOR_YELLOW,"Вы установили режим скрытия игроку %s", getName(params[0]));
-			SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал режим скрытия игроку %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]));
+			SetPlayerHealthAC(params[0], 200.0);
+			if(PI[params[0]][pAdmin] >= 1) for(new i = 0; i < MAX_PLAYERS; i++) ShowPlayerNameTagForPlayer(i, params[0], false);
+			SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал режим скрытия никнейма для %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]));
 		}
 		case 1: 
 		{
     	    PI[params[0]][pAdminStatus] = 0;
-			SetPlayerHealthAC(params[0], 100.0);
-			SCMf(playerid, COLOR_YELLOW,"Вы сняли режим скрытия игроку %s", getName(params[0]));
-			SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял режим скрытия игроку %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]));
+			SetPlayerHealthAC(params[0], 176.0);
+			if(PI[params[0]][pAdmin] >= 1) for(new i = 0; i < MAX_PLAYERS; i++) ShowPlayerNameTagForPlayer(i, params[0], true);
+			SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял режим скрытия никнейма для %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]));
 		}
 	}
 	return 1;

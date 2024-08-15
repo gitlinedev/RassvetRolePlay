@@ -1223,7 +1223,7 @@ CMD:clead(playerid, params[])
     if (!IsPlayerConnected(targetid))
         return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 
-    if (!IsPlayerLogged[targetid])
+    if(!IsPlayerLogged{targetid})
         return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 
     if (PI[playerid][pMember] != PI[targetid][pMember]) 

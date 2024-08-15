@@ -41,8 +41,6 @@ stock ClearRequest(playerid)
 	PI[playerid][pRequestValue_2] = -1;
 	PI[playerid][pRequestFrom] = INVALID_PLAYER_ID;
 	PI[playerid][pRequestFor] = INVALID_PLAYER_ID;
-
-	SCM(playerid, -1, "Очищено!");
 }
 stock CheckRequest(playerid)
 {
@@ -129,8 +127,11 @@ stock SendRequestForPlayer(playerid, id, type, value = -1, value_2 = -1)
 	{
 		case 0:
 		{
-			SCMf(playerid, 0x33ceffFF, "Вы предложили %s пожать Вам руку", getName(id));
-			SCMf(id, 0x33ceffFF, "%s предложил Вам пожать руку", getName(playerid));
+			cef_text[0] = EOS, f(cef_text, 56, "Вы предложили %s пожать Вам руку", getName(id));
+			SendPlayerOfferNotify(playerid, 2, cef_text, "", "ОТМЕНИТЬ", 25);
+
+			cef_text[0] = EOS, f(cef_text, 52, "%s предложил Вам пожать руку", getName(playerid));
+			SendPlayerOfferNotify(id, 1, cef_text, "СОГЛАСИТЬСЯ", "ОТКАЗАТЬСЯ", 15);
 		}
 		case 1:
 		{
@@ -142,7 +143,7 @@ stock SendRequestForPlayer(playerid, id, type, value = -1, value_2 = -1)
 			SCMf(playerid, 0x36e96cFF, "Вы предложили %s взять вашу аптечку.", getName(id));
 
 			global_str[0] = EOS, format(global_str, 54, "%s предложил Вам взять аптечку", getName(playerid));
-			SendPlayerOfferNotify(id, global_str, "СОГЛАСИТЬСЯ", "ОТКАЗАТЬСЯ", 15);
+			SendPlayerOfferNotify(id, 1, global_str, "СОГЛАСИТЬСЯ", "ОТКАЗАТЬСЯ", 15);
 		}
 		default: 
 		{
