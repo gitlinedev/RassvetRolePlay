@@ -9,11 +9,11 @@ static const stock AdminName[9][6] = {
  	"SGM+",
  	"DEV"
 };
-static const stock ModerName[4][17] = {
+static const stock ModerName[4][22] = {
 	"»грок",
- 	"Junior Moderator",
- 	"Moderator",
- 	"Senior Moderator"
+ 	"Junior Moderator (#1)",
+ 	"Moderator (#2)",
+ 	"Senior Moderator (#3)"
 };
 
 static const stock VehicleNames[][] = {
@@ -912,14 +912,17 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 					case 16: SetPlayerPos(playerid, 2500.6553,-716.2165,28.3000+2);
 					case 17: SetPlayerPos(playerid, 1474.5935,2045.2124,24.0309+2);
 					case 18: SetPlayerPos(playerid, 1581.1870,-1199.6599,14.9259+2);
-					case 19: SetPlayerPos(playerid, 2100.2429,1867.9214,-38.0100);
+					case 19: SetPlayerPos(playerid, 2095.6086,1560.5791,-46.5100);
 					case 20: SetPlayerPos(playerid, -2634.9954,-2385.7825,14.0381);
                 }
 				SetPlayerVirtualWorld(playerid,0);
 				SetPlayerInterior(playerid,0);
 				SetPlayerHealthAC(playerid, 200);
-				SendClientMessage(playerid, COLOR_LIGHTGREY, !"¬ы были телепортированы {ff6633}(/tp)");
-				SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] телепортировалс€ использу€ /tp", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid);
+
+				new senderName[MAX_PLAYER_NAME + 20];
+				if(PI[playerid][pAdmin]) format(senderName, sizeof(senderName), "%s #%d", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber]);
+				else format(senderName, sizeof(senderName), "%s", ModerName[PI[playerid][pModer]]);
+				SendAdminsMessagef(COLOR_ADMINCHAT, "[%s] %s[%d] телепортировалс€ использу€ /tp", senderName, PI[playerid][pName], playerid);
             }
         }
 		case 2149:

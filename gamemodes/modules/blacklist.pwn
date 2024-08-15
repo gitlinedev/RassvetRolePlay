@@ -86,9 +86,8 @@ stock bl_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					case 1: ShowPlayerDialog(playerid, 3125, DIALOG_STYLE_INPUT, "{ee3366}Чёрный список", "{FFFFFF}Введите имя игрока, которого хотите удалить из чёрного списка:", "Принять", "Назад");
 					default: 
 					{
-						new str_q[135];
-						mysql_format(mysql,str_q,sizeof(str_q),"SELECT * FROM `fractions_blacklist` WHERE `bl_name` = '%e' AND `bl_fraction` = '%d' LIMIT 1",inputtext,PI[playerid][pMember]);
-						mysql_function_query(mysql, str_q, true, "BlackListCheck", "ds", playerid, inputtext);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 130,"SELECT * FROM `fractions_blacklist` WHERE `bl_name` = '%e' AND `bl_fraction` = '%d' LIMIT 1",inputtext,PI[playerid][pMember]);
+						mysql_function_query(mysql, mysql_string, true, "BlackListCheck", "ds", playerid, inputtext);
 					}
 				}
 			}
@@ -135,9 +134,9 @@ stock bl_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if(strlen(inputtext) < 6 || strlen (inputtext) > 24) 
                 return ShowPlayerDialog(playerid, 3125, DIALOG_STYLE_INPUT, !"{ee3366}Чёрный список", !"{FFFFFF}Неверный формат никнейма!\n\n\
                                                         {FFFF99}Введите имя игрока, которого хотите удалить из чёрного списка:", !"Принять", !"Назад");
-			
-            mysql_string[0] = EOS, f(mysql_string, 116, "SELECT * FROM `fractions_blacklist` WHERE `bl_name` = '%e' AND `bl_fraction`='%d' LIMIT 1", inputtext, PI[playerid][pMember]);
-	        mysql_tquery(mysql, mysql_string, "CheckBlackList", "ds", playerid, inputtext);
+
+			mysql_string[0] = EOS, mf(mysql, mysql_string, 135, "SELECT * FROM `fractions_blacklist` WHERE `bl_name` = '%e' AND `bl_fraction`='%d' LIMIT 1", inputtext, PI[playerid][pMember]);
+			mysql_function_query(mysql, mysql_string, true, "CheckBlackList", "ds", playerid, inputtext);
 
 		}
 		case 7874:
@@ -147,8 +146,8 @@ stock bl_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			new name[45];
 			GetPVarString(playerid,"name_bl", name, 45);
 
-            mysql_string[0] = EOS, f(mysql_string, 116, "SELECT * FROM `fractions_blacklist` WHERE `bl_name` = '%e' AND `bl_fraction`='%d' LIMIT 1", name, PI[playerid][pMember]);
-	        mysql_tquery(mysql, mysql_string, "CheckBlackList", "ds", playerid, name);
+			mysql_string[0] = EOS, mf(mysql, mysql_string, 135, "SELECT * FROM `fractions_blacklist` WHERE `bl_name` = '%e' AND `bl_fraction`='%d' LIMIT 1", name, PI[playerid][pMember]);
+			mysql_function_query(mysql, mysql_string, true, "CheckBlackList", "ds", playerid, name);
 		}
     }
     return 1;
@@ -160,8 +159,9 @@ callback: CheckBlackListBl(playerid)
     if(rows) 
     {
 	    if(PI[playerid][pRang] < 9) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-        mysql_string[0] = EOS, f(mysql_string, 66, "SELECT * FROM `fractions_blacklist` WHERE `bl_fraction` = '%d'", PI[playerid][pMember]);
-	    mysql_tquery(mysql, mysql_string, "BlackList", "d", playerid);
+
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `fractions_blacklist` WHERE `bl_fraction` = '%d'", PI[playerid][pMember]);
+		mysql_function_query(mysql, mysql_string, true, "BlackList", "d", playerid);
 	}
 	else ShowPlayerDialog(playerid, 3127, DIALOG_STYLE_LIST, "{ee3366}Чёрный список", "1. Добавить в ЧС\n2. Убрать из ЧС", "Выбрать", "Назад");
 	return 1;
@@ -221,8 +221,8 @@ callback: CheckBlackListPlayer(playerid)
     cache_get_data(rows, fields);
     if(rows) 
     {
-        mysql_string[0] = EOS, f(mysql_string, 85, "SELECT * FROM `fractions_blacklist` WHERE `bl_name` = '%e'", getName(playerid));
-	    mysql_tquery(mysql, mysql_string, "LoadBlackListForPlayer", "d", playerid);
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 85, "SELECT * FROM `fractions_blacklist` WHERE `bl_name` = '%e'", getName(playerid));
+		mysql_function_query(mysql, mysql_string, true, "LoadBlackListForPlayer", "d", playerid);
 	}
 	else ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Чёрный список организаций", "{FFFFFF}Вы не состоите в чёрном списке ни одной организации", "Закрыть", "");
 	return 1;
@@ -344,7 +344,7 @@ CMD:allleaders(playerid,params[])
 CMD:bl(playerid) 
 {
     if(PI[playerid][pRang] < 9) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    global_str[0] = EOS, f(global_str, 63, "SELECT * FROM `fractions_blacklist` WHERE bl_fraction = '%d'", PI[playerid][pMember]);
-    mysql_tquery(mysql, global_str, "CheckBlackListBl", "d", playerid);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 85, "SELECT * FROM `fractions_blacklist` WHERE bl_fraction = '%d'", PI[playerid][pMember]);
+	mysql_function_query(mysql, mysql_string, true, "CheckBlackListBl", "d", playerid);
 	return 1;
 }

@@ -127,7 +127,7 @@ callback: SetGroup(playerid)
             strcat(str_1, GroupName, sizeof(str_1));
             strcat(str_1, "{FFFFFF}", sizeof(str_1));
         }
-		if(Default == 1)
+		else if(Default == 1)
 		{
 			strcat(str_1, "{FFFF99}", sizeof(str_1));
             strcat(str_1, GroupName, sizeof(str_1));
