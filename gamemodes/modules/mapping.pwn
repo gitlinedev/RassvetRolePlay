@@ -11,10 +11,10 @@ stock LoadMappingModule()
 	#include <Mapping/police>
 	//батырево
 	#include <Mapping/bat_plyazh>
-	//#include <Mapping/batyrevo>
+	#include <Mapping/batyrevo>
 	//бусаево
-	//#include <Mapping/razvoz and db>
-	//#include <Mapping/busaevo>
+	//#include <Mapping/razvoz>
+	#include <Mapping/busaevo>
 	//инты
 	#include <Mapping/int_spawn>
 	#include <Mapping/int_bank>
