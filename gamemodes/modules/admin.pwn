@@ -29,7 +29,7 @@ static const stock VehicleNames[][] = {
 	"ВАЗ-21099","РАФ-2203"," ЕРАЗ-672","Shamal","Hydra","ИЖ Планета 5","NRG-500","Урал","Cement Truck","Эвакуатор","Fortune","Cadrona","FBI Truck",
 	"Willard","Forklift","Tractor","Combine","Feltzer","Remington","Slamvan","Blade","Freight","Streak","Vortex","М5 F90","Bugatti Chiron","ВАЗ 2424",
 	"Москвич-434","Firetruck","Москвич-400","Москвич-2125","Москвич-2140","Cargobob","ЗАЗ-968А","Sunrise","ГАЗ 31105","Utility","Nevada","УАЗ-3303","ЗАЗ-968М","Monster A",
-	"Monster B","Lamborghini Huracan Devo","Acura NSX GT3","Orange Porshe","ИЖ Москвич-427","Elegy","Raindance","RC Tiger","ВАЗ 2108","ВАЗ 2104","Savanna","Bandito","Freight","Trailer",
+	"Monster B","Lamborghini Huracan Devo","Acura NSX GT3","Tesla Pro","ИЖ Москвич-427","Elegy","Raindance","RC Tiger","ВАЗ 2108","ВАЗ 2104","Savanna","Bandito","Freight","Trailer",
 	"Kart","Mower","Duneride","Sweeper","ГАЗ-М20","Москвич-408","AT-400","ЗИЛ-157","Mersedes G65","BMW X5M","BF-400","Newsvan","Tug","Trailer A","Emperor",
 	"Восход 3М","Euros","ЛиАЗ-677","Club","Trailer B","Trailer C","Andromada","Dodo","RC Cam","Launch","ГАЗ-2401","ВАЗ 21099",
 	"ВАЗ 2114","УАЗ 469","ИЖ-2717","S.W.A.T.","Alpha","Phoenix","Glendale","Sadler","L Trailer A","L Trailer B",
@@ -894,13 +894,13 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
                 switch(listitem)
                 {
 					case 0: SetPlayerPos(playerid, -2496.6514,187.7827,55.7560);
-                    case 1: SetPlayerPos(playerid, -506.5684,-1417.5021,56.2231);
+                    case 1: SetPlayerPos(playerid, -506.5684,-1417.5021,56.2231+4);
                     case 2: SetPlayerPos(playerid, 2303.4346,-1722.0289,36.8250);
                     case 3: SetPlayerPos(playerid, 1880.3647,1180.8679,38.8619);
                     case 4: SetPlayerPos(playerid, 2386.1399,-938.3940,14.3443);
                     case 5: SetPlayerPos(playerid, 1429.7269,2343.9487,22.1195+2); // скин
                     case 6: SetPlayerPos(playerid, 2224.7097,-2611.0547,31.8857+2);
-                    case 7: SetPlayerPos(playerid, -367.4405,-1198.3756,50.2112+2);
+                    case 7: SetPlayerPos(playerid, -317.5424,-1055.9333,51.3935+2);
                     case 8: SetPlayerPos(playerid, 1907.1965,-2226.8005,43.2401+2);
                     case 9: SetPlayerPos(playerid, 2403.2986,-1849.3372,21.9369+2);
 					case 10: SetPlayerPos(playerid, 2113.0063,1821.8636,23.0438+2);

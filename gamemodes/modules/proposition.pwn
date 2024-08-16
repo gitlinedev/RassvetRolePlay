@@ -41,6 +41,7 @@ stock ClearRequest(playerid)
 	PI[playerid][pRequestValue_2] = -1;
 	PI[playerid][pRequestFrom] = INVALID_PLAYER_ID;
 	PI[playerid][pRequestFor] = INVALID_PLAYER_ID;
+	if(IsPlayerLogged{playerid}) cef_emit_event(playerid, "cef:remove:notification:offer");
 }
 stock CheckRequest(playerid)
 {
@@ -128,7 +129,7 @@ stock SendRequestForPlayer(playerid, id, type, value = -1, value_2 = -1)
 		case 0:
 		{
 			cef_text[0] = EOS, f(cef_text, 56, "Вы предложили %s пожать Вам руку", getName(id));
-			SendPlayerOfferNotify(playerid, 2, cef_text, "", "ОТМЕНИТЬ", 25);
+			SendPlayerOfferNotify(playerid, 2, cef_text, "", "ОТМЕНИТЬ", 15);
 
 			cef_text[0] = EOS, f(cef_text, 52, "%s предложил Вам пожать руку", getName(playerid));
 			SendPlayerOfferNotify(id, 1, cef_text, "СОГЛАСИТЬСЯ", "ОТКАЗАТЬСЯ", 15);

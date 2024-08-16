@@ -11,10 +11,10 @@ stock LoadMappingModule()
 	#include <Mapping/police>
 	//батырево
 	#include <Mapping/bat_plyazh>
-	#include <Mapping/batyrevo>
+	//#include <Mapping/batyrevo>
 	//бусаево
-	#include <Mapping/razvoz and db>
-	#include <Mapping/busaevo>
+	//#include <Mapping/razvoz and db>
+	//#include <Mapping/busaevo>
 	//инты
 	#include <Mapping/int_spawn>
 	#include <Mapping/int_bank>
@@ -76,7 +76,7 @@ stock OtherMapping()
     ///////////////[КАПТЕРА ПИКАПЫ]////////////////////////
     /////конец
     VchSkladGate = CreateObject(1717, 1568.80, 1809.53, 16.25,   0.00, 0.00, 90.00);
-    Gate = CreateObject(975, 2121.8877, 1798.9204, 12.8168,   0.00, 0.00, 90.12);
+    Gate = CreateObject(975, 2123.18, 1798.82, 12.56,   0.00, 0.00, 90.12);
     GatePravo = CreateObject(975, 1872.5520, -2228.8486, 11.9105,   0.00, 0.00, 0.00);
     Create3DTextLabel("{008000}Банк\nБатырево", -1, 1794.7571,2036.6995,15.8694, 20.0, 0);
     vhodbank = CreateDynamicPickup(1318, 23, 1795.1494,2039.2830,15.8942, -1);
@@ -88,10 +88,10 @@ stock OtherMapping()
     Create3DTextLabel("{008000}/bank\nКлавиша B", -1,1537.8619,1820.2335,578.6213, 6.5, 92);
     Create3DTextLabel("{008000}/bank\nКлавиша B", -1,1540.8298,1820.5121,578.6213, 6.5, 92);
     opgintvihod_offklub = CreateDynamicPickup(1318, 23, -2126.8787,2389.4063,1501.8101, 1);
-    opgintvhod_offklub = CreateDynamicPickup(1318, 23,-365.9405,-1213.8025,41.0700, -1);
+    opgintvhod_offklub = CreateDynamicPickup(1318, 23,-317.0792,-1073.1880,41.1181, -1);
     opgintvhod_gopota = CreateDynamicPickup(1318, 23, 2215.5474,-2597.8342,21.9600, -1);
     opgintvihod_gopota = CreateDynamicPickup(1318, 23, -2126.8787,2389.4063,1501.8101, 2);
-    opgintvhod_skinhead = CreateDynamicPickup(1318, 23, 2315.6936,1767.5208,1.1716, -1);
+    opgintvhod_skinhead = CreateDynamicPickup(1318, 23, 1441.7367,2352.0581,12.8216, -1);
     opgintvihod_skinhead = CreateDynamicPickup(1318, 23, -2126.8787,2389.4063,1501.8101, 3);
     Create3DTextLabel("{008000}Мэрия птг. Батырево", -1, 1818.2981,2095.7285,17.1631, 20.0, 0);
     VhodMeriya = CreateDynamicPickup(1318, 23, 1818.2981,2095.7285,16.1631, -1);
@@ -113,17 +113,8 @@ stock OtherMapping()
     vxoddchmvd1 = CreateDynamicPickup(1318, 23, 137.7148,1897.4443,-31.9625, -1);
     VhodSportzalPolice = CreateDynamicPickup(1318, 23, 2385.7202,-1796.4390,21.9341, 0);
     VihodSportzalPolice = CreateDynamicPickup(1318, 23, 138.0581,1981.8760,-16.3778, -1);
-    Create3DTextLabel("{008000}Нажмите 'ALT'", -1, 2121.3992,1794.0708,12.2849, 20.0, 0);
+    Create3DTextLabel("{008000}Нажмите 'ALT'", -1, 2122.7444,1794.2056,12.0534, 20.0, 0);
     Create3DTextLabel("{008000}Полиция", -1,2403.3105,-1843.4712,22.4368, 20.0, 0);
-    Create3DTextLabel("{008000}/dice Для игры", -1, 2335.1279,1766.7971,-13.9100, 20.0, -1);
-    Create3DTextLabel("{008000}/dice Для игры", -1, 2335.1255,1762.8182,-13.9100, 20.0, -1);
-    Create3DTextLabel("{008000}/dice Для игры", -1, 2329.4746,1763.0470,-13.9100, 20.0, -1);
-    Create3DTextLabel("{008000}/dice Для игры", -1, 2325.4631,1761.3829,-13.9100, 20.0, -1);
-    Create3DTextLabel("{008000}/dice Для игры", -1, 2330.1829,1769.1815,-13.9100, 20.0, -1);
-    Create3DTextLabel("{008000}/dice Для игры", -1, 2326.0420,1774.8130,-13.9100, 20.0, -1);
-    Create3DTextLabel("{008000}/dice Для игры", -1, 2333.0562,1770.7949,-13.9100, 20.0, -1);
-    Create3DTextLabel("{008000}/dice Для игры", -1, 2332.6768,1754.2649,-10.4741, 20.0, -1);
-    Create3DTextLabel("{008000}/dice Для игры", -1, 2325.6680,1754.4149,-10.4741, 20.0, -1);
     VhodUchastokMVD0 = CreateDynamicPickup(1318, 23, 2403.3105,-1843.4712,22.4368, 0);
     VhodUchastokMVD1 = CreateDynamicPickup(1318, 23, 126.4313,1851.9615,-31.9703, -1);
 	spawn_vihod = CreateDynamicPickup(1318, 23, 1599.7197,2027.5946,-55.7341, -1);
@@ -162,7 +153,7 @@ stock OtherMapping()
     //=============================[ ШАХТА ]=============================//
     Create3DTextLabel("{008000}Казино", -1, 2320.1853,-1936.7942,22.3337, 10.0, 0);
     Casino_Enter = CreateDynamicPickup(1318, 23, 2320.1853,-1936.7942,22.3337, -1);
-    Casino_Exit = CreateDynamicPickup(1318, 23, 2337.2285,1766.9097,-13.9100, -1);
+    Casino_Exit = CreateDynamicPickup(1318, 23, 592.0253,-107.5073,728.1457, -1);
     Create3DTextLabel("{008000}Автошкола", -1, 1843.0927,1451.3744,10.7364, 10.0, 0);
     Create3DTextLabel("{00ff91}Чтобы взять парашу введите\n{ff0026}/par", -1, 1843.0927,1451.3744,10.7364, 10.0, 0);
     PAR_vhod = CreateDynamicPickup(1318, 23, 2126.6987,-1962.8444,20.3229, -1);
@@ -179,7 +170,7 @@ stock OtherMapping()
     ArmyStolovaya = CreateDynamicPickup(1314, 16089, -2430.6829,1801.1373,2053.4800, -1);
     EatPolice = CreateDynamicPickup(16089, 23, 119.2875,1887.0156,-31.0664, -1);
     EatPolice1 = CreateDynamicPickup(16089, 23, 139.4049,1869.3790,-31.9697, -1);
-    ///пикапы тиров
+    /*///пикапы тиров
     vhodtirkavkaz = CreateDynamicPickup(1318, 23, -356.5761,-1180.2509,41.0675, 0);
     vihodtirkavkaz = CreateDynamicPickup(1318, 23, -145.8029,1818.6835,-5.9800, -5);
     vhodtirgopota = CreateDynamicPickup(1318, 23, 2255.5798,-2594.4944,22.1780, 0);
@@ -189,7 +180,7 @@ stock OtherMapping()
     vhodtirvch = CreateDynamicPickup(1318, 23, -2633.2554,312.8313,11.2209, 0);
     vihodtirvch = CreateDynamicPickup(1318, 23, -145.8029,1818.6835,-5.9800, 2);
     vhodtirpravo = CreateDynamicPickup(1318, 23, 1907.2701,-2209.0989,11.7839, 0);
-    vihodtirpravo = CreateDynamicPickup(1318, 23, -145.8029,1818.6835,-5.9800, -1);
+    vihodtirpravo = CreateDynamicPickup(1318, 23, -145.8029,1818.6835,-5.9800, -1);*/
     //информационные пикапы
 
     //информационный пикап БЦРБ
@@ -223,10 +214,10 @@ stock OtherMapping()
     GopotaGarageVihod = CreateDynamicPickup(1318, 23, -168.2390,626.4500,-50.1706, 5);
     Create3DTextLabel("{FFD700}Въезд", -1, -2757.7310,351.1184,10.9850, 20.0, 0);
 
-    SkinheadGarageVhod = CreateDynamicPickup(1318, 23, 2327.8706,1782.9962,1.1716, -1);
+    SkinheadGarageVhod = CreateDynamicPickup(1318, 23, 1453.0338,2363.7148,12.8316, -1);
     SkinheadGarageVihod = CreateDynamicPickup(1318, 23, -168.2390,626.4500,-50.1706, 6);
     Create3DTextLabel("{FFD700}Въезд", -1,-562.5096,-1392.1708,42.1858, 20.0, 0);
-    OffClubGarageVhod = CreateDynamicPickup(1318, 23, -360.3912,-1227.4340,41.1000, -1);
+    OffClubGarageVhod = CreateDynamicPickup(1318, 23, -310.1765,-1088.9393,41.1115, -1);
     OffClubGarageVihod = CreateDynamicPickup(1318, 23, -168.2390,626.4500,-50.1706, 7);
     army_sklad = CreateDynamicCP(-2569.5925,450.9106,10.9316, 3,  0, 0, -1, 50.0);
     NPC_ALL[0] = CreateActor(149, 1921.8282, 2096.4849, 15.7053,91.9485);
@@ -602,6 +593,90 @@ stock RemoveBuild(playerid)
 	RemoveBuildingForPlayer(playerid, 3547, 196.9930, -874.2220, 40.0400, 0.25);
 	RemoveBuildingForPlayer(playerid, 3557, -390.0670, -1235.5601, 40.0400, 0.25);
 	RemoveBuildingForPlayer(playerid, 3559, 196.9930, -874.2220, 40.0400, 0.25);
+	RemoveBuildingForPlayer(playerid, 9130, 1858.1700, 1360.1600, 9.4576, 0.25);
+	RemoveBuildingForPlayer(playerid, 9170, 1858.1700, 1360.1600, 9.4576, 0.25);
+	RemoveBuildingForPlayer(playerid, 9137, 1857.7496, 1444.6674, 9.4835, 0.25);
+	RemoveBuildingForPlayer(playerid, 9182, 1857.7496, 1444.6674, 9.4835, 0.25);
+	RemoveBuildingForPlayer(playerid, 9146, 1828.2317, 1376.1675, 8.7522, 0.25);
+	RemoveBuildingForPlayer(playerid, 9145, 1865.8325, 1460.9642, 9.5700, 0.25);
+	RemoveBuildingForPlayer(playerid, 9202, 1853.5685, 1448.7565, 9.4544, 0.25);
+	RemoveBuildingForPlayer(playerid, 9202, 1853.5685, 1448.7565, 9.4544, 0.25);
+	RemoveBuildingForPlayer(playerid, 629, 1792.0875, 1417.6105, 8.5197, 0.25);
+	RemoveBuildingForPlayer(playerid, 629, 1769.8411, 1369.5352, 8.6197, 0.25);
+	RemoveBuildingForPlayer(playerid, 630, 1793.8873, 1435.0773, 8.5130, 0.25);
+	RemoveBuildingForPlayer(playerid, 629, 1791.8719, 1448.3517, 8.5197, 0.25);
+	RemoveBuildingForPlayer(playerid, 630, 1761.9413, 1356.3563, 8.7130, 0.25);
+	RemoveBuildingForPlayer(playerid, 615, 1760.3008, 1366.2220, 8.6769, 0.25);
+	RemoveBuildingForPlayer(playerid, 658, 1757.9338, 1368.1563, 8.6807, 0.25);
+	RemoveBuildingForPlayer(playerid, 630, 1788.4100, 1399.7800, 8.7130, 0.25);
+	RemoveBuildingForPlayer(playerid, 615, 1764.2809, 1464.4819, 8.6769, 0.25);
+	RemoveBuildingForPlayer(playerid, 630, 1783.0483, 1465.0034, 8.5130, 0.25);
+	RemoveBuildingForPlayer(playerid, 630, 1786.5947, 1424.1960, 8.5130, 0.25);
+	RemoveBuildingForPlayer(playerid, 630, 1784.4460, 1457.6068, 8.5130, 0.25);
+	RemoveBuildingForPlayer(playerid, 630, 1797.7616, 1460.9546, 8.5130, 0.25);
+	RemoveBuildingForPlayer(playerid, 629, 1775.3298, 1449.9448, 8.3197, 0.25);
+	RemoveBuildingForPlayer(playerid, 630, 1793.8873, 1435.0773, 8.5130, 0.25);
+	RemoveBuildingForPlayer(playerid, 658, 1766.3495, 1455.0237, 8.6807, 0.25);
+	RemoveBuildingForPlayer(playerid, 658, 1751.9211, 1462.7734, 8.6807, 0.25);
+	RemoveBuildingForPlayer(playerid, 615, 1756.2117, 1354.7136, 8.6769, 0.25);
+	RemoveBuildingForPlayer(playerid, 669, 1789.6246, 1386.0400, 8.6628, 0.25);
+	RemoveBuildingForPlayer(playerid, 631, 1767.1539, 1360.0833, 8.6723, 0.25);
+	RemoveBuildingForPlayer(playerid, 615, 1784.7141, 1460.2733, 8.6769, 0.25);
+	RemoveBuildingForPlayer(playerid, 615, 1767.1691, 1461.6611, 8.6769, 0.25);
+	RemoveBuildingForPlayer(playerid, 630, 1757.7769, 1453.5018, 8.5130, 0.25);
+	RemoveBuildingForPlayer(playerid, 621, 1807.8518, 1462.3799, 8.6922, 0.25);
+	RemoveBuildingForPlayer(playerid, 621, 1800.4672, 1452.5518, 8.6922, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1858.3667, 1465.6356, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1863.9346, 1457.9438, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1860.2729, 1466.3643, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1859.0551, 1466.4885, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1858.9247, 1464.3036, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1867.5101, 1458.4137, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1862.6489, 1462.2563, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1862.7622, 1459.0115, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1862.8711, 1460.6404, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1860.8701, 1464.4911, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1863.7479, 1463.6008, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1865.0862, 1463.6387, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1867.5980, 1463.4017, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1865.7601, 1457.9628, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1866.4615, 1463.6050, 8.7237, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1761.2744, 1357.4398, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1760.8856, 1355.3104, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1760.2400, 1356.5153, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1762.6226, 1355.3192, 8.7036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1762.8207, 1357.0944, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 627, 1767.7723, 1370.1267, 8.6563, 0.25);
+	RemoveBuildingForPlayer(playerid, 627, 1769.6918, 1371.8092, 8.6563, 0.25);
+	RemoveBuildingForPlayer(playerid, 627, 1770.0400, 1367.5000, 8.6563, 0.25);
+	RemoveBuildingForPlayer(playerid, 627, 1772.1400, 1369.9200, 8.6563, 0.25);
+	RemoveBuildingForPlayer(playerid, 762, 1771.1906, 1443.2288, 12.4481, 0.25);
+	RemoveBuildingForPlayer(playerid, 615, 1771.2312, 1462.2383, 8.6769, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1794.7175, 1435.9111, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 615, 1768.1539, 1464.8405, 8.6769, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1790.7446, 1383.7258, 8.7036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1787.2820, 1398.4956, 8.7036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1789.3540, 1398.7397, 8.7036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1792.3588, 1415.8599, 8.7036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1787.6018, 1400.3014, 8.7036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1793.6100, 1416.9800, 8.7036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1789.6613, 1400.4091, 8.7036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1791.0118, 1439.6866, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1792.7839, 1439.6372, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1792.3009, 1442.8014, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1793.8206, 1434.0323, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1791.4122, 1441.3795, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1794.0548, 1442.5004, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1794.6521, 1440.6676, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1793.0160, 1441.2198, 8.8036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1768.3309, 1360.2332, 8.7036, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1863.9121, 1368.4957, 8.7461, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1871.2067, 1358.4020, 8.7461, 0.25);
+	RemoveBuildingForPlayer(playerid, 658, 1755.6899, 1351.6438, 8.6807, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1862.8058, 1368.5681, 8.7461, 0.25);
+	RemoveBuildingForPlayer(playerid, 625, 1870.7579, 1452.3470, 8.7461, 0.25);
+	RemoveBuildingForPlayer(playerid, 636, 1859.5436, 1465.0161, 8.9962, 0.25);
+	RemoveBuildingForPlayer(playerid, 653, 1863.5370, 1369.0023, 8.7075, 0.25);
 	//каптера делит
 	RemoveBuildingForPlayer(playerid, 8465, 1702.2900, -1201.3900, 1.0000, 0.25);
 	RemoveBuildingForPlayer(playerid, 8476, 1592.9700, -1637.6400, -4.0120, 0.25);
