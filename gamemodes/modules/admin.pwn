@@ -226,7 +226,7 @@ CMD:setfuel(playerid,params[])
 CMD:skin(playerid, params[]) 
 {
     if(CheckAccess(playerid, 1, 2)) return 1;
-	if(sscanf(params,"ud",params[0], params[1], params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина] [0/1]");
+	if(sscanf(params,"udd", params[0], params[1], params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина] [0/1]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	if(params[1] > 311) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина (1-300)] [0/1]");
@@ -294,8 +294,13 @@ CMD:goto(playerid, params[])
 CMD:veh(playerid,params[]) 
 {
     if(CheckAccess(playerid, 1, 3)) return 1;
-    if(sscanf(params, "ddd",params[0],params[1],params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /veh [ID машины] [цвет] [цвет]");
+    if(sscanf(params, "ddd",params[0], params[1], params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /veh [ID машины] [цвет] [цвет]");
     if(params[0] < 400 || params[0] > 611 && params[0]) return SCM(playerid, COLOR_GREY, !"Номер Транспортного средства не может быть ниже 400 или выше 611 !");
+
+	if(params[0] == 432 || params[0] == 460 || params[0] == 476 || params[0] == 511 || 
+		params[0] == 512 || params[0] == 513 || params[0] == 519 || params[0] == 520 || params[0] == 553 ||
+		params[0] == 577 || params[0] == 592 || params[0] == 593) return SCM(playerid, COLOR_GREY, !"Этот транспорт запрещен разработчиками сервера");
+
     new Float:pos[3]; GetPlayerPos(playerid,pos[0],pos[1],pos[2]);
     new vehc = CreateVehicle(params[0],pos[0],pos[1],pos[2],0,params[1],params[2],-1);
     SetVehicleVirtualWorld(vehc, GetPlayerVirtualWorld(playerid));
@@ -504,7 +509,7 @@ CMD:mphp(playerid,params[])
 		if(PlayerToPoint(100.0, i, x,y,z)) 
 		{
 		    SetPlayerHealthAC(i, params[0]);
-		    SCMf(i, -1,"Игровой мастер изменил уровень Вашего здоровья", PI[playerid][pAdminNumber]);
+		    SCM(i, -1, !"Игровой мастер изменил уровень Вашего здоровья");
 			PI[i][pHospital] = 0;
 		}
    	}
@@ -756,6 +761,7 @@ CMD:auninvite(playerid, params[])
 	for(new g; g <= totalgz; g++) GangZoneHideForPlayer(params[0], g);
 	GangZoneStopFlashForPlayer(params[0], WarZone);
 
+	SavePlayerData(params[0]);
 
 	ClearGroup(params[0]);
 	return SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] уволил из организцаии игрока %s[%d]", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]), params[0]);
@@ -797,6 +803,8 @@ CMD:luninvite(playerid, params[])
 	SetPlayerColorEx(params[0]);
 	SetPlayerTeam(params[0], NO_TEAM);
 
+	SavePlayerData(params[0]);
+
 	cef_emit_event(params[0], "cef:capture:visible", CEFINT(false));
 
 	for(new g; g <= totalgz; g++) GangZoneHideForPlayer(params[0], g);
@@ -816,6 +824,8 @@ CMD:unjail(playerid,params[])
 	PI[params[0]][pDemorgan]= 0;
 	PI[params[0]][pDemorganTime]= 0;
 
+	SavePlayerData(params[0]);
+
 	PlayerSpawn(params[0]);
 	SCMf(playerid, COLOR_TOMATO, "Вы выпустили игрока %s из деморгана", getName(params[0]));
 	SCMf(params[0], COLOR_TOMATO, "Игровой мастер выпустил Вас из деморгана.", PI[playerid][pAdminNumber]);
@@ -831,6 +841,8 @@ CMD:unprison(playerid,params[])
 	
 	PI[params[0]][pJail] = 0;
 	PI[params[0]][pJailTime] = 0;
+
+	SavePlayerData(params[0]);
 
 	PlayerSpawn(params[0]);
 	SCMf(playerid, COLOR_TOMATO, "Вы выпустили игрока %s из тюрьмы", getName(params[0]));
@@ -999,9 +1011,8 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 						case 8: PI[id][pOrgSkin] = 298;
 					}
 				}
-				new str_q[73];
-				mysql_format(mysql, str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `fraction` = '%d' AND `skin_m` = %d", PI[id][pMember], PI[id][pOrgSkin]);
-				mysql_function_query(mysql, str_q, true, "SetPlayerStandartGroup", "d", id);
+				mysql_string[0] = EOS, mf(mysql, mysql_string, 86, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `skin_m` = %d", PI[id][pMember], PI[id][pOrgSkin]);
+				mysql_function_query(mysql, mysql_string, true, "SetPlayerStandartGroup", "d", id);
 
 				UpdatePlayerDataInt(playerid, "skinm", PI[playerid][pOrgSkin]);
 				SetPlayerSkinAC(id,PI[id][pOrgSkin]);
@@ -1058,9 +1069,8 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 					PassiveModeOff(id);
 	            }
 				
-				new str_q[73];
-				mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `fraction` = '%d' AND `default` = 1", PI[id][pMember]);
-				mysql_function_query(mysql, str_q, true, "SetPlayerStandartGroup", "d", id);
+				mysql_string[0] = EOS, mf(mysql, mysql_string, 71, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `default` = 1", PI[id][pMember]);
+				mysql_function_query(mysql, mysql_string, true, "SetPlayerStandartGroup", "d", id);
 
 				SavePlayerData(id);
 
@@ -1200,4 +1210,73 @@ CMD:makegm(playerid, params[])
 	6. SGM\n\
 	7. SGM+\n\
 	8. DEV", !"Далее", !"Отмена");
+}
+CMD:freeze(playerid, params[]) 
+{
+    if(CheckAccess(playerid)) return 1;
+    if(sscanf(params, "i", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /freeze [ID игрока]");
+    if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не найден");
+    if(GetPVarInt(playerid,"Freeze") == 0) 
+	{
+        SetPVarInt(playerid,"Freeze", 1);
+        TogglePlayerControllable(params[0], 0);
+        SCMf(params[0], -1, "Игровой мастер заморозил Вас");
+        SCMf(playerid, COLOR_GREY, "Вы заморозили игрока %s[%d]", getName(params[0]), params[0]);
+    }
+    else 
+	{
+         DeletePVar(playerid, "Freeze");
+         TogglePlayerControllable(params[0], 1);
+         SCMf(params[0], -1, "Игровой мастер разморозил Вас");
+         SCMf(playerid, COLOR_GREY, "Вы разморозили игрока %s[%d]", getName(params[0]), params[0]);
+    }
+    return 1;
+}
+CMD:editmp(playerid) 
+{
+    if(CheckAccess(playerid)) return 1;
+	if(MPStatus == false) return SCM(playerid, COLOR_GREY,"Мероприятие не создано. (/setmp)");
+
+	new playerOnMP;
+    for(new i = 0; i < MAX_PLAYERS; i++) 
+	{
+        if(!IsPlayerConnected(i)) continue;
+        if(PI[i][pOnMP] == 1) playerOnMP++;
+    }
+
+	return ShowPlayerDialogf(playerid, 5898, DIALOG_STYLE_LIST, 
+								!"{ee3366}Настройки МП", 
+								!"Выбрать", !"Закрыть", 
+								!"1. Изменить позицию телепорта\n\
+								2. Выдать одежду в радиусе\n\
+								3. Выдать оружие в радиусе\n\
+								4. Выдать бронижелет в радиусе\n\
+								5. Выдать здоровья в радиусе\n\
+								{FFFF99}Убийство тиммейтов\t\t%s\n\
+								{FFFF99}Завершить МП\n\
+								{FFFF99}Завершить МП (без респавна)\n\
+								{FFFF99}Возвращать на МП после смерти\t%s\n\
+								{FFFF99}Игроков на МП: %d", 
+									MPTeamKill ? ("{ce6c4f}Отключен{FFFFFF}") : ("{4eaa77}Включен{FFFFFF}"),
+									MPReturnDeath ? ("{ce6c4f}Отключено{FFFFFF}") : ("{4eaa77}Включено{FFFFFF}"),
+									playerOnMP);
+}
+CMD:setmp(playerid)
+{
+    if(CheckAccess(playerid)) return 1;
+	if(MPStatus == false) 
+	{
+		GetPlayerPos(playerid, gomp_pos[0], gomp_pos[1], gomp_pos[2]);
+
+        MPStatus = true;
+		MPTeamKill = false;
+		MPReturnDeath = false;
+
+		SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] создал точку телепорта на мероприятие", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid);
+		
+		PI[playerid][pAdminEvents]++;
+		UpdatePlayerDataInt(playerid, "AdminEvents", PI[playerid][pAdminEvents]);
+	}
+	else SCM(playerid, COLOR_GREY, !"Точка телепорта уже создана, настроки: /editmp");
+	return 1;
 }

@@ -1182,15 +1182,18 @@ CMD:cteam(playerid, params[])
     for (new i = 0; i < MAX_PLAYERS; i++)
     {
         if (!IsPlayerConnected(i)) continue;
+		if (GangWarInfo[i][gMember] == INVALID_PLAYER_ID) continue;
+
         if (GangWarInfo[i][gMember] == PI[playerid][pMember]) 
         {
             ShowTeam[playerid][count] = GangWarInfo[i][gPlayerID];
             count++;
-            format(string, sizeof(string), "%s%d\t%s[%d]\t%s[%d]\t%d мс\n", 
+            f(string, sizeof(string), "%s%d\t%s[%d]\t%s[%d]\t%d мс\n", 
                    string, count, 
                    PI[GangWarInfo[i][gPlayerID]][pName], GangWarInfo[i][gPlayerID], 
                    NameRang(GangWarInfo[i][gPlayerID]), PI[GangWarInfo[i][gPlayerID]][pRang], 
-                   GetPlayerPing(GangWarInfo[i][gPlayerID]));
+                   GetPlayerPing(GangWarInfo[i][gPlayerID])
+			);
         }
     }
 
