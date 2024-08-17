@@ -122,7 +122,7 @@ CMD:unwarn(playerid,params[])
 }
 cmd:giveskill(playerid, params[]) 
 {
-    if(CheckAccess(playerid, 4)) return 1;
+    if(CheckAccess(playerid, 4, 2)) return 1;
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /giveskill [ID игрока]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -204,7 +204,7 @@ CMD:ban(playerid,params[])
 }
 CMD:spawncar(playerid) 
 {
-    if(CheckAccess(playerid, 3)) return 1;
+    if(CheckAccess(playerid, 3, 2)) return 1;
 	new carid = GetPlayerVehicleID(playerid);
 	if(GetPlayerState(playerid) != PLAYER_STATE_DRIVER) return SCM(playerid, COLOR_GREY, !"Нужно находиться за рулем транспорта");
 	SetVehicleToRespawn(carid);
@@ -212,7 +212,7 @@ CMD:spawncar(playerid)
 }
 CMD:setfuel(playerid,params[]) 
 {
-    if(CheckAccess(playerid, 3)) return 1;
+    if(CheckAccess(playerid, 3, 2)) return 1;
     if(sscanf(params,"d",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setfuel [кол-во]");
     if(IsPlayerInAnyVehicle(playerid) && GetPlayerState(playerid) == PLAYER_STATE_DRIVER) 
 	{
@@ -223,16 +223,28 @@ CMD:setfuel(playerid,params[])
 	else SCM(playerid, COLOR_GREY, !"Нужно находиться на водительском месте");
 	return 1;
 }
-CMD:skin(playerid,params[]) 
+CMD:skin(playerid, params[]) 
 {
-    if(CheckAccess(playerid)) return 1;
-	if(sscanf(params,"ud",params[0], params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина]");
+    if(CheckAccess(playerid, 1, 2)) return 1;
+	if(sscanf(params,"ud",params[0], params[1], params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина] [0/1]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	if(params[1] > 2000) return 1;
-	SetPlayerSkinAC(params[0],params[1]);
-    SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал временный скин игроку %s[%d] (ID %d)", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0], params[1]);
-    SCMf(params[0], -1, "Игровой мастер выдал Вам временный скин.", PI[playerid][pAdminNumber]);
+	if(params[1] > 311) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина (1-300)] [0/1]");
+	if(params[2] != 0 || params[2] != 1) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина] [0/1 (временный/вечный)]");
+	
+	if(params[2] == 1)
+	{
+		PI[params[0]][pSkin] = params[1];
+
+		SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал вечный скин игроку %s[%d] (ID %d)", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0], params[1]);
+		SCMf(params[0], -1, "Игровой мастер выдал Вам вечный скин.", PI[playerid][pAdminNumber]);
+	}
+	else
+	{
+		SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал временный скин игроку %s[%d] (ID %d)", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0], params[1]);
+		SCMf(params[0], -1, "Игровой мастер выдал Вам временный скин.", PI[playerid][pAdminNumber]);
+	}
+	SetPlayerSkinAC(params[0], params[1]);
     return 1;
 }
 CMD:gethere(playerid,params[]) 
@@ -281,7 +293,7 @@ CMD:goto(playerid, params[])
 }
 CMD:veh(playerid,params[]) 
 {
-    if(CheckAccess(playerid)) return 1;
+    if(CheckAccess(playerid, 1, 3)) return 1;
     if(sscanf(params, "ddd",params[0],params[1],params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /veh [ID машины] [цвет] [цвет]");
     if(params[0] < 400 || params[0] > 611 && params[0]) return SCM(playerid, COLOR_GREY, !"Номер Транспортного средства не может быть ниже 400 или выше 611 !");
     new Float:pos[3]; GetPlayerPos(playerid,pos[0],pos[1],pos[2]);
@@ -298,7 +310,7 @@ CMD:veh(playerid,params[])
 }
 CMD:dveh(playerid) 
 {
-    if(CheckAccess(playerid, 3)) return 1;
+    if(CheckAccess(playerid, 3, 3)) return 1;
     if(!IsPlayerInAnyVehicle(playerid)) return SCM(playerid, COLOR_GREY, !"Нужно находиться в транспорте");
     new carid = GetPlayerVehicleID(playerid);
 	if(CarInfo[carid][cCreate] == 0) return SCM(playerid, COLOR_GREY, !"Данный транспорт нельзя удалить");
@@ -321,7 +333,7 @@ CMD:unmute(playerid,params[])
 }
 CMD:setarm(playerid,params[]) 
 {
-    if(CheckAccess(playerid)) return 1;
+    if(CheckAccess(playerid, 1, 3)) return 1;
 	if(sscanf(params, "ud", params[0],params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setarm [ID игрока] [кол-во]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -333,7 +345,7 @@ CMD:setarm(playerid,params[])
 }
 CMD:vmute(playerid,params[]) 
 {
-    if(CheckAccess(playerid, 2, 2)) return 1;
+    if(CheckAccess(playerid, 2, 3)) return 1;
 	if(sscanf(params,"uds[32]",params[0],params[1],params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /vmute [ID игрока] [время] [причина]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -355,7 +367,7 @@ CMD:vmute(playerid,params[])
 }
 CMD:unvmute(playerid,params[]) 
 {
-    if(CheckAccess(playerid, 2)) return 1;
+    if(CheckAccess(playerid, 2, 3)) return 1;
 	if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unvmute [ID игрока]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -413,7 +425,7 @@ cmd:saveplayers(playerid)
 }
 CMD:msg(playerid,params[]) 
 {
-    if(CheckAccess(playerid)) return 1;
+    if(CheckAccess(playerid, 5)) return 1;
 	if(sscanf(params,"s[144]",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /msg [текст]");
 	SendClientMessageToAllf(COLOR_BLACKRED, "Игровой мастер: %s", params[0]);
     return 1;
@@ -500,7 +512,7 @@ CMD:mphp(playerid,params[])
 }
 cmd:setmember(playerid, params[]) 
 {
-    if(CheckAccess(playerid, 3)) return 1;
+    if(CheckAccess(playerid, 3, 3)) return 1;
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setmember [ID игрока]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -827,7 +839,7 @@ CMD:unprison(playerid,params[])
 }
 CMD:givevb(playerid, params[])
 {
-    if(CheckAccess(playerid, 5)) return 1;
+    if(CheckAccess(playerid, 5, 3)) return 1;
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givevb [ID игрока]");
 	else if(PI[params[0]][pMilitaryID]) return SCM(playerid, COLOR_GREY,"У игрока уже имеется военный билет!");
 	PI[params[0]][pMilitaryID] = 1;
@@ -837,7 +849,7 @@ CMD:givevb(playerid, params[])
 }
 CMD:agivelic(playerid,params[])
 {
-    if(CheckAccess(playerid, 3)) return 1;
+    if(CheckAccess(playerid, 3, 2)) return 1;
 	if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /agivelic [ID игрока]");
 	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -881,24 +893,24 @@ CMD:unban(playerid,params[])
 {
     if(CheckAccess(playerid, 5)) return 1;
 	if(sscanf(params, "s[24]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unban [имя]");
-	mysql_string[0] = EOS, f(mysql_string, 70, "SELECT * FROM `banlist` WHERE `name` = '%e'",params[0]);
-	mysql_tquery(mysql, mysql_string, "UnbanAccount", "is", playerid, params[0]);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `banlist` WHERE `name` = '%e'",params[0]);
+	mysql_function_query(mysql, mysql_string, true, "UnbanAccount", "is", playerid, params[0]);
 	return 1;
 }
 CMD:offgm(playerid,params[]) 
 {
     if(CheckAccess(playerid, 8)) return 1;
 	if(sscanf(params, "s[24]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /offgm [имя]");
-	mysql_string[0] = EOS, f(mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'",params[0]);
-	mysql_tquery(mysql, mysql_string, "OffGM", "is", playerid, params[0]);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'",params[0]);
+	mysql_function_query(mysql, mysql_string, true, "OffGM", "is", playerid, params[0]);
 	return 1;
 }
 CMD:offleader(playerid,params[]) 
 {
     if(CheckAccess(playerid, 5)) return 1;
 	if(sscanf(params, "s[24]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /offleader [имя]");
-	mysql_string[0] = EOS, f(mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'",params[0]);
-	mysql_tquery(mysql, mysql_string, "OffLeader", "is", playerid, params[0]);
+	mysql_string[0] = EOS, mf(mysql, mysql_string, 70, "SELECT * FROM `accounts` WHERE `Name` = '%e'",params[0]);
+	mysql_function_query(mysql, mysql_string, true, "OffLeader", "is", playerid, params[0]);
 	return 1;
 }
 //======================================= [ dialogs ] =============================//
@@ -1047,7 +1059,7 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 	            }
 				
 				new str_q[73];
-				mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `fraction` = '%d' AND `standart` = 1", PI[id][pMember]);
+				mysql_format(mysql,str_q, sizeof(str_q), "SELECT * FROM `group` WHERE `fraction` = '%d' AND `default` = 1", PI[id][pMember]);
 				mysql_function_query(mysql, str_q, true, "SetPlayerStandartGroup", "d", id);
 
 				SavePlayerData(id);

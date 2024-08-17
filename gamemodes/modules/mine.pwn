@@ -3,7 +3,7 @@ new MineOre[MAX_PLAYERS];
 new MineTypeOre[MAX_PLAYERS];
 new AntiFloodMine[MAX_PLAYERS];
 
-new OrePrice = 105;
+new OrePrice = 105*4;
 new InvPrice = 20;
 
 new MineClothes;
