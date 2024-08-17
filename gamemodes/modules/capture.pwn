@@ -743,14 +743,10 @@ stock capture_OnDialogResponse(playerid, dialogid, response, listitem)
                 if(!AddPlayerToCapture(playerid)) return SendClientMessage(playerid, COLOR_LIGHTGREY, !"Свободных мест уже нет (7/7)");
                 else 
                 {
-                    static name[24];
-                    SetString(name, NameRang(playerid));
-                    name = NameRang(playerid);
-                    
 					new count = GetCountonGanwWar(PI[playerid][pMember]);
 
                     SendFractionMessagef(PI[playerid][pMember], 0x69b867FF, "[R] %s %s[%d] присоединился к участникам стрелы (%d/7)",\
-                        name, getName(playerid), playerid, count);
+                        NameRang(playerid), getName(playerid), playerid, count);
                 }
             }
         }
@@ -1205,7 +1201,7 @@ CMD:cteam(playerid, params[])
     {
         new str_1[512*2];
         format(str_1, sizeof(str_1), "№\tИгрок\tРанг\tПинг\n%s", string);
-        ShowPlayerDialog(playerid, 
+        CEF_ShowPlayerDialog(playerid, 
                          (PI[playerid][pCaptureManager] == 1 || PI[playerid][pRang] >= 9) ? 4903 : 0, 
                          DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Участники стрелы", 
                          str_1, 

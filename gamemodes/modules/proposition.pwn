@@ -41,6 +41,7 @@ stock ClearRequest(playerid)
 	PI[playerid][pRequestValue_2] = -1;
 	PI[playerid][pRequestFrom] = INVALID_PLAYER_ID;
 	PI[playerid][pRequestFor] = INVALID_PLAYER_ID;
+	KillTimer(OfferTimer[playerid]);
 	if(IsPlayerLogged{playerid}) cef_emit_event(playerid, "cef:remove:notification:offer");
 }
 stock CheckRequest(playerid)
@@ -96,6 +97,41 @@ stock CheckRequest(playerid)
 				format(request_str, 70,"%s передал аптечку %s", getName(from_player), getName(playerid));
 			    ProxDetector(25.0, playerid, request_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
 			}
+			case 3:
+			{
+			 	new PlayerHouse[5];
+				if(PI[from_player][pHouse] != -1) format(PlayerHouse, sizeof(PlayerHouse), PI[from_player][pHouse]);
+				else format(PlayerHouse, sizeof(PlayerHouse), "---");
+
+				global_str[0] = EOS, f(global_str, 300, "{000000}»м€\t\t\t\t{ee3366}%s\n\
+														{000000}Ћет в области\t\t\t%d\n\
+														{000000}«аконнопослушность\t\t%d\n\
+														{000000}”ровень розыска\t\t%d\n\
+														{000000}Ќомер дома\t\t\t%d",
+														PI[from_player][pName],
+														PI[from_player][pLevel],
+														PI[from_player][pRespect],
+														PI[from_player][pWanted],
+														PlayerHouse);
+
+				CEF_ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, "{ee3366}ѕаспорт", global_str, "«акрыть", "");
+
+				SetPlayerChatBubble(playerid, "просматривает документы", 0xFF99CCFF, 20.0, 4000);
+			}
+			case 4:
+			{
+			 	ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_LIST, "{ee3366}Ћицензии", "«акрыть", "", "\
+					јвтошкола птг. Ѕатырево: \tƒокумент є%d\n\
+					√ражданин –‘\t\t\t{3377cc}%s\n\
+					{FFFFFF}¬одительские права: \t\t\t%s\n\
+					{FFFFFF}Ћицензи€ на оружие: \t\t\t%s", 
+						PI[from_player][pLicNumber], 
+						getName(from_player), 
+						PI[from_player][pDriveLicense] ? "{FF6347}-" : "{24ff78}+", 
+						PI[from_player][pGunLicense] ? "{FF6347}-" : "{24ff78}+");
+
+				SetPlayerChatBubble(playerid, "просматривает лицензии", 0xFF99CCFF, 20.0, 4000);
+			}
 		}
 		ClearRequest(PI[playerid][pRequestFrom]);
 		ClearRequest(playerid);
@@ -113,6 +149,11 @@ stock SendRequestForPlayer(playerid, id, type, value = -1, value_2 = -1)
 	{
 		ClearRequest(playerid);
 		return SCM(playerid, COLOR_GREY, !"»грок не авторизован");
+	}
+	if(PI[id][pRequest]) 
+	{
+		ClearRequest(playerid);
+		return SCM(playerid, COLOR_GREY, !"” игрока уже есть активное предложение");
 	}
 
 	PI[playerid][pRequest] = 1;
@@ -139,15 +180,35 @@ stock SendRequestForPlayer(playerid, id, type, value = -1, value_2 = -1)
 		}
 		case 1:
 		{
-			SCMf(playerid, 0x33ceffFF, "¬ы предложили %s вступить в организацию (%s)", getName(id), Fraction_Name[PI[playerid][pMember]]);
-			SCMf(id, 0x33ceffFF, "%s %s предложил ¬ам вступить в организацию (%s)", NameRang(playerid), getName(playerid), Fraction_Name[PI[playerid][pMember]]);
+			cef_text[0] = EOS, f(cef_text, 105, "¬ы предложили %s вступить в организацию (%s)", getName(id), Fraction_Name[PI[playerid][pMember]]);
+			SendPlayerOfferNotify(playerid, 2, cef_text, "", "ќ“ћ≈Ќ»“№", 15);
+
+			cef_text[0] = EOS, f(cef_text, 105, "%s %s предложил ¬ам вступить в организацию (%s)", NameRang(playerid), getName(playerid), Fraction_Name[PI[playerid][pMember]]);
+			SendPlayerOfferNotify(id, 1, cef_text, "—ќ√Ћј—»“№—я", "ќ“ ј«ј“№—я", 15);
 		}
 		case 2:
 		{
-			SCMf(playerid, 0x36e96cFF, "¬ы предложили %s вз€ть вашу аптечку.", getName(id));
+			cef_text[0] = EOS, f(cef_text, 51, "¬ы предложили %s вз€ть вашу аптечку.", getName(id));
+			SendPlayerOfferNotify(playerid, 2, cef_text, "", "ќ“ћ≈Ќ»“№", 15);
 
-			global_str[0] = EOS, format(global_str, 54, "%s предложил ¬ам вз€ть аптечку", getName(playerid));
-			SendPlayerOfferNotify(id, 1, global_str, "—ќ√Ћј—»“№—я", "ќ“ ј«ј“№—я", 15);
+			cef_text[0] = EOS, format(cef_text, 54, "%s предложил ¬ам вз€ть аптечку", getName(playerid));
+			SendPlayerOfferNotify(id, 1, cef_text, "—ќ√Ћј—»“№—я", "ќ“ ј«ј“№—я", 15);
+		}
+		case 3:
+		{
+			cef_text[0] = EOS, f(cef_text, 64, "¬ы предложили %s показать ваши документы", getName(id));
+			SendPlayerOfferNotify(playerid, 2, cef_text, "", "ќ“ћ≈Ќ»“№", 15);
+
+			cef_text[0] = EOS, format(cef_text, 64, "%s предложил ¬ам показать свои документы", getName(playerid));
+			SendPlayerOfferNotify(id, 1, cef_text, "—ќ√Ћј—»“№—я", "ќ“ ј«ј“№—я", 15);
+		}
+		case 4:
+		{
+			cef_text[0] = EOS, f(cef_text, 64, "¬ы предложили %s показать ваши лицензии", getName(id));
+			SendPlayerOfferNotify(playerid, 2, cef_text, "", "ќ“ћ≈Ќ»“№", 15);
+
+			cef_text[0] = EOS, format(cef_text, 64, "%s предложил ¬ам показать свои лицензии", getName(playerid));
+			SendPlayerOfferNotify(id, 1, cef_text, "—ќ√Ћј—»“№—я", "ќ“ ј«ј“№—я", 15);
 		}
 		default: 
 		{

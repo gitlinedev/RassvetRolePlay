@@ -806,6 +806,7 @@ new NPC_ALL[30],
 	Text3D:vehicletext,
 	vehicle_static[99],
 	WarZone,
+	WarZoneCube,
 	SkinPost,
 	SkinPostTimer,
 	GopotaPost,
@@ -905,7 +906,6 @@ new NPC_ALL[30],
 	Text:AutoSalon_ButtonColor[2],
 	Text:AutoSalon_Color[48],
 	bool:MPStatus,
-	bool:MPReturnDeath,
 	bool:MPTeamKill,
 	Float:gomp_pos[3],
 	help_spawn,
@@ -1912,8 +1912,8 @@ stock ConnectMySQL()
     new currenttime = GetTickCount();
 
 	new sql = 0;
-	if(!sql) mysql = mysql_connect("127.0.0.1", "gs269723", "gs269723", "6CKII67VlSAR"); // основа
-	else mysql = mysql_connect("127.0.0.1", "gs264469", "gs264469", "f28KjhCF4oci");
+	if(!sql) mysql = mysql_connect("127.0.0.1", "gs269723", "gs269723", "6CKII67VlSAR"); // основа (0)
+	else mysql = mysql_connect("127.0.0.1", "gs87610", "gs87610", "cs0gy97c"); // тест (1)
 
 	switch(mysql_errno())
 	{
@@ -1965,12 +1965,16 @@ public OnGameModeInit()
 	cef_subscribe("cef:select:clothes", "CEF_SelectClothes");
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	ClearCapture();
-		
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-	
 	CheckCarHP = SetTimer("CheckCarHealth", 1000, 1);
 	SetTimer("SecondTimer",1000,true);
 	SetTimer("MinutTimer",1000*60,true);
 	SetTimer("ChangeServer0", 500, false);
 	SetTimer("FlyTimer", 100, 1);
+	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+	ArmyStorageZone = CreateDynamicCircle(-2569.5925,450.9106, 4.0, 0, 0, -1);
+	WarZoneCube = CreateDynamicCube(1540.5142, -1188.6774, 1.9030, 1647.0428, -1296.2592, 45.9030, 0, 0, -1);
+	
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	SetNameTagDrawDistance(30.0);
 	LimitPlayerMarkerRadius(70.0);
@@ -2095,7 +2099,6 @@ public OnPlayerConnect(playerid)
 	PreloadAnimLib(playerid,"CARRY");
 	PreloadAnimLib(playerid,"BASEBALL");
 	//
-	ArmyStorageZone = CreateDynamicCircle(-2569.5925,450.9106, 4.0, 0, 0, -1);
 
 	ClearPlayerData(playerid);
 
@@ -2256,33 +2259,18 @@ public OnPlayerDeath(playerid, killerid, reason)
 			else PlayerHospital(playerid);
 			TogglePlayerControllable(playerid, true);
 		}
-		else if(PI[playerid][pOnMP] == 1 && MPReturnDeath == true)
-		{
-			SetPlayerPosAC(playerid, gomp_pos[0],gomp_pos[1],gomp_pos[2]);
-			SetPlayerInterior(playerid, 0);
-			SetPlayerVirtualWorld(playerid, 0);
-
-			SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, 100*10);
-			SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, 100*10);
-			SetPlayerSkillLevel(playerid, WEAPONSKILL_DESERT_EAGLE, 100*10);
-			SetPlayerSkillLevel(playerid, WEAPONSKILL_SHOTGUN, 100*10);
-			SetPlayerSkillLevel(playerid, WEAPONSKILL_MP5, 100*10);
-			SetPlayerSkillLevel(playerid, WEAPONSKILL_AK47, 100*10);
-			SetPlayerSkillLevel(playerid, WEAPONSKILL_SNIPERRIFLE, 100*10);
-
-			SetPlayerHealth(playerid, 100);
-			return 1;
-		}
-		else if(PI[playerid][pOnMP] == 1 && MPReturnDeath == false)
+		else if(PI[playerid][pOnMP] == 1)
 		{
 			PI[playerid][pOnMP] = 0;
-			SetPlayerPos(playerid, PI[playerid][pOnMPX], PI[playerid][pOnMPY], PI[playerid][pOnMPZ]+2);
-			SetPlayerInterior(playerid,0);
-			SetPlayerVirtualWorld(playerid,0);
+
+			new skin = GetSkinOfPlayer(playerid);
+			SetSpawnInfoEx(playerid, skin, PI[playerid][pOnMPX], PI[playerid][pOnMPY], PI[playerid][pOnMPZ]+2, 180.0);
+
+			SetPlayerInterior(playerid, 0);
+			SetPlayerVirtualWorld(playerid, 0);
 			SetPlayerSkills(playerid);
 
 			SetPlayerHealth(playerid, 100);
-			return 1;
 		}
 	}
 	PI[playerid][pMaskWorn] = 0;
@@ -5550,28 +5538,28 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if(!response) return 1;
 			if(response)
 			{
-				new Float:x,Float:y,Float:z;
-				GetPlayerPos(targplayer[0],x,y,z);
-				if(!PlayerToPoint(3.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Вы находетесь далеко друг от друга");
+				new Float:X,Float:Y,Float:Z;
+				GetPlayerPos(targplayer[0], X, Y, Z);
+				if(!PlayerToPoint(3.0, playerid, X, Y, Z)) return SCM(playerid, COLOR_GREY, !"Вы находетесь далеко друг от друга");
 
 				switch(listitem)
 				{
 					case 0:
 					{
-						return SendR(playerid);//SendRequestForPlayer(playerid, targplayer[0], 4);
+						return SendRequestForPlayer(playerid, targplayer[0], 0);
 					}
 					case 1:
 					{
 						if(PI[targplayer[0]][pHealPack] >= 3) return SCM(playerid, COLOR_GREY, !"У игрока уже есть 3 набора аптечек");
-						return SendR(playerid);//SendRequestForPlayer(playerid, targplayer[0], 2);
+						return SendRequestForPlayer(playerid, targplayer[0], 2);
 					}
 					case 2:
 					{
-						return SendR(playerid);//SendRequestForPlayer(playerid, targplayer[0], 9);
+						return SendRequestForPlayer(playerid, targplayer[0], 3);
 					}
 					case 3:
 					{
-						return SendR(playerid);//SendRequestForPlayer(playerid, targplayer[0], 7);
+						return SendRequestForPlayer(playerid, targplayer[0], 4);
 					}
 					case 4:
 					{
@@ -7363,10 +7351,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						BizInfo[b][bMoney] += cena;
 						BizInfo[b][bProduct] -= 1;
                         UpdateBusinessData(b);
-						new str_1[50];
-						format(str_1,sizeof(str_1),"%s выпил спранк",PI[playerid][pName]);
+						global_str[0] = EOS, f(global_str, 39, "%s выпил спранк",PI[playerid][pName]);
 						PlayerPlaySound(playerid, 32200, 0.0, 0.0, 0.0);
-					    ProxDetector(10.0, playerid, str_1, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
+					    ProxDetector(10.0, playerid, global_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
 	                    SetPlayerChatBubble(playerid, "выпил спранк", 0xFF99CCFF, 20.0, 4000);
 					}
 		         	case 1: {
@@ -7377,14 +7364,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						BizInfo[b][bMoney] += cena;
 						BizInfo[b][bProduct] -= 1;
                         UpdateBusinessData(b);
-						new str_1[50];
-						format(str_1,sizeof(str_1),"%s выпил кофе",PI[playerid][pName]);
+						global_str[0] = EOS, f(global_str, 39, "%s выпил кофе",PI[playerid][pName]);
 						PlayerPlaySound(playerid, 32200, 0.0, 0.0, 0.0);
-					    ProxDetector(10.0, playerid, str_1, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
+					    ProxDetector(10.0, playerid, global_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
 	                    SetPlayerChatBubble(playerid, "выпил кофе", 0xFF99CCFF, 20.0, 4000);
 
 			        }
-			       	case 2: {
+			       	case 2: 
+					{
 			            new cena = 250;
 	                    if(BizInfo[b][bProduct] <= 0  && BizInfo[b][bOwned] == 1) return SCM(playerid, COLOR_GREY,"В бизнесе недостаточно продуктов");
 						if(GetPlayerMoneyID(playerid) < cena) return SCM(playerid, COLOR_GREY,"У Вас недостаточно денег на руках");
@@ -7397,10 +7384,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(PI[playerid][pSatiety] <= 70) PI[playerid][pSatiety] += 30;
 						else PI[playerid][pSatiety] = 100;
                         UpdateBusinessData(b);
-						new str_1[50];
-						format(str_1,sizeof(str_1),"%s съела бургер",PI[playerid][pName]);
+						global_str[0] = EOS, f(global_str, 39, "%s съела бургер",PI[playerid][pName]);
 						PlayerPlaySound(playerid, 32200, 0.0, 0.0, 0.0);
-					    ProxDetector(10.0, playerid, str_1, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
+					    ProxDetector(10.0, playerid, global_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
 	                    SetPlayerChatBubble(playerid, "съела бургер", 0xFF99CCFF, 20.0, 4000);
 			        }
 			    }
@@ -8476,7 +8462,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 							if(!IsPlayerConnected(i)) continue;
 							if(PlayerToPoint(100.0, i, x,y,z)) 
 							{
-								SetPlayerHealthAC(i, 100);
+								SetPlayerArmourAC(i, 100);
 								SCM(i, -1, !"Игровой мастер выдал Вам бронижелет");
 							}
 						}
@@ -8535,19 +8521,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						MPStatus = false;
 						SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] остановил точку телепорта на мероприятие без респавна", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid);
 						callcmd::editmp(playerid);
-					}
-					case 8: 
-					{
-						if(MPReturnDeath == true) 
-						{
-							SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выключил возврат на МП после смерти", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid);
-							MPReturnDeath = false;
-						}
-						else
-						{
-							SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] включил возврат на МП после смерти", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid);
-							MPReturnDeath = true;
-						}
 					}
 				}
 			}
@@ -8663,7 +8636,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 						SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] перекрасил территорию №%d (%s) в территорию (Скинхеды)",\
 							AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, gz, Fraction_Name[LastOpg]);
-						return SCM(playerid, COLOR_LIGHTGREY, !"Вы присвоили территорию ОПГ 'Скинхеды'");
+						SCM(playerid, COLOR_LIGHTGREY, !"Вы присвоили территорию ОПГ 'Скинхеды'");
 					}
 					case 1: 
 					{
@@ -8672,7 +8645,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 						SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] перекрасил территорию №%d (%s) в территорию (Гопота)",\
 							AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, gz, Fraction_Name[LastOpg]);
-						return SCM(playerid, COLOR_LIGHTGREY, !"Вы присвоили территорию ОПГ 'Гопота'");
+						SCM(playerid, COLOR_LIGHTGREY, !"Вы присвоили территорию ОПГ 'Гопота'");
 					}
 					case 2: 
 					{
@@ -8681,7 +8654,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 						SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] перекрасил территорию №%d (%s) в территорию (Кавказцы)",\
 							AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, gz, Fraction_Name[LastOpg]);
-						return SCM(playerid, COLOR_LIGHTGREY, !"Вы присвоили территорию ОПГ 'Кавказцы'");
+						SCM(playerid, COLOR_LIGHTGREY, !"Вы присвоили территорию ОПГ 'Кавказцы'");
 					}
 				}
 				foreach(new i:Player) 
@@ -11219,11 +11192,10 @@ callback: LoadWarehouse()
 		cache_get_field_content(0, "metall", temp), MineOreStock = strval (temp);
         cache_get_field_content(0, "coal", temp), MineCoalStock = strval (temp);
 		//
-		new str_mine[135];
-        format(str_mine, sizeof str_mine, "{ff9933}Шахта\n\n\
+		global_str[0] = EOS, f(global_str, 180, "{ff9933}Шахта\n\n\
                                         {FFFFFF}Металла на складе: {ffcc33}%d кг\n\
                                         {FFFFFF}Угля на складе: {cc6666}%d кг", MineOreStock, MineCoalStock);
-        MineInfo = CreateDynamic3DTextLabel(str_mine, -1, 2346.0369,-1452.2238,1137.4485, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 1, 1);
+        MineInfo = CreateDynamic3DTextLabel(global_str, -1, 2055.4192, 1649.4381, -45.3953, 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 1, 1);
 		//
 		kavkaz_sklad = CreateDynamicPickup(1279, 23, -2131.1814,2390.8223,1501.8101, 1);
 		gopota_sklad = CreateDynamicPickup(1279, 23, -2131.1814,2390.8223,1501.8101, 2);
@@ -11378,11 +11350,9 @@ callback: LoadPlayerData(playerid)
 		cache_get_field_content(0, "phonebook", temp), PI[playerid][pPhoneBook] = strval (temp);
 		cache_get_field_content(0, "Satiety", temp), PI[playerid][pSatiety] = strval (temp);
 		cache_get_field_content(0, "HealthPoints", temp), PI[playerid][pHealthPoints] = strval (temp);
-
 		cache_get_field_content(0, "LeavePosX", temp), PI[playerid][pLeavePosX] = strval (temp);
 		cache_get_field_content(0, "LeavePosY", temp), PI[playerid][pLeavePosY] = strval (temp);
 		cache_get_field_content(0, "LeavePosZ", temp), PI[playerid][pLeavePosZ] = strval (temp);
-
 		cache_get_field_content(0, "arm", temp), PI[playerid][pArmour] = strval (temp);
 		cache_get_field_content(0, "med", temp), PI[playerid][data_MED] = strval (temp);
 		cache_get_field_content(0, "mednum", temp), PI[playerid][data_MEDNUM] = strval (temp);
@@ -11467,6 +11437,8 @@ callback: LoadPlayerData(playerid)
 			CheckGangWar(playerid);
 			for(new g; g <= totalgz; g++) GangZoneShowForPlayer(playerid, g, GetGZFrac(g));
 		}
+
+		cef_emit_event(playerid, "cef:hud:run", CEFINT(100));
 
 		if(PI[playerid][pSkin] == 0) return PI[playerid][pSkin] = 23;
 
@@ -13545,8 +13517,10 @@ stock PlayerToPoint(Float:radi, playerid, Float:x, Float:y, Float:z) {
 	}
 	return 0;
 }
-stock SendDepMessage(color, text[]) {
- 	for(new i = 0; i < MAX_PLAYERS; i++) {
+stock SendDepMessage(color, text[]) 
+{
+ 	for(new i = 0; i < MAX_PLAYERS; i++) 
+	{
 	    if(!IsPlayerConnected(i)) continue;
 		switch(PI[i][pMember]) {
 		    case 1,2,3,4,8,9: SCM(i, color, text);
@@ -13628,7 +13602,7 @@ CMD:flip(playerid, params[])
 	else format(senderName, sizeof(senderName), "%s", ModerName[PI[playerid][pModer]]);
 
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s] %s[%d] починил транспорт игрока %s[%d]", senderName, PI[playerid][pName], playerid, getName(params[0]), params[0]);
-	SCMf(params[0], -1, "%s починил Вам трансопрт", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
+	SCMf(params[0], -1, "%s починил Вам транспорт", PI[playerid][pAdmin] ? "Игровой мастер" : "Игровой модератор");
 	return 1;
 }
 alias:ans("pm");
@@ -13874,27 +13848,20 @@ CMD:lic(playerid,params[])
 {
     if(sscanf(params, "u", params[0])) 
 	{
-        new licb[50], licg[50];
-		switch(PI[playerid][pDriveLicense]) 
-		{
-			case 1: format(licb,sizeof(licb),"{FFFFFF}Водительские права: \t\t\t{FF6347}-");
-			case 2: format(licb,sizeof(licb),"{FFFFFF}Водительские права: \t\t\t{24ff78}+");
-		}
-		switch(PI[playerid][pGunLicense]) 
-		{
-			case 1: format(licg,sizeof(licg),"{FFFFFF}Лицензия на оружие: \t\t\t{FF6347}-");
-			case 2: format(licg,sizeof(licg),"{FFFFFF}Лицензия на оружие: \t\t\t{24ff78}+");
-		}
-		return ShowPlayerDialogf(playerid,0, DIALOG_STYLE_LIST, "{ee3366}Лицензии", "Закрыть", "", "\
+		return ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_LIST, "{ee3366}Лицензии", "Закрыть", "", "\
 		Автошкола птг. Батырево: \tДокумент №%d\n\
 		Гражданин РФ\t\t\t{3377cc}%s\n\
-		%s\n\
-		%s", PI[playerid][pLicNumber], getName(playerid), licb, licg);
+		{FFFFFF}Водительские права: \t\t\t%s\n\
+		{FFFFFF}Лицензия на оружие: \t\t\t%s", 
+			PI[playerid][pLicNumber], 
+			getName(playerid), 
+			PI[playerid][pDriveLicense] ? "{FF6347}-" : "{24ff78}+", 
+			PI[playerid][pGunLicense] ? "{FF6347}-" : "{24ff78}+");
 	}
 	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /lic [ид игрока]");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	if(!ProxDetectorS(10.0, playerid, params[0])) return SCM(playerid, COLOR_GREY, !"Игрок слишком далеко от Вас");
-	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 7);
+	return SendRequestForPlayer(playerid, params[0], 4);
 }
 CMD:dice(playerid,params[]) 
 {
@@ -13905,8 +13872,8 @@ CMD:dice(playerid,params[])
 	if(params[1] < 1000 || params[1] > 100000000) return SCM(playerid, COLOR_GREY, !"Сумма ставки должна быть от 1000 до 100000000 рублей");
 	if(GetPlayerMoneyID(playerid) < params[1]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
     if(GetPlayerMoneyID(params[0]) < params[1]) return SCM(playerid, COLOR_GREY, !"У игрока недостаточно денег на руках");
-	new Float:x,Float:y,Float:z;
-	GetPlayerPos(params[0],x,y,z);
+	new Float:x, Float:y, Float:z;
+	GetPlayerPos(params[0], x, y, z);
 	if(!ProxDetectorS(10.0, playerid, params[0])) return SCM(playerid, COLOR_GREY, !"Игрок находится слишком далеко");
     if(!PlayerToPoint(100.0, playerid, 2330.7095,1766.8969,-13.9100)) return SCM(playerid, COLOR_GREY, !"Нужно находиться в казино");
 	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 8, params[1]);
@@ -13916,17 +13883,28 @@ CMD:pass(playerid,params[])
     if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /pass [ID игрока]");
 	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	new Float:x,Float:y,Float:z;
-	GetPlayerPos(params[0],x,y,z);
+	new Float:x, Float:y, Float:z;
+	GetPlayerPos(params[0], x, y, z);
 	if(!ProxDetectorS(10.0, playerid, params[0])) return SCM(playerid, COLOR_GREY, !"Игрок находится слишком далеко");
-	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 9);
+	return SendRequestForPlayer(playerid, params[0], 3);
 }
 CMD:skill(playerid,params[]) 
 {
-	new str_3[365];
-    if(sscanf(params, "u", params[0])) {
-		format(str_3,sizeof(str_3),"1. ТТ:\t\t\t%d %%\n2. Тайзер:\t%d %%\n3. ПЛ-15:\t\t%d %%\n4. Дробовик:\t\t\t%d %%\n5. MP5:\t\t\t%d %%\n6. AK-47:\t\t%d %%",PI[playerid][pSkillPistol],PI[playerid][pSkillSDPistol],PI[playerid][pSkillDeagle],PI[playerid][pSkillShotgun],PI[playerid][pSkillMP5],PI[playerid][pSkillAK47]);
-		ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, "{ee3366}Навыки владения оружием", str_3, "Закрыть", "");
+    if(sscanf(params, "u", params[0])) 
+	{
+		ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_LIST, !"{ee3366}Навыки владения оружием", !"Закрыть", !"",\
+			"1. ТТ:\t\t\t%d %%\n\
+			2. Тайзер:\t\t%d %%\n\
+			3. ПЛ-15:\t\t%d %%\n\
+			4. Дробовик:\t\t%d %%\n\
+			5. MP5:\t\t\t%d %%\n\
+			6. AK-47:\t\t%d %%",
+				PI[playerid][pSkillPistol],
+				PI[playerid][pSkillSDPistol],
+				PI[playerid][pSkillDeagle],
+				PI[playerid][pSkillShotgun],
+				PI[playerid][pSkillMP5],
+				PI[playerid][pSkillAK47]);
   		return SetPlayerChatBubble(playerid, "просматривает навыки владения оружием", 0xFF99CCFF, 20.0, 4000);
 	}
 	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
@@ -14742,9 +14720,8 @@ CMD:put(playerid,params[])
 	                PI[playerid][data_PUTPATR] = 0;
 	                if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
 	                SetPlayerSpecialAction(playerid,0);
-					new str_1[185];
-					format(str_1,sizeof(str_1),"{3366FF}МЗКТ\n{FFFFFF}Патроны: {FF6600}%d/6000 шт.\n{FFFFFF}Металл: {FF6600}%d/12000 шт.",CarInfo[c][cAmmo], CarInfo[c][cMetall]);
-	                UpdateDynamic3DTextLabelText(vehicletext, -1, str_1);
+					global_str[0] = EOS, f(global_str, 107, "{3366FF}МЗКТ\n{FFFFFF}Патроны: {FF6600}%d/6000 шт.\n{FFFFFF}Металл: {FF6600}%d/12000 шт.",CarInfo[c][cAmmo], CarInfo[c][cMetall]);
+	                UpdateDynamic3DTextLabelText(vehicletext, -1, global_str);
 	                return 1;
                 }
                 else if(PI[playerid][data_PUTMET] != 0) 
@@ -14754,9 +14731,8 @@ CMD:put(playerid,params[])
 	                PI[playerid][data_PUTMET] = 0;
 	                if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
 	                SetPlayerSpecialAction(playerid,0);
-					new str_1[185];
-					format(str_1,sizeof(str_1),"{3366FF}МЗКТ\n{FFFFFF}Патроны: {FF6600}%d/6000 шт.\n{FFFFFF}Металл: {FF6600}%d/12000 шт.",CarInfo[c][cAmmo], CarInfo[c][cMetall]);
-	                UpdateDynamic3DTextLabelText(vehicletext, -1, str_1);
+					global_str[0] = EOS, f(global_str, 107, "{3366FF}МЗКТ\n{FFFFFF}Патроны: {FF6600}%d/6000 шт.\n{FFFFFF}Металл: {FF6600}%d/12000 шт.",CarInfo[c][cAmmo], CarInfo[c][cMetall]);
+	                UpdateDynamic3DTextLabelText(vehicletext, -1, global_str);
 	                return 1;
                 }
 			}
@@ -14790,12 +14766,10 @@ CMD:putammo(playerid,params[])
 					army_wh[0] += metals;
 					CarInfo[car][cMetall] = 0;
 					SendFractionMessagef(PI[playerid][pMember],0x69b867FF, "[R] %s[%d] разгрузил грузовик с боеприпасами. (+%d патронов)",getName(playerid),playerid, materials, metals);
-					new str_3[185];
-            		format(str_3,sizeof(str_3),"{3366FF}Склад армии\n{FFFFFF}Металла на складе: {FF6600}%d шт.\n{FFFFFF}Патронов на складе: {FF6600}%d шт.",army_wh[0],army_wh[1]);
-       				UpdateDynamic3DTextLabelText(army_sklad_text, -1, str_3);
-					new str_4[185];
-					format(str_4,sizeof(str_4),"{3366FF}МЗКТ\n{FFFFFF}Патроны: {FF6600}%d/6000 шт.\n{FFFFFF}Металл: {FF6600}%d/12000 шт.", CarInfo[car][cAmmo], CarInfo[car][cMetall]);
-	                UpdateDynamic3DTextLabelText(vehicletext, -1, str_4);
+					global_str[0] = EOS, f(global_str, 130, "{3366FF}Склад армии\n{FFFFFF}Металла на складе: {FF6600}%d шт.\n{FFFFFF}Патронов на складе: {FF6600}%d шт.",army_wh[0],army_wh[1]);
+       				UpdateDynamic3DTextLabelText(army_sklad_text, -1, global_str);
+					global_str[0] = EOS, f(global_str, 115, "{3366FF}МЗКТ\n{FFFFFF}Патроны: {FF6600}%d/6000 шт.\n{FFFFFF}Металл: {FF6600}%d/12000 шт.", CarInfo[car][cAmmo], CarInfo[car][cMetall]);
+	                UpdateDynamic3DTextLabelText(vehicletext, -1, global_str);
 					return 1;
 				}
                 SCM(playerid, COLOR_GREY, !"Грузовик пуст");
@@ -16033,9 +16007,8 @@ CMD:anim(playerid)
 		SetPVarInt(playerid, "anim_load",1);
 		return true;
 	}
-	new string[406+1];
 	if(GetPlayerState(playerid) != PLAYER_STATE_ONFOOT) return SCM(playerid, COLOR_GREY, !"Нельзя использовать в транспорте!");
-	format(string,sizeof(string),"\
+	ShowPlayerDialog(playerid,dialog_ANIM,DIALOG_STYLE_LIST,"{ee3366}Список анимаций:", "\
 	1. Поднять руки вверх\n\
 	2. Курить\n3. Мыть руки\n\
 	4. Сесть на землю\n\
@@ -16058,22 +16031,18 @@ CMD:anim(playerid)
 	21. Медитация\n\
 	22. Facepalm\n\
 	23. Заложник\n\
-	24. Справить нужду");
-	ShowPlayerDialog(playerid,dialog_ANIM,DIALOG_STYLE_LIST,"{ee3366}Список анимаций:", string, "Выбрать","Отмена");
+	24. Справить нужду", "Выбрать","Отмена");
 	return true;
 }
 callback: DialogGiveGun(playerid) {
 
     new gun = GetPlayerWeapon(GetPVarInt(playerid, "from_player"));
-	new str_3[256];
 
-	format(str_3,sizeof(str_3),"Владелец: %s[%d]\nОружие: %s (%d пт)\n\nВы действительно хотите принять это предложение",
+	ShowPlayerDialogf(playerid, 8790, DIALOG_STYLE_MSGBOX, !"{ee3366}Передача оружия", "Принять", "Нет", "Владелец: %s[%d]\nОружие: %s (%d пт)\n\nВы действительно хотите принять это предложение",
 		PI[GetPVarInt(playerid, "from_player")][pName],
 		GetPVarInt(playerid, "from_player"),
 		weapon_names[gun],
 		GetPVarInt(playerid, "value_1"));
-
-	ShowPlayerDialog(playerid, 8790, DIALOG_STYLE_MSGBOX, !"{ee3366}Передача оружия", str_3, "Принять", "Нет");
 	return 1;
 }
 CMD:givegun(playerid, params[]) 
@@ -16098,11 +16067,13 @@ CMD:givegun(playerid, params[])
 	if(PI[playerid][data_AMMO][gunslot] < params[1]) return SCM(playerid, COLOR_GREY, "У Вас нет такого количества патронов");
 	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 16, params[1]);
 }
-stock PlayerGetsChatBan(playerid, text[]) {
+stock PlayerGetsChatBan(playerid, text[]) 
+{
 	new g = random(777);
 	return SendAdminsMessagef(0xa0bbbbFF, "[Варнинг] <#%d> %s[%i] отправил сообщение: %s",g, getName(playerid), playerid, text);
 }
-stock CheckString(string[]) {
+stock CheckString(string[]) 
+{
     static const WebSites[][] = {
 		"NEW IP","Заходите на лучший сервер",".com","46","176 46","точка ру",".su",".info",
 		"Переезд","Новый сервер","NEW IP","ну что го сливать админку","ну что го сливать лидерку",
@@ -16111,9 +16082,11 @@ stock CheckString(string[]) {
 	for(new i = 0; i < sizeof(WebSites); i++) if(strfind(string, WebSites[i], true) != -1) return 1;
 	return 0;
 }
-CMD:phone(playerid) {
+CMD:phone(playerid) 
+{
 	if(PI[playerid][pPhone] == 0) return SCM(playerid, COLOR_GREY,"У вас нет телефона");
-	if(PI[playerid][pPhoneStatus] == 1) {
+	if(PI[playerid][pPhoneStatus] == 1) 
+	{
 		ShowPlayerDialog(playerid, 7220, DIALOG_STYLE_LIST, "{ee3366}Телефон", "\
 		1. Информация\n\
 		2. Позвонить\n\
@@ -16223,7 +16196,8 @@ callback: WbookOff(playerid, name[])
 	}
 	return 1;
 }
-callback: PhoneBook(playerid) {
+callback: PhoneBook(playerid) 
+{
     new rows, fields, temp[144], p_number, p_name[32];
     cache_get_data(rows, fields);
 	new str_1[185];
@@ -16272,10 +16246,12 @@ callback: PhoneBookAdd(playerid, name[])
 	}
 	return 1;
 }
-callback: InfoPhoneBook(playerid) {
+callback: InfoPhoneBook(playerid) 
+{
 	new rows, fields,temp[256],string[256],p_number, p_name[32],p_data[20];
     cache_get_data(rows, fields);
-    for(new i = 0; i < rows; i++) {
+    for(new i = 0; i < rows; i++) 
+	{
 		cache_get_field_content(i, "number", temp), p_number = strval(temp);
 		cache_get_field_content(i, "name", p_name, mysql, 32);
 		cache_get_field_content(i, "data", p_data, mysql, 20 );
@@ -16283,14 +16259,17 @@ callback: InfoPhoneBook(playerid) {
 	}
 	return ShowPlayerDialog(playerid,0, DIALOG_STYLE_MSGBOX, !"{ee3366}Информация о контакте", string, "Закрыть", "");
 }
-callback: CallPhoneBook(playerid) {
+callback: CallPhoneBook(playerid) 
+{
 	new rows, fields,temp[64],p_number;
     cache_get_data(rows, fields);
-    for(new i = 0; i < rows; i++) {
-		cache_get_field_content(i, "number", temp), p_number = strval(temp); {
-			new str_1[256];
-			format(str_1, sizeof(str_1),"%d",p_number);
-			callcmd::call(playerid,str_1);
+    for(new i = 0; i < rows; i++) 
+	{
+		cache_get_field_content(i, "number", temp), p_number = strval(temp); 
+		{
+			new str_1[12];
+			format(str_1, sizeof(str_1), "%d", p_number);
+			callcmd::call(playerid, str_1);
 		}
 	}
 	return 1;
@@ -16446,8 +16425,7 @@ stock NameRang(id)
 }
 CMD:plus(playerid) 
 {
-	new str_3[756];
-	format(str_3,sizeof(str_3),"\
+    ShowPlayerDialog(playerid, dialog_DONATE_VIP, DIALOG_STYLE_MSGBOX, !"{ee3366}Приобретение '"NAMEVIP"'", "\
 		{FFFFFF}Примущества, которые даёт подписка {FFA500}"NAMEVIP"\n\n\
 		{3366cc}1. Уникальная личность\n\
 		{FFFFFF}Ваш никнейм в чате будет выделен постфиксом: Ivan_Ivanov {FFA500}["VIP_TAG"]{FFFFFF}\n\
@@ -16468,8 +16446,7 @@ CMD:plus(playerid)
 		{3366cc}9. Выгодный тариф\n\
 		{FFFFFF}Цены на звонки, SMS и телефонные учлуги снижены\n\
 		{3366cc}10. Олды на месте\n\
-		{FFFFFF}Вы получите в два раза больше очков опыта за каждый PayDay");
-    ShowPlayerDialog(playerid, dialog_DONATE_VIP, DIALOG_STYLE_MSGBOX, !"{ee3366}Приобретение '"NAMEVIP"'", str_3, "Купить", "Отмена");
+		{FFFFFF}Вы получите в два раза больше очков опыта за каждый PayDay", "Купить", "Отмена");
     return 1;
 }
 stock IsPlayerGreenZone(playerid) 
@@ -16481,7 +16458,7 @@ stock IsPlayerGreenZone(playerid)
 	PlayerToKvadrat(playerid, 1771.5, 1418.1666259765625, 1871.5, 1518.1666259765625) && GetPlayerVirtualWorld(playerid) == 0) return true; // автошкола
 	return 0;
 }
-callback: PayDay(playerid) //+
+callback: PayDay(playerid)
 {
 	if(IsPlayerLogged{playerid}) 
 	{
@@ -16738,6 +16715,14 @@ public OnPlayerLeaveDynamicArea(playerid, areaid)
 		KillTimer(TimetTheftCartridges[playerid]);
 		cef_emit_event(playerid, "hide-ammo-notify");
 	}
+	if(areaid == WarZoneCube)
+	{
+		if(PI[playerid][pOnCapture] == 1 && GangWarStatus >= 1)
+		{
+			AutoKickCapture(playerid);
+			CheckCount(playerid);
+		}
+	}
 	/*if(areaid == capturezonespawn) 
 	{
 		if(GangWarStatus > 0) 
@@ -16830,7 +16815,7 @@ stock ShowSettings(playerid)
 	1. Изменить пароль\t\t\t{FFFF99}...\n\
 	2. Изменить стиль боя\t\t\t{FFFF99}...\n\
 	3. Изменить стиль походки\t\t{FFFF99}...\n\
-	4. Кинематографический режим\t\t{FFFF99}...\n\
+	4. Кинематографический режим\t{FFFF99}...\n\
 	5. Управление аксессуарами\t\t{FFFF99}...", "Изменить", "Назад");
 }
 cmd:i(playerid) 
@@ -17002,14 +16987,15 @@ CMD:mp(playerid,params[])
 	if(MPStatus == false) return SCM(playerid, COLOR_GREY, !"Игровой мастер не создал точку телепорта");
 	if(PI[playerid][pJail] != 0) return SCM(playerid, COLOR_GREY, !"Нельзя телепортироваться на мероприятие в КПЗ");
 	if(PI[playerid][pDemorgan] != 0) return SCM(playerid, COLOR_GREY, !"Нельзя телепортироваться на мероприятие в деморгане");
+	if(PI[playerid][pOnMP] != 0) return SCM(playerid, COLOR_GREY, !"Вы уже находитесь на мероприятии");
 	if(GetPlayerState(playerid) == PLAYER_STATE_DRIVER) return SCM(playerid, COLOR_GREY, !"Нельзя телепортироваться на мероприятие в машине");
 	if(GetPlayerInterior(playerid) != 0) return SCM(playerid, COLOR_GREY, !"Попасть на мероприятие можно только на улице");
-	return ShowPlayerDialog(playerid, 1231, DIALOG_STYLE_MSGBOX, !"{ee3366}Телепортация на мероприятие", "{FFFFFF}Вы действительно хотите телепортитоватся на мероприятие?\n{FFFF99}Если Вы захотите покинуть мероприятие досрочно, используйте /back", "Да", "Нет");
+	return ShowPlayerDialog(playerid, 1231, DIALOG_STYLE_MSGBOX, !"{ee3366}Телепортация на мероприятие", !"{FFFFFF}Вы действительно хотите телепортитоватся на мероприятие?\n{FFFF99}Если Вы захотите покинуть мероприятие досрочно, используйте /back", !"Да", !"Нет");
 }
 CMD:back(playerid) 
 {
 	if(PI[playerid][pOnMP] != 1) return SCM(playerid, COLOR_GREY, !"Вы не участвуете в мероприятии");
-	return ShowPlayerDialog(playerid, 1232, DIALOG_STYLE_MSGBOX, !"{ee3366}Покинуть мероприятие", "{FFFFFF}Вы действительно хотите покинуть мероприятие?", "Да", "Нет");
+	return ShowPlayerDialog(playerid, 1232, DIALOG_STYLE_MSGBOX, !"{ee3366}Покинуть мероприятие", !"{FFFFFF}Вы действительно хотите покинуть мероприятие?", !"Да", !"Нет");
 }
 stock ChangeNameMenu(playerid) return ShowPlayerDialog(playerid, dialog_CHANGE_NAME, DIALOG_STYLE_LIST, "{ee3366}Выбор типа", "1. Изменить на случайный никнейм\t\t{FFFF99}Бесплатно\n2. Изменить на свой никнейм\t\t{3366cc}Платно", "Выбор", "Закрыть");
 stock RandomName(playerid) 
@@ -18243,16 +18229,12 @@ CMD:engine(playerid)
 	{
 		case 0: 
 		{
-			cef_emit_event(playerid, "update-speed-icon", CEFINT(1), CEFINT(1));
-			cef_emit_event(playerid, "update-speed-icon", CEFINT(4), CEFINT(1));
 			GetVehicleParamsEx(carid,engine,lights_text,alarm,doors_text,bonnet,boot,objective);
 			SetVehicleParamsEx(carid,true,lights_text,alarm,doors_text,bonnet,boot,objective);
 			CarInfo[carid][cEngineStatus] = 1;
 		}
 		case 1: 
 		{
-			cef_emit_event(playerid, "update-speed-icon", CEFINT(1), CEFINT(0));
-			cef_emit_event(playerid, "update-speed-icon", CEFINT(4), CEFINT(0));
 			GetVehicleParamsEx(carid,engine,lights_text,alarm,doors_text,bonnet,boot,objective);
 			SetVehicleParamsEx(carid,false,lights_text,alarm,doors_text,bonnet,boot,objective);
 			CarInfo[carid][cEngineStatus] = 0;

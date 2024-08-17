@@ -229,8 +229,8 @@ CMD:skin(playerid, params[])
 	if(sscanf(params,"udd", params[0], params[1], params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина] [0/1]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	if(params[1] > 311) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина (1-300)] [0/1]");
-	if(params[2] != 0 || params[2] != 1) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина] [0/1 (временный/вечный)]");
+	if(params[1] > 300) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /skin [ID игрока] [номер скина (1-300)] [0/1]");
+	if(params[2] < 0 || params[2] > 1) return 0;
 	
 	if(params[2] == 1)
 	{
@@ -339,7 +339,7 @@ CMD:unmute(playerid,params[])
 CMD:setarm(playerid,params[]) 
 {
     if(CheckAccess(playerid, 1, 3)) return 1;
-	if(sscanf(params, "ud", params[0],params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setarm [ID игрока] [кол-во]");
+	if(sscanf(params, "ud", params[0], params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setarm [ID игрока] [кол-во]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	cef_emit_event(params[0], "show-center-notify", CEFINT(5), CEFSTR("Игровой мастер изменил Вам броню"));
@@ -562,7 +562,7 @@ CMD:mparm(playerid,params[])
 		if(!IsPlayerConnected(i)) continue;
 		if(PlayerToPoint(100.0, i, x,y,z)) 
 		{
-		    SetPlayerHealthAC(i, params[0]);
+		    SetPlayerArmourAC(i, params[0]);
 		    SCMf(i, -1,"Игровой мастер выдал Вам бронижелет", PI[playerid][pAdminNumber]);
 		}
    	}
@@ -1247,18 +1247,16 @@ CMD:editmp(playerid)
 	return ShowPlayerDialogf(playerid, 5898, DIALOG_STYLE_LIST, 
 								!"{ee3366}Настройки МП", 
 								!"Выбрать", !"Закрыть", 
-								!"1. Изменить позицию телепорта\n\
+								"1. Изменить позицию телепорта\n\
 								2. Выдать одежду в радиусе\n\
 								3. Выдать оружие в радиусе\n\
 								4. Выдать бронижелет в радиусе\n\
 								5. Выдать здоровья в радиусе\n\
-								{FFFF99}Убийство тиммейтов\t\t%s\n\
+								6. Убийство тиммейтов\t\t\t%s\n\
 								{FFFF99}Завершить МП\n\
 								{FFFF99}Завершить МП (без респавна)\n\
-								{FFFF99}Возвращать на МП после смерти\t%s\n\
 								{FFFF99}Игроков на МП: %d", 
-									MPTeamKill ? ("{ce6c4f}Отключен{FFFFFF}") : ("{4eaa77}Включен{FFFFFF}"),
-									MPReturnDeath ? ("{ce6c4f}Отключено{FFFFFF}") : ("{4eaa77}Включено{FFFFFF}"),
+									MPTeamKill ? ("{4eaa77}Включено{FFFFFF}") : ("{ce6c4f}Отключено{FFFFFF}"),
 									playerOnMP);
 }
 CMD:setmp(playerid)
@@ -1270,7 +1268,6 @@ CMD:setmp(playerid)
 
         MPStatus = true;
 		MPTeamKill = false;
-		MPReturnDeath = false;
 
 		SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] создал точку телепорта на мероприятие", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid);
 		
