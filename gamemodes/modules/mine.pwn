@@ -114,15 +114,15 @@ stock mineOnPlayerPickUpDynamicPickup(playerid, pickupid)
 {
     if(pickupid == MineLift_down)
     {
-        SetPlayerPos(playerid, -354.3391,-1885.2427,16.9119);
-        SetPlayerFacingAngle(playerid, 267.2022);
+        SetPlayerPos(playerid, 2048.5959,1630.3308,-40.6281);
+        SetPlayerFacingAngle(playerid, 269.9832);
         SetCameraBehindPlayer(playerid);
     }
     if(pickupid == MineLift_up)
     {
         if(PI[playerid][pTempJob] != 2) return SendClientMessage(playerid, COLOR_GREY, !"Начните рабочий день шахтера чтобы спуститься на лифте");
-        SetPlayerPos(playerid, -286.4547,-1883.4045,18.3447);
-        SetPlayerFacingAngle(playerid, 89.2320);
+        SetPlayerPos(playerid, 2041.1871,1649.2223,-44.4953);
+        SetPlayerFacingAngle(playerid, 268.9128);
         SetCameraBehindPlayer(playerid);
     }
 

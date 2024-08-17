@@ -16,7 +16,7 @@ callback: LoadVKInfo()
 	return 1;
 }
 
-stock CheckOnline(playerid)
+stock CheckOnline()
 {
     new TempOnline = 0;
     foreach(new i:Player) 

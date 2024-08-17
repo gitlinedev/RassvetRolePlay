@@ -58,6 +58,9 @@ stock CheckRequest(playerid)
 
 	new from_player = PI[playerid][pRequestFrom];
 
+	KillTimer(OfferTimer[playerid]);
+	KillTimer(OfferTimer[from_player]);
+
 	if(PI[playerid][pRequest] == 1)
 	{
 		switch(PI[playerid][pRequestType])
@@ -77,7 +80,7 @@ stock CheckRequest(playerid)
 			case 1:
 			{
 				SetPVarInt(playerid, "FromID", from_player);
-				ShowPlayerDialogf(playerid, 7242, DIALOG_STYLE_MSGBOX, !"{ee3366}Вступление в организацию", "Вступить", "Закрыть", "\
+				ShowPlayerDialogf(playerid, 7242, DIALOG_STYLE_MSGBOX, "{ee3366}Вступление в организацию", "Вступить", "Закрыть", "\
 					{FFFFFF}Пригласил: %s\n\
 					Организация: %s\n\n\
 					{FFFF99}Вы действительно хотите вступить в организацию?", 

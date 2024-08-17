@@ -120,6 +120,25 @@ CMD:unwarn(playerid,params[])
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] снял игровое предупреждение игроку %s[%d]", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0]);
 	return 1;
 }
+cmd:giveskill(playerid, params[]) 
+{
+    if(CheckAccess(playerid, 4)) return 1;
+    if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /giveskill [ID игрока]");
+	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
+	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+
+	SCM(params[0], COLOR_TOMATO, !"Игровой мастер выдал Вам все навыки стрельбы");
+	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал для %s[%d] все навыки стрельбы", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(params[0]), params[0]);
+
+	PI[params[0]][pSkillPistol] = 100;
+	PI[params[0]][pSkillSDPistol] = 100;
+	PI[params[0]][pSkillDeagle] = 100;
+	PI[params[0]][pSkillShotgun] = 100;
+	PI[params[0]][pSkillMP5] = 100;
+	PI[params[0]][pSkillAK47] = 100;
+	PI[params[0]][pSkillRifle] = 100;
+	return SetPlayerSkills(params[0]);
+}
 CMD:spawn(playerid,params[],text) 
 {
     if(CheckAccess(playerid, 1, 1)) return 1;
@@ -824,7 +843,7 @@ CMD:agivelic(playerid,params[])
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	PI[params[0]][pDriveLicense] = 1;
 	if(PI[params[0]][pLicNumber] == 0) PI[params[0]][pLicNumber] = RandomEX(1111111, 6666666);
-	SCMf(playerid, -1, "Игровой мастер выдал Вам водительские права", PI[playerid][pAdminNumber]);
+	SCM(params[0], -1, !"Игровой мастер выдал Вам водительские права");
 	return SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s выдал водительские права %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),getName(params[0]));
 }
 CMD:jail(playerid,params[])
@@ -918,11 +937,6 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 				SetPlayerVirtualWorld(playerid,0);
 				SetPlayerInterior(playerid,0);
 				SetPlayerHealthAC(playerid, 200);
-
-				new senderName[MAX_PLAYER_NAME + 20];
-				if(PI[playerid][pAdmin]) format(senderName, sizeof(senderName), "%s #%d", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber]);
-				else format(senderName, sizeof(senderName), "%s", ModerName[PI[playerid][pModer]]);
-				SendAdminsMessagef(COLOR_ADMINCHAT, "[%s] %s[%d] телепортировался используя /tp", senderName, PI[playerid][pName], playerid);
             }
         }
 		case 2149:

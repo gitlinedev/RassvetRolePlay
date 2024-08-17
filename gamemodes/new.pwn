@@ -312,6 +312,9 @@ enum gangzone {
 	gzopg,
 	standart_opg,
 }
+
+new OfferTimer[MAX_PLAYERS];
+
 new const weapon_names[][] = {
 /*  0 */{"Кулак"},                      /*  1 */{"Кастет"},                     /*  2 */{"Клюшка для гольфа"},
 /*  3 */{"Полицейская дубинка"},        /*  4 */{"Нож"},                        /*  5 */{"Бейсбольная бита"},
@@ -2074,14 +2077,6 @@ public OnPlayerRequestClass(playerid, classid)
 }
 public OnPlayerConnect(playerid)
 {	
-	//холы
-	/*CreateObject(16290, 1866.07, 2056.04, 16.37,   0.00, 0.00, 0.00);
-	CreateObject(16282, 2195.29, 1792.00, 5.59,   0.00, 0.00, 0.00);
-	CreateObject(16315, 2799.14, 2543.69, 8.22,   0.00, 0.00, 0.00);
-	CreateObject(16316, 2796.82, 2699.37, 20.35,   0.00, 0.00, 0.00);
-	CreateObject(16317, 2808.00, 2748.36, 14.69,   0.00, 0.00, 3.90);
-	CreateObject(16318, 2493.61, 2817.59, 11.59,   0.00, 0.00, 0.78);
-	CreateObject(16294, 2782.53, 2696.41, 15.85,   0.00, 0.00, 0.00);
 	//инты
 	CreateObject(9420, 2050.36, 1734.23, -44.03,   0.00, 0.00, 0.00);
 	CreateObject(9422, 2050.36, 1734.23, -44.03,   0.00, 0.00, 0.00);
@@ -2147,12 +2142,12 @@ public OnPlayerConnect(playerid)
 	CreateObject(9480, 2114.57, 1497.19, -48.56,   0.00, 0.00, 265.60);
 	CreateObject(9481, 2100.75, 1485.47, -43.40,   0.00, 0.00, 90.00);
 	CreateObject(9482, 2094.76, 1508.96, -47.45,   0.00, 0.00, 0.00);
-	CreateObject(9482, 2094.63, 1508.74, -47.45,   0.00, 0.00, 0.00);*/
+	CreateObject(9482, 2094.63, 1508.74, -47.45,   0.00, 0.00, 0.00);
 	//16282 16315	
 	GetPlayerName(playerid, PI[playerid][pName], MAX_PLAYER_NAME);
 	GetPlayerIp(playerid,PI[playerid][pLoginIP], 32);
 	getdate(PI[playerid][pLogDateYear], PI[playerid][pLogDateMonth], PI[playerid][pLogDateDat]);
-
+	CheckOnline();
 	PI[playerid][data_PLAYER_TIMER_ID] = SetTimerEx("PlayerUpdate", 1000, true, "d", playerid);
 	
 	if (SvGetVersion(playerid) == SV_NULL) SCM(playerid, COLOR_HINT, "[SV-client] {FFFFFF}загрузка плагина произошла {FFFF33}неуспешно (NULL)");
@@ -2289,6 +2284,19 @@ public OnPlayerDisconnect(playerid, reason)
 	//==============================================//
     KillTimer(PI[playerid][data_PLAYER_TIMER_ID]);
 	KillTimer(PI[playerid][LoadCefInformation]);
+	if(PI[playerid][pRequest] == 1) KillTimer(OfferTimer[playerid]);
+	{
+		if(PI[playerid][pRequestFor] != INVALID_PLAYER_ID)
+		{
+			ClearRequest(PI[playerid][pRequestFor]);
+			ClearRequest(playerid);
+		}
+		if(PI[playerid][pRequestFrom] != INVALID_PLAYER_ID)
+		{
+			ClearRequest(PI[playerid][pRequestFrom]);
+			ClearRequest(playerid);
+		}
+	}
 	//==============================================//
 	SavePlayerData(playerid);
 	UpdatePlayerDataInt(playerid, "Online", 0);
@@ -3121,8 +3129,8 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 	{
 	    SetPlayerVirtualWorld(playerid, 0);
 	    SetPlayerInterior(playerid, 0);
-	    SetPlayerPos(playerid, 1846.1957,1451.5331,10.0355);
-		SetPlayerFacingAngle(playerid, 86.71);
+	    SetPlayerPos(playerid, -571.3687,-1317.9279,41.3625);
+		SetPlayerFacingAngle(playerid, 329.5674);
 		SetCameraBehindPlayer(playerid);
 		return Freeze(playerid);
 	}
@@ -3472,8 +3480,8 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 	    SetPlayerVirtualWorld(playerid, 1);
 	    SetPlayerInterior(playerid, 1);
 
-  		SetPlayerPos(playerid, -346.5360,-1874.5011,16.9119);
-		SetPlayerFacingAngle(playerid, 179.3512);
+  		SetPlayerPos(playerid, 2055.6670,1642.0542,-40.6281);
+		SetPlayerFacingAngle(playerid, 178.9299);
 		SetCameraBehindPlayer(playerid);
 		Freeze(playerid);
 		return true;
@@ -3484,8 +3492,8 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 	    SetPlayerVirtualWorld(playerid, 0);
 	    SetPlayerInterior(playerid, 0);
 
-  		SetPlayerPos(playerid, 2784.9275,2708.0662,16.7200);
-		SetPlayerFacingAngle(playerid, 190.025);
+  		SetPlayerPos(playerid, 2795.5710,2710.9250,14.9075);
+		SetPlayerFacingAngle(playerid, 190.3421);
 		SetCameraBehindPlayer(playerid);
 		Freeze(playerid);
 		return true;
@@ -6134,12 +6142,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
    			{
 				if(PI[playerid][pVIP] > 0) 
 				{
-					if(strval(inputtext) > 80 || strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Вы можете купить от 1 до 80 кг металла");
+					if(strval(inputtext) > 80 || strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Вы можете купить от 1 до 2000 единиц веществ");
 					if(strval(inputtext)+PI[playerid][pDrugs] > 2000) return SCMf(playerid, COLOR_GREY, "Вы можете носить с собой не более 2000 единиц веществ. У Вас: %d кг", PI[playerid][pMetall]);
 				}
 				else
 				{
-					if(strval(inputtext) > 40 || strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Вы можете купить от 1 до 40 кг металла");
+					if(strval(inputtext) > 40 || strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Вы можете купить от 1 до 1000 единиц веществ");
 					if(strval(inputtext)+PI[playerid][pDrugs] > 1000) return SCMf(playerid, COLOR_GREY, "Вы можете носить с собой не более 1000 единиц веществ. У Вас: %d кг", PI[playerid][pMetall]);
 				}
 				if(GetPlayerMoneyID(playerid) < strval(inputtext)*50) return SCM(playerid, COLOR_GREY, !"У Вас не хватает денег");
@@ -7070,10 +7078,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 																							8. Авторынок\t\tНижегородская область", "Отметить", "Назад");
 					case 2: ShowPlayerDialog(playerid, 4505, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Временные работы", "\
 																							Место\tРасполажение\n\
-																							1. Ферма {e1e187}[1+ уровень]\t\t{FFFFFF}Ашан\n\
-																							2. Дайвинг {e1e187}[1+ уровень]\t\t{FFFFFF}с. Раговичи\n\
+																							1. Ферма {e1e187}[1+ уровень]\t\t{FFFFFF}Ашан (не работает)\n\
+																							2. Дайвинг {e1e187}[1+ уровень]\t\t{FFFFFF}с. Раговичи (не работает)\n\
 																							3. Шахта {e1e187}[1+ уровень]\t\t{FFFFFF}г. Лыткарино\n\
-																							4. Мясокомбинат {e1e187}[1+ уровень]\t\t{FFFFFF}г. Лыткарино", "Отметить", "Назад");
+																							4. Мясокомбинат {e1e187}[1+ уровень]\t\t{FFFFFF}г. Лыткарино (не работает)", "Отметить", "Назад");
 					case 3: ShowPlayerDialog(playerid, 4504, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Основные работы", "\
 																							Место\tРасполажение\n\
 																							1. Дальнобойщик {e1e187}[3+ уровень]\t\t{FFFFFF}г. Южный\n\
@@ -9431,21 +9439,21 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 2: 
 					{
-						mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e' AND `default` = '1'", PI[playerid][pMember], grouptext);
 	                    mysql_tquery(mysql, mysql_string, "CheckStandart", "i", playerid);
 					}
 					case 3: 
 					{
 					    switch(PI[playerid][pMember]) 
 						{
-							case 1: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 156\n3. ID 154\n4. ID 208\n5. ID 155\n6. ID 147\n7. ID 187", "Выбрать", "Отмена");
-							case 2: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 179\n3. ID 262\n4. ID 253\n5. ID 283\n6. ID 167\n7. ID 277\n8. ID 278\n9. ID 188\n10. ID 222\n11. ID 255\n12 ID 84", "Выбрать", "Отмена");
-							case 3: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 280\n3. ID 281\n4. ID 282\n5. ID 285\n6. ID 286\n7. ID 288", "Выбрать", "Отмена");
-							case 4: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин{FFFFFF}\n2. ID 280\n3. ID 281\n4. ID 282\n5. ID 285\n6. ID 286\n7. ID 288\n8 ID 220\n9. ID 224\n10. ID 284\n11. ID 289", "Выбрать", "Отмена");
-							case 5: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
-							case 6: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
-							case 7: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
-							case 8: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 15\n3. ID 17\n4. ID 23", "Выбрать", "Отмена");
+							case 1: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 156\n3. ID 154\n4. ID 208\n5. ID 155\n6. ID 147\n7. ID 187", "Выбрать", "Отмена");
+							case 2: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 179\n3. ID 262\n4. ID 253\n5. ID 283\n6. ID 167\n7. ID 277\n8. ID 278\n9. ID 188\n10. ID 222\n11. ID 255\n12 ID 84", "Выбрать", "Отмена");
+							case 3: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 280\n3. ID 281\n4. ID 282\n5. ID 285\n6. ID 286\n7. ID 288", "Выбрать", "Отмена");
+							case 4: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин{FFFFFF}\n2. ID 280\n3. ID 281\n4. ID 282\n5. ID 285\n6. ID 286\n7. ID 288\n8 ID 220\n9. ID 224\n10. ID 284\n11. ID 289", "Выбрать", "Отмена");
+							case 5: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
+							case 6: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
+							case 7: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
+							case 8: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 15\n3. ID 17\n4. ID 23", "Выбрать", "Отмена");
 						}
 					}
 					case 4: 
@@ -11016,7 +11024,6 @@ public OnPlayerSpawn(playerid)
 
 	if(!IsPlayerLogged{playerid} && GetPVarInt(playerid, "ChoosingSkin") == 1) 
 	{
-		SCM(playerid, -1, "Choosingskin");
 		ChoosingSkin(playerid);
 	}
 	else if(!IsPlayerLogged{playerid}) return Kick(playerid);
@@ -11427,7 +11434,6 @@ callback: LoadPlayerData(playerid)
 		SCM(playerid, COLOR_BLACKBLUE, !"Добро пожаловать на Рассвет!");
 		SCM(playerid, COLOR_LIGHTYELLOW, !"Загружаем данные сессии. Пожалуйства подождите...");
 		SCM(playerid, COLOR_LIGHTYELLOW, "Меню помощи - /help, стандартное управление голосовым чатом: X (англ) - говорить");
-		SCM(playerid, COLOR_HINT, "[Подсказка]: {FFFFFF}В нашей игре вы можете привязать свой профиль вк, используя {FFFF33}/vk");
 		SendPlayerWelcomeNotify(playerid, "ДОБРО ПОЖАЛОВАТЬ", "РАДЫ ВИДЕТЬ ВАС НА НАШЕМ СЕРВЕРЕ!", 8);
 
 		if(PI[playerid][pVmuteTime] > 0)
@@ -16808,21 +16814,6 @@ stock CarInformation(playerid)
 	{FFA53366cc00}Удачи на дороне, соблюдайте Правила Дорожного Движения!", "Закрыть", "");
 	return 1;
 }
-cmd:giveskill(playerid, params[]) 
-{
-    if(CheckAccess(playerid, 4)) return 1;
-    if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /giveskill [ID игрока]");
-	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	PI[params[0]][pSkillPistol] = 100;
-	PI[params[0]][pSkillSDPistol] = 100;
-	PI[params[0]][pSkillDeagle] = 100;
-	PI[params[0]][pSkillShotgun] = 100;
-	PI[params[0]][pSkillMP5] = 100;
-	PI[params[0]][pSkillAK47] = 100;
-	PI[params[0]][pSkillRifle] = 100;
-	return SetPlayerSkills(params[0]);
-}
 CMD:settings(playerid) return ShowSettings(playerid);
 stock ShowSettings(playerid) 
 {
@@ -17281,8 +17272,10 @@ CMD:stopcapture(playerid,params[])
 			cef_emit_event(i, "cef:capture:visible", CEFINT(false));
 			SCMf(i, COLOR_TOMATO, "Игровой мастер остановил захват территории. Причина: %s", params[0]);
 			GangWarStatus = 0;
+			PI[i][pOnCapture] = 0;
 		}
 	}
+	ClearCapture();
     return SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] остановил захват территории. Причина: %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,params[0]);
 }
 stock Bomb(Float:x,Float:y,Float:z) 
@@ -18575,39 +18568,6 @@ stock ShowMainMenu(playerid)
 	{FFFFFF}10. Чёрный список организаций\n\
 	{5fc2f1}11. Дополнительные услуги", 
 	PI[playerid][pPassiveMode] ? ("{66cc66}(Включён)") : ("{ff6633}(Отключён)"));
-}
-CMD:vk(playerid)
-{
-	new Cache: result, query[144], TempCode, TempVKID, TempVKName[50];
-	mf(mysql, query, sizeof query, "SELECT * FROM accounts WHERE ID='%d'", PI[playerid][pID]);
-	result = mysql_query(mysql, query, true);
-
-	if(cache_num_rows())
-	{
-		TempCode = cache_get_field_content_int(0, "VKCode", mysql);
-		TempVKID = cache_get_field_content_int(0, "TempVKID", mysql);
-		cache_get_field_content(0, "TempVKName", TempVKName, mysql, 50);
-	}
-	else
-	{
-		return SendClientMessage(playerid, COLOR_LIGHTGREY, !"Произошла ошибка. Повторите попытку позже.");
-	}
-	cache_delete(result);
-	if(TempCode > 100000 && TempVKID != 0) 
-	{
-		ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Привязка ВКонтакте", !"Ок", !"", "\
-		{FFFFFF}На ваш аккаунт был отправлен код для привязки ВКонтакте\n\n\
-		{FFFFFF}Код: \t\t\t{FFFF99}%d\n\
-		{FFFFFF}Страница ВКонтакте: \t{FFFF99}vk.com/id%d\n\
-		{FFFFFF}Имя страницы ВКонтакте: \t{FFFF99}%s", TempCode, TempVKID, TempVKName);
-	}
-	else 
-	{
-		SendClientMessage(playerid, COLOR_LIGHTGREY, !"Наш ваш аккаунт не был отправлен код для привязки страници ВКонтакте");
-		SendClientMessage(playerid, COLOR_LIGHTGREY, "Чтобы привязать страницу ВКонтакте -> перейдите в наш паблик ВКонтакте: vk.com/"VK"");
-		return 1;
-	}
-	return 1;
 }
 public OnPlayerStreamIn(playerid, forplayerid) 
 {
