@@ -184,7 +184,7 @@ stock mineOnPlayerPickUpDynamicPickup(playerid, pickupid)
             return 1;
         }
     }
-    AntiFloodMine[playerid] = gettime() + 3;
+    AntiFloodMine[playerid] = gettime() + 2;
     return 1;
 }
 stock mine_OnPlayerKeyStateChange(playerid, newkeys, oldkeys)

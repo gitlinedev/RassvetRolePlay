@@ -1225,7 +1225,6 @@ enum
 	dialog_BAN,
 	dialog_ADMINS,
 	dialog_WARNTIME,
-	dialog_SETSPAWN,
 	dialog_DONATE,
 	dialog_TAKE,
 	dialog_DONATE_VIP,
@@ -3235,8 +3234,12 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 	}
 	if(pickupid == Kazna_GiveMoney) 
 	{
-		if(PI[playerid][pRang] < 9) return SCM(playerid, COLOR_GREY, "Казна города доступна лидеру организаций и его заместителям");
-		ShowPlayerDialog(playerid, 3456, DIALOG_STYLE_MSGBOX, !"{ee3366}Казна", "{FFFFFF}Вы можете взять 5000 рублей из общей казны.\nОбратите внимание на то, что Вам разрешено брать лишь 5000 рублей в час", "Выбрать", "Закрыть");
+		if(PI[playerid][pRang] < 9) return SCM(playerid, COLOR_GREY, !"Казна города доступна лидеру организаций и его заместителям");
+		if(GetPVarInt(playerid,"Counting_Treasury") > gettime()) return SCM(playerid, COLOR_GREY, !"Деньги из казны можно брать раз в 5 минут");
+		ShowPlayerDialog(playerid, 3456, DIALOG_STYLE_MSGBOX, !"{ee3366}Казна", "{FFFFFF}Вы можете взять 5000 рублей из общей казны.\n\
+						Обратите внимание на то, что Вам разрешено брать лишь 5000 рублей в 5 минут", 
+						"Выбрать", "Закрыть"
+		);
 	}
 	if(pickupid == VhodArmy1) 
 	{
@@ -6090,9 +6093,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if(!response) return 1;
 			if(response)
    			{
-				SendAdminsMessagef(COLOR_GREY, "[Warning] %s[%d] взял из общей казны 5000 рублей.",PI[playerid][pName], playerid);
-				PI[playerid][pMoney] += 5000;
+				SendAdminsMessagef(COLOR_GREY, "[Warning] %s[%d] взял из общей казны 5000 рублей.", PI[playerid][pName], playerid);
                 GivePlayerMoneyLog(playerid, 5000);
+
+				SetPVarInt(playerid, "Counting_Treasury", gettime() + 300);
 		    }
 		}
 		case 9189: 
@@ -10994,20 +10998,26 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if(!response) return Kick(playerid);
 		    if(response) return Kick(playerid);
 		}
-		case dialog_SETSPAWN: {
+		case 3513: 
+		{
 		    if(!response) return 1;
-		    if(response) {
-		        switch(listitem) {
-		            case 0: {
+		    if(response) 
+			{
+		        switch(listitem) 
+				{
+		            case 0: 
+					{
 					    if(PI[playerid][pMember] == 0) return SCM(playerid, COLOR_GREY, !"Вы не состоите во организации");
                         PI[playerid][data_SPAWN] = 1;
 					    SCM(playerid, COLOR_YELLOW, !"Место спавна изменено");
 					}
-		            case 1: {
+		            case 1: 
+					{
 					    PI[playerid][data_SPAWN] = 0;
 					    SCM(playerid, COLOR_YELLOW, !"Место спавна изменено");
 					}
-		            case 2: {
+		            case 2: 
+					{
 					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
                         PI[playerid][data_SPAWN] = 2;
 					    SCM(playerid, COLOR_YELLOW, !"Место спавна изменено");
@@ -17340,16 +17350,16 @@ public void:OnPlayerKeyDown(player, key)
 		if(PI[player][pAdmin] >= 2) 
 		{
 			ShowPlayerDialogf(player, 7213, DIALOG_STYLE_LIST, "{ee3366}Настройки игрового мастера", "Изменить", "Закрыть", "\
-			{FFFFFF}1. Скрытие никнейма \t%s\n\
+			{FFFFFF}1. Скрытие никнейма \t\t%s\n\
 			2. Установить никнейм\t\t\t{FFFFFF}Вручную\n\
 			3. Сгенерировать никнейм\t\t{FFFFFF}Автоматически\n\
 			4. Установить невидимый скин\t{FFFFFF}...\n\
 			5. Выдать себе JetPack\t\t{FFFFFF}...\n\
-			{FFFFFF}6. Отключить админ-чат \t\t\t%s\n\
+			{FFFFFF}6. Скрытие админ уведомлений \t\t%s\n\
 			{FFFFFF}7. Езда по воде \t\t\t%s\n\
 			{FFFFFF}8. Стрельба без перезарядки \t\t%s", 
 			PI[player][pAdminStatus] ? ("{4eaa77}Включен{FFFFFF}") : ("{ce6c4f}Отключено{FFFFFF}"),
-			PI[player][pAdminChat] ? ("{4eaa77}Отключен{FFFFFF}") : ("{ce6c4f}Включен{FFFFFF}"),
+			PI[player][pAdminChat] ? ("{4eaa77}Включено{FFFFFF}") : ("{ce6c4f}Отключено{FFFFFF}"),
 			PI[player][pAdminWatherDriver] ? ("{4eaa77}Включена{FFFFFF}") : ("{ce6c4f}Отключена{FFFFFF}"),
 			PI[player][pAdminNoReload] ? ("{4eaa77}Включена{FFFFFF}") : ("{ce6c4f}Отключена{FFFFFF}"));
 		}
@@ -19208,4 +19218,15 @@ public OnQueryError(errorid, error[], callback[], query[], connectionHandle)
 		default: print(error);
 	}
 	return 1;
+}
+CMD:setspawn(playerid) 
+{
+    if(!IsPlayerLogged{playerid}) return 1;
+    return ShowPlayerDialog(playerid, 3513, DIALOG_STYLE_LIST, 
+				!"{f00e5d}Выберете место появления", 
+				!"1. База организации\n\
+				2. Автомобильный / железнодорожный вокзал\n\
+				3. Дом / квартира", 
+				"Выбрать", "Закрыть"
+			);
 }
