@@ -37,6 +37,7 @@ CMD:arrest(playerid, params[])
     } 
     else return SCM(playerid, COLOR_GREY, !"Нужно находиться возле здания Полиции");
 
+    PI[targetid][pJail] = 1;
     PI[targetid][pJailTime] = 600 * PI[targetid][pWanted];
     UnfreezePlayer(targetid);
     PI[targetid][pWanted] = 0;

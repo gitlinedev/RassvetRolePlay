@@ -11598,7 +11598,7 @@ callback: PlayerUpdate(playerid)
 	        }
 	    }
 	}
- 	if(PI[playerid][pJail] != 0 && PI[playerid][pJailTime] <= 0) 
+ 	/*if(PI[playerid][pJail] != 0 && PI[playerid][pJailTime] <= 0) 
 	{
 		switch(PI[playerid][pJail]) 
 		{
@@ -11616,7 +11616,7 @@ callback: PlayerUpdate(playerid)
 
 		PlayerSpawn(playerid);
 		SCM(playerid, COLOR_LIGHTGREY, !"Вы отсидели положенный срок. Больше не нарушайте!");
-	}
+	}*/
 	if(minute == 0 && payday[playerid] == false) {
 		payday[playerid] = true;
 		PayDay(playerid);	
@@ -13308,18 +13308,18 @@ stock SettingSpawn(playerid)
 	}
 	if(PI[playerid][pJail] > 0) 
 	{
-		SetSpawnInfoEx(playerid, skin, 147.3188,1889.2491,-31.0747, 180.0);
-		SetPlayerVirtualWorld(playerid,1);
-		SetPlayerInterior(playerid,1);
+		SetSpawnInfoEx(playerid, skin, 146.2991,1889.2996,-31.0747, 175.5462);
+		SetPlayerVirtualWorld(playerid, 1);
+		SetPlayerInterior(playerid, 1);
 		SetPlayerHealth(playerid, 100.00);
 		Freeze(playerid);
 		return true;
 	}
 	else if(PI[playerid][pDemorgan] > 0 && PI[playerid][pDemorganTime] > 0)
 	{
-		SetSpawnInfoEx(playerid, skin, 14.5554,2.1119,1001.2870, 180.0);
-		SetPlayerVirtualWorld(playerid,1);
-		SetPlayerInterior(playerid,1);
+		SetSpawnInfoEx(playerid, skin, 2066.3328, 1654.8046, -45.1906, 269.0373);
+		SetPlayerVirtualWorld(playerid, 1);
+		SetPlayerInterior(playerid, 1);
 		SetPlayerHealth(playerid, 100.00);
 		Freeze(playerid);
 		return true;
