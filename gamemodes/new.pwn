@@ -30,7 +30,7 @@ new
 #include <a_samp>
 
 #undef MAX_PLAYERS
-#define MAX_PLAYERS 150
+#define MAX_PLAYERS 500
 
 #include Pawn.CMD
 #include streamer
@@ -1327,7 +1327,6 @@ static PedFeMale[6] = {10,12,13,31,38,39};
 #include "modules/admin.pwn"
 #include "modules/mine.pwn"
 #include "modules/cef.pwn"
-#include "modules/bank_system.pwn"
 //#include "modules/apartments.pwn"
 #include "modules/floats.pwn"
 #include "modules/voicechat.pwn"
@@ -1337,6 +1336,7 @@ static PedFeMale[6] = {10,12,13,31,38,39};
 #include "modules/anticheat.pwn"
 #include "modules/stamina.pwn"
 #include "modules/fly.pwn"
+#include "modules/bank_system.pwn"
 #include "modules/police.pwn"
 //=========================================================================================//
 stock GivePlayerMetall(playerid, amount)
@@ -1904,7 +1904,7 @@ stock ConnectMySQL()
 {
     new currenttime = GetTickCount();
 
-	new sql = 1;
+	new sql = 0;
 	if(!sql) mysql = mysql_connect("127.0.0.1", "gs269723", "gs269723", "6CKII67VlSAR"); // основа (0)
 	else mysql = mysql_connect("127.0.0.1", "gs87610", "gs87610", "cs0gy97c"); // тест (1)
 
@@ -6166,62 +6166,66 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		}
 		case 5980: 
 		{
-			switch(listitem) 
-			{
-   			    case 0: 
+			if(!response) return 1;
+			if(response)
+   			{
+				switch(listitem) 
 				{
-   			        GiveWeapon(playerid, 3, 1);
-   			        SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял полицейскую дубинку со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
-   			    }
-   			    case 1: 
-				{
-				   	GiveWeapon(playerid, 12, 1);
-					SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял полицейский жезл со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					case 0: 
+					{
+						GiveWeapon(playerid, 3, 1);
+						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял полицейскую дубинку со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					}
+					case 1: 
+					{
+						GiveWeapon(playerid, 12, 1);
+						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял полицейский жезл со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					}
+					case 2: 
+					{					
+						if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"Бронежилет доступен со 2 ранга");
+						SetPlayerArmourAC(playerid, 100);
+						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял бронежелет со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					}
+					case 3: 
+					{
+						if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"Балончик с краской доступен со 2 ранга");
+						GiveWeapon(playerid, 41, 500);
+						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял балончик с краской со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					}
+					case 4: 
+					{
+						if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"ПЛ-15 доступен со 2 ранга");
+						GiveWeapon(playerid, 24, 70);
+						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял ПЛ-15 со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					}
+					case 5: 
+					{
+						if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"Тайзер доступен с 2 ранга");
+						GiveWeapon(playerid, 23, 70);
+						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял Тайзер",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					}
+					case 6: 
+					{
+						if(PI[playerid][pRang] < 3) return SCM(playerid, COLOR_GREY,"АКС-74У доступен с 3 ранга");
+						GiveWeapon(playerid, 29, 180);
+						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял АКС-74У со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					}
+					case 7: 
+					{
+						if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY,"АК-47 с 5 ранга");
+						GiveWeapon(playerid, 30, 180);
+						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял АК-47 со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					}
+					case 8: 
+					{
+						if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY,"Снайперская винтовка доступна с 5 ранга");
+						GiveWeapon(playerid, 34, 20);
+						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял снайперскую винтовку со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
+					}
 				}
-   			    case 2: 
-				{					
-   			    	if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"Бронежилет доступен со 2 ранга");
-				   	SetPlayerArmourAC(playerid, 100);
-					SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял бронежелет со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
-   			    }
-   			    case 3: 
-				{
-                    if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"Балончик с краской доступен со 2 ранга");
-   			        GiveWeapon(playerid, 41, 500);
-					SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял балончик с краской со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
-   			    }
-   			    case 4: 
-				{
-                    if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"ПЛ-15 доступен со 2 ранга");
-   			        GiveWeapon(playerid, 24, 70);
-					SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял ПЛ-15 со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
-   			    }
-   			    case 5: 
-				{
-                    if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"Тайзер доступен с 2 ранга");
-   			        GiveWeapon(playerid, 23, 70);
-					SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял Тайзер",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
-   			    }
-   			    case 6: 
-				{
-                    if(PI[playerid][pRang] < 3) return SCM(playerid, COLOR_GREY,"АКС-74У доступен с 3 ранга");
-   			        GiveWeapon(playerid, 29, 180);
-					SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял АКС-74У со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
-   			    }
-   			    case 7: 
-				{
-                    if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY,"АК-47 с 5 ранга");
-   			        GiveWeapon(playerid, 30, 180);
-					SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял АК-47 со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
-   			    }
-   			    case 8: 
-				{
-                    if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY,"Снайперская винтовка доступна с 5 ранга");
-   			        GiveWeapon(playerid, 34, 20);
-					SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял снайперскую винтовку со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
-   			    }
-   			}
-			ShowPoliceStorage(playerid);
+				ShowPoliceStorage(playerid);
+			}
 		}
 		case 4980:
 		{
@@ -8574,6 +8578,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					{
 						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_MSGBOX, !"{ee3366}Команды игрового мастера",
 						!"admins - список администраторов в сети\n\
+						az - телепортация в админ-зону\n\
 						moders - список модераторов в сети\n\
 						spawn - заспавнить игрока\n\
 						vw - перейти в другой виртуальный мир\n\
@@ -10280,78 +10285,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
             }
             DeletePVar(playerid, "PrisonID");
         }
-		case 8999: 
-		{
-		    if(!response) return 1;
-		    if(response) 
-			{
-			    switch(listitem) 
-				{
-      				case 0: ShowPlayerDialog(playerid, 8998, DIALOG_STYLE_LIST, "{ee3366}Банкомат", "1. Узнать баланс счёта\n2. Снять деньги со счета\n3. Пополнить счёт\n4. Перевести деньги на другой счёт\n5. Положить деньги на счет телефона", "Выбрать", "Отмена");
-      				case 1: ShowPlayerDialog(playerid, 8997, DIALOG_STYLE_LIST, "{ee3366}Оплата аредны", "1. Оплатить дом / квартиру\n2. Оплатить бизнес / АЗС", "Выбрать", "Отмена");
-      				case 3: SCM(playerid, COLOR_YELLOW, !"Разработка. Приятной игры на {921dd1}"NAMESERVER"");
-			    }
-			}
-		}
-        case 8997: 
-		{
-            if(!response) return 1;
-			if(response) 
-			{
-			    switch(listitem)
-				{
-			        case 0: 
-					{
-					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
-						if(PI[playerid][pHouse] != INVALID_HOUSE_ID) 
-						{
-							new h = PI[playerid][pHouse];
-						 	ShowPlayerDialogf(playerid, 7950, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", "Выполнить", "Назад", "\
-							{FFFFFF}Номер дома: %d\n\
-							{FFFFFF}Статус оплаты: %d / 30 дней\n\
-							{FFFF99}Квартплата - 1499 руб / день\n\n\
-							{FFFFFF}Введите количество дней для оплаты", HOUSE_DATA[h][data_ID], HOUSE_DATA[h][data_DAY]);
-				        }
-				        else if(PI[playerid][pFloat] != INVALID_KV_ID) 
-						{
-							new kv = PI[playerid][data_PADIK],k = PI[playerid][pFloat];
-						 	ShowPlayerDialogf(playerid, 7951, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", "Выполнить", "Назад","\
-							{FFFFFF}Номер квартиры: %d\n\
-							{FFFFFF}Статус оплаты: %d / 30 дн\n\
-							{FFFF99}Квартплата - 1299 руб / день\n\n\
-							{FFFFFF}Введите количество дней для оплаты", kvData[kv][kvID], kvData[kv][kvDays][k]);
-				        }
-					}
-					case 1: 
-					{
-					    if(PI[playerid][pBusiness] == INVALID_BUSINESS_ID) return SCM(playerid, COLOR_GREY,"У Вас нет бизнеса или АЗС");
-						new b = GetBusinessIndexByID(PI[playerid][pBusiness]);
-						ShowPlayerDialogf(playerid, 7952, DIALOG_STYLE_INPUT, "{ee3366}Оплата бизнеса", "Выполнить", "Назад","\
-						{FFFFFF}Номер бизнеса: %d\n\
-						{FFFFFF}Статус оплаты: %d / 30 дней\n\
-						{FFFF99}Налог - 3999 рублей\n\n\
-						{FFFFFF}Введите количество дней для оплаты", BizInfo[b][bID], BizInfo[b][bDays]);
-					}
-				}
-			}
-        }
-        /*case 8998: {
-            if(!response) return 1;
-			if(response) {
-			    switch(listitem) {
-			        case 0: ShowBankMoney(playerid);
-			        case 1: ShowPlayerDialog(playerid, dialog_BANK_2, DIALOG_STYLE_INPUT, "{ee3366}Снятие наличных", "Комиссия составит {3377cc}4%\n{FFFFFF}Введите требуемую сумму", "Снять", "Назад");
-			        case 2: ShowPlayerDialog(playerid, dialog_BANK_3, DIALOG_STYLE_INPUT, "{ee3366}Пополнение счёта", "Введите нужную сумму:", "Пополнить", "Назад");
-			        case 3: {
-						ShowPlayerDialog(playerid, dialog_BANK_9, DIALOG_STYLE_INPUT, "{ee3366}Перевод на другой счёт", "\
-						Укажите ID получателя и сумма перевода\n\
-						через запятую. Комиссия при переводе составит {3377cc}3%\n\
-						{FFFF99}Пример формы для перевода: 12, 500000", "Перевести", "Назад");
-					}
-			        case 4: ShowPlayerDialog(playerid, 9001, DIALOG_STYLE_INPUT, "{ee3366}Банк", "Введите сумму которую желаете положить на счет телефона", "Пополнить", "Назад");
-				}
-			}
-        }*/
         case 7997: 
 		{
             if(!response) return 1;

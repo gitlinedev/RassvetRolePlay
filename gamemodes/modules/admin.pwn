@@ -2537,3 +2537,12 @@ CMD:speedhack(playerid)
 	SetVehicleSpeed(GetPlayerVehicleID(playerid), 500);
 	return 1;
 }
+CMD:az(playerid)
+{
+	if(CheckAccess(playerid, 1)) return 1;
+	SetPlayerPos(playerid, 2095.6086,1560.5791,-46.5100);
+	SetPlayerVirtualWorld(playerid,0);
+	SetPlayerInterior(playerid,0);
+	SetPlayerHealthAC(playerid, 200);
+	return 1;
+}

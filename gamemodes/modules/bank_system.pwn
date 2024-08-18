@@ -16,6 +16,16 @@ stock ShowTransferBankMoney(playerid)
     банковской карты. Не путайте его с ID игрока", !"Далее", !"Назад");
     return 1;
 }
+stock ShowTransferBankomatMoney(playerid)
+{
+    ShowPlayerDialog(playerid, 7969, DIALOG_STYLE_INPUT, !"{ee3366}Перевод на другой счёт", !"\
+    {FFFFFF}Укажите номер банковского счёта и сумму перевода\n\
+    через запятую. Комиссия при переводе составит {3377cc}2%\n\n\
+    {FFFF99}Пример формы для перевода: 1000, 25000\n\n\
+    {696969}Примечание: номер счёта - это уникальный номер\n\
+    банковской карты. Не путайте его с ID игрока", !"Далее", !"Назад");
+    return 1;
+}
 stock bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
     switch(dialogid)
@@ -47,6 +57,132 @@ stock bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                     1. Оплатить дом / квартиру\n\
                     2. Оплатить бизнес / АЗС", "Далее", "Закрыть");
 
+      				case 3: SCM(playerid, COLOR_YELLOW, !"Разработка. Приятной игры на {921dd1}"NAMESERVER"");
+			    }
+			}
+		}
+        case 8997: 
+		{
+            if(!response) return 1;
+			if(response) 
+			{
+			    switch(listitem)
+				{
+			        case 0: 
+					{
+					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
+						if(PI[playerid][pHouse] != INVALID_HOUSE_ID) 
+						{
+							new h = PI[playerid][pHouse];
+						 	ShowPlayerDialogf(playerid, 7950, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", "Выполнить", "Назад", "\
+							{FFFFFF}Номер дома: %d\n\
+							{FFFFFF}Статус оплаты: %d / 30 дней\n\
+							{FFFF99}Квартплата - 1499 руб / день\n\n\
+							{FFFFFF}Введите количество дней для оплаты", HOUSE_DATA[h][data_ID], HOUSE_DATA[h][data_DAY]);
+				        }
+				        else if(PI[playerid][pFloat] != INVALID_KV_ID) 
+						{
+							new kv = PI[playerid][data_PADIK],k = PI[playerid][pFloat];
+						 	ShowPlayerDialogf(playerid, 7951, DIALOG_STYLE_INPUT, "{ee3366}Оплата жилья", "Выполнить", "Назад","\
+							{FFFFFF}Номер квартиры: %d\n\
+							{FFFFFF}Статус оплаты: %d / 30 дн\n\
+							{FFFF99}Квартплата - 1299 руб / день\n\n\
+							{FFFFFF}Введите количество дней для оплаты", kvData[kv][kvID], kvData[kv][kvDays][k]);
+				        }
+					}
+					case 1: 
+					{
+					    if(PI[playerid][pBusiness] == INVALID_BUSINESS_ID) return SCM(playerid, COLOR_GREY,"У Вас нет бизнеса или АЗС");
+						new b = GetBusinessIndexByID(PI[playerid][pBusiness]);
+						ShowPlayerDialogf(playerid, 7952, DIALOG_STYLE_INPUT, "{ee3366}Оплата бизнеса", "Выполнить", "Назад","\
+						{FFFFFF}Номер бизнеса: %d\n\
+						{FFFFFF}Статус оплаты: %d / 30 дней\n\
+						{FFFF99}Налог - 3999 рублей\n\n\
+						{FFFFFF}Введите количество дней для оплаты", BizInfo[b][bID], BizInfo[b][bDays]);
+					}
+				}
+			}
+        }
+        case 8998: 
+		{
+            if(!response) return 1;
+			if(response) 
+			{
+			    switch(listitem) 
+				{
+			        case 0: ShowBankMoney(playerid);
+			        case 1: ShowPlayerDialog(playerid, 7367, DIALOG_STYLE_INPUT, "{ee3366}Снятие наличных", "{FFFFFF}Комиссия составит {3377cc}4%\n{FFFFFF}Введите требуемую сумму", "Снять", "Назад");
+			        case 2: ShowPlayerDialog(playerid, 7368, DIALOG_STYLE_INPUT, "{ee3366}Пополнение счёта", "{FFFFFF}Введите нужную сумму:\t", "Пополнить", "Назад");
+			        case 3: ShowTransferBankomatMoney(playerid);
+			        case 4: ShowPlayerDialog(playerid, 9001, DIALOG_STYLE_LIST, "{ee3366}Пополнение телефона", "1. 100 руб\n2. 500 руб\n3. 3000 руб\n4. 5000 руб\n5. 10000 руб", "Пополнить", "Назад");
+				}
+			}
+        }
+        case 7367:
+        {
+            if(!response) return callcmd::bank(playerid);
+			if(response) 
+			{
+			    if(strval(inputtext) <= 0) return ShowPlayerDialog(playerid, 7967, DIALOG_STYLE_INPUT, "{ee3366}Снятие наличных", "Комиссия составит {3377cc}4%\n{FFFFFF}Введите требуемую сумму", "Снять", "Назад");
+			    new Sum = strval(inputtext)+strval(inputtext)/100*4;
+                if(Sum > PI[playerid][pBank]) return SCMf(playerid, COLOR_GREY, "C учётом комисси требуется {FF6347}%d руб", strval(inputtext)+strval(inputtext)/100*2);
+			    
+                new OldBank = PI[playerid][pBank];
+
+				PI[playerid][pBank] -= Sum;
+				GivePlayerMoneyLog(playerid, strval(inputtext));
+                UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
+
+				new money[25];
+				format(money, sizeof money, "+%dP", strval(inputtext));
+				cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Снятие денег со счёта  в банке"), CEFSTR("4ea650"), CEFSTR(money));
+
+				ShowPlayerDialogf(playerid, 2345, DIALOG_STYLE_MSGBOX, !"{ee3366}Операция завершена", !"Закрыть", !"Назад", "\
+					{FFFFFF}Старый баланс: {ff6633}%d руб\n\
+					{FFFFFF}Новый баланс: {3366cc}%d руб\n\
+					{FFFFFF}Комиссия: {ff6633}%d руб\n\
+					{FFFFFF}Снято: {3366cc}%d руб", OldBank, PI[playerid][pBank], strval(inputtext)/100*2, strval(inputtext));
+                
+                transfer_log[0] = EOS, f(transfer_log, 57, "- Снятие %d руб (комиссия 2%%: %d руб)", strval(inputtext), strval(inputtext)/100*2);
+                TransferBank_log(playerid, strval(inputtext), transfer_log);
+			}
+        }
+        case 7368:
+        {
+            if(!response) return callcmd::bank(playerid);
+			if(response) 
+            {
+			    if(strval(inputtext) <= 0) return ShowPlayerDialog(playerid, 7968, DIALOG_STYLE_INPUT, "{ee3366}Пополнение счёта", "{FFFFFF}Введите нужную сумму:", "Далее", "Закрыть");
+			    if(strval(inputtext) > GetPlayerMoneyID(playerid)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
+				
+                new OldBank = PI[playerid][pBank];
+
+				PI[playerid][pBank] += strval(inputtext);
+				GivePlayerMoneyLog(playerid,-strval(inputtext));
+                UpdatePlayerDataInt(playerid, "bank", PI[playerid][pBank]);
+
+				new money[25];
+				format(money, sizeof money, "-%dP", strval(inputtext));
+				cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Пополение счёта в банке"), CEFSTR("ed3245"), CEFSTR(money));
+
+				ShowPlayerDialogf(playerid, 2345, DIALOG_STYLE_MSGBOX, !"{ee3366}Операция завершена", !"Закрыть", !"Назад", "\
+					{FFFFFF}Старый баланс: {ff6633}%d руб\n\
+					{FFFFFF}Новый баланс: {3366cc}%d руб\n\
+					{FFFFFF}Пополнено: {3366cc}%d руб", OldBank, PI[playerid][pBank], strval(inputtext));
+                
+                transfer_log[0] = EOS, f(transfer_log, 40, "+ Пополнение %d руб", strval(inputtext));
+                TransferBank_log(playerid, strval(inputtext), transfer_log);
+			}
+        }
+        case 8999: 
+		{
+		    if(!response) return 1;
+		    if(response) 
+			{
+			    switch(listitem) 
+				{
+      				case 0: ShowPlayerDialog(playerid, 8998, DIALOG_STYLE_LIST, "{ee3366}Банкомат", "1. Узнать баланс счёта\n2. Снять деньги со счета\n3. Пополнить счёт\n4. Перевести деньги на другой счёт\n5. Положить деньги на счет телефона", "Выбрать", "Отмена");
+      				case 1: ShowPlayerDialog(playerid, 8997, DIALOG_STYLE_LIST, "{ee3366}Оплата аредны", "1. Оплатить дом / квартиру\n2. Оплатить бизнес / АЗС", "Выбрать", "Отмена");
       				case 3: SCM(playerid, COLOR_YELLOW, !"Разработка. Приятной игры на {921dd1}"NAMESERVER"");
 			    }
 			}
