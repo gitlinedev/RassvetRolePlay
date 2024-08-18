@@ -11994,7 +11994,8 @@ callback: SecondTimer()
 			{
 				if(hour == 0) 
 				{
-					mysql_tqueryf(mysql, "UPDATE vk_bot SET yesterday_online=%d WHERE id=1", vMaxOnline);
+					mysql_tqueryf(mysql, "UPDATE vk_bot SET yesterday_online=%d, max_online=0 WHERE id=1", vMaxOnline);
+					vMaxOnline = 0;
 				}
 				if(hour == 9) SendClientMessageToAll(COLOR_GREY, !"Внимание! Через 3 минуты произойдёт плановый перезапуск сервера");
 			}
