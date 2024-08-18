@@ -73,7 +73,7 @@ stock gm_OnDialogResponse(playerid, dialogid, response, listitem)
 				{
 				    case 0: 
 					{
-						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, !"{ee3366} оманды игрового модератора", !"\
+						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366} оманды игрового модератора", !"\
 						mhelp - команды модератора\n\
 						flip - починить машину\n\
 						sp - следить за игроком\n\
@@ -87,7 +87,7 @@ stock gm_OnDialogResponse(playerid, dialogid, response, listitem)
 					}
 					case 1: 
 					{
-						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, !"{ee3366} оманды игрового модератора", !"\
+						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366} оманды игрового модератора", !"\
 						unjail - выпустить из деморгана\n\
 						jail - посадить игрока в тюрьму\n\
 						unprison - выпустить из тюрьмы\n\
@@ -102,12 +102,11 @@ stock gm_OnDialogResponse(playerid, dialogid, response, listitem)
 					}
 					case 2: 
 					{
-						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, !"{ee3366} оманды игрового модератора", !"\
+						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366} оманды игрового модератора", !"\
 						veh - создать автомобиль\n\
 						dveh - удалить автомобиль\n\
 						givevb - выдать игроку военный билет\n\
 						setarm - выдать броню\n\
-						setmember - выдать ранг в организации\n\
 						vmute - выдать блокировку голосового чата\n\
 						unvmute - сн€ть блокировку голосового чата\n\
 						kick - кикнуть игрока", !"«акрыть", !"");

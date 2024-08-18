@@ -57,7 +57,7 @@ callback: CheckBlackListInvite(playerid)
 		if(!IsPlayerLogged{id})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 		if(PI[id][pMember] != 0) return  SCM(playerid, COLOR_GREY, !"Данный игрок состоит в организации");
 		if(PI[id][pWarn] > 0) return SCM(playerid, COLOR_GREY, !"У данного игрока есть предупреждения");
-		if(PI[id][pMilitaryID] == 0 && PI[playerid][pMember] == 3) return SCM(playerid, COLOR_GREY, !"У игрока нет военного билета");
+		//if(PI[id][pMilitaryID] == 0 && PI[playerid][pMember] == 3) return SCM(playerid, COLOR_GREY, !"У игрока нет военного билета");
 
 		new Float:x,Float:y,Float:z;
 		GetPlayerPos(id,x,y,z);

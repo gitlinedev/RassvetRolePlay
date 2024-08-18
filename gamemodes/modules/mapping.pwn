@@ -123,13 +123,26 @@ stock OtherMapping()
     Create3DTextLabel("{008000}Вход", -1, 1475.1235,2048.4810,12.8747, 20.0, 0);
     VhodArmy1 = CreateDynamicPickup(1318, 23, 1919.4459, 2304.0505, 15.5697, -1);
     VhodArmy2 = CreateDynamicPickup(1318, 23, -454.3694,-1489.6445,41.0700, -1);
-    palata_vhod = CreateDynamicPickup(1318, 23, -691.4985,1617.8883,1002.0200, -1);
-    palata_vihod = CreateDynamicPickup(1318, 23, 1324.4685,2505.1799,1002.1400, -1);
+
+	PalataExit = CreateDynamicPickup(1318, 23, 2105.4714, 1464.2803, -47.5200, -1);
+
+    PalataEnter_1 = CreateDynamicPickup(1318, 23, 2149.8105,1496.7435,-47.5522, -1);
+	PalataEnter_2 = CreateDynamicPickup(1318, 23, 2141.2830,1496.7434,-47.5522, -1);
+	PalataEnter_3 = CreateDynamicPickup(1318, 23, 2149.9155,1492.4520,-47.5522, -1);
+	PalataEnter_4 = CreateDynamicPickup(1318, 23, 2141.3159,1492.4518,-47.5522, -1);
+
+	LiftMedical_1 = CreateDynamicPickup(1318, 23, 2167.8127,1535.6669,-47.2944, -1); // вверх
+	LiftMedical_2 = CreateDynamicPickup(1318, 23, 2153.7673,1494.5684,-47.5522, -1); // вниз
+
+	LiftMedicalPersonal_1 = CreateDynamicPickup(1318, 23, 2125.3843,1535.6166,-47.294, -1); // 1 лифт
+	LiftMedicalPersonal_2 = CreateDynamicPickup(1318, 23, 2111.2915,1494.6246,-47.5444, -1); // 2 лифт
+	LiftMedicalPersonal_3 = CreateDynamicPickup(1318, 23, 2064.9641,1502.3088,-47.5044, -1); // 3 лифт
+
     Ordinatorskaya_Enter = CreateDynamicPickup(1318, 23,  -688.8463,1666.1891,1002.0200, -1);
     Ordinatorskaya_Exit = CreateDynamicPickup(1318, 23, -2851.9490,2814.9189,1002.1600, -1);
-    BCRDEnter_1 = CreateDynamicPickup(1318, 23,  2110.8955,1820.9956,13.3484, -1);
-    BCRDExit = CreateDynamicPickup(1318, 23,  -679.4802,1633.7867,1002.0200, -1);
-    BCRDExit1 = CreateDynamicPickup(1318, 23,  -679.4778,1630.4673,1002.0200, -1);
+
+    BCRDEnter = CreateDynamicPickup(1318, 23,  2110.8955,1820.9956,13.3484, -1);
+    BCRDExit = CreateDynamicPickup(1318, 23, 2147.1125,1527.4778,-47.2944, -1);
     //=============================[ ШАХТА ]=============================//
     Create3DTextLabel("{008000}Шахта", -1, 2797.2009,2714.2578,14.9075, 10.0, 0, 0);
     MineEnter = CreateDynamicPickup(1318, 23, 2797.2009,2714.2578,14.9075, -1);
@@ -183,8 +196,8 @@ stock OtherMapping()
     //информационные пикапы
 
     //информационный пикап БЦРБ
-    Create3DTextLabel("{FFFF00}Информационный пикап", -1, -688.3610,1634.2631,1002.0200, 20.0, 1, 1);
-    CRBinfo = CreateDynamicPickup(1239, 23, -688.3610,1634.2631,1002.0200, -1);
+    Create3DTextLabel("{FFFF00}Информационный пикап", -1, 2148.9890,1536.2206,-47.2944, 20.0, 1, 1);
+    CRBinfo = CreateDynamicPickup(1239, 23, 2148.9890,1536.2206,-47.2944, -1);
     //информационный пикап Правительства области (около пра-ва)
     Create3DTextLabel("{FFFF00}Информационный пикап", -1, 1920.8109,-2246.5757,11.0240, 20.0, 1, 1);
     Pravoinfo = CreateDynamicPickup(1239, 23, 1920.8109,-2246.5757,11.0240, -1);
@@ -270,8 +283,8 @@ stock OtherMapping()
     metall_buy = CreateDynamicPickup(19134, 23, 2806.9888,2691.7205,15.2110, -1);
     Create3DTextLabel("{FFFF00}Склада\nвеществ", -1, 1894.9059,1186.5181,30.3239, 20.0, 0);
     drugs_buy = CreateDynamicPickup(1279, 23, 1894.9059,1186.5181,30.3239, -1);
-    Create3DTextLabel("{FFFF00}Получение\nмедицинской справки", -1, -688.7606,1631.3787,1002.0200+1, 20.0, 1, 1);
-    CRBPickCard = CreateDynamicPickup(19134, 23, -688.7606,1631.3787,1002.0200, -1);
+    Create3DTextLabel("{FFFF00}Получение\nмедицинской справки", -1, 2145.3030,1536.2240,-47.2944, 20.0, 1, 1);
+    CRBPickCard = CreateDynamicPickup(19134, 23, 2145.3030,1536.2240,-47.2944, -1);
     Create3DTextLabel("{FFFF00}Дайвер", -1, 1986.9636,1001.2310,16.3208, 20.0, 0);
     CreateActor(48, 1986.9636,1001.2310,15.3208,142.0948);
     Dalnoboy_pickup = CreateDynamicPickup(1275, 23, -663.7905,-2011.1587,41.7544, -1);

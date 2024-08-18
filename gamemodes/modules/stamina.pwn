@@ -10,7 +10,7 @@ callback: RunCheck()
 
         cef_emit_event(i, "cef:hud:run", CEFINT(floatround(PI[i][pRun], floatround_round)));
 
-        if(!GetPlayerSpeed(i) && MaxRun > PI[i][pRun]) PI[i][pRun] += 0.01;
+        if(!GetPlayerSpeed(i) && MaxRun > PI[i][pRun]) PI[i][pRun] += 0.05;
 
         if(GetPVarInt(i, "Colddown"))
         {
@@ -33,7 +33,7 @@ callback: RunCheck()
                     SetPVarInt(i, "Colddown", 1);
                     ApplyAnimation(i, "FAT", "IDLE_tired", 4.0, 1, 0, 0, 0, 0, 1);
                 }
-                PI[i][pRun] -= 0.05;
+                PI[i][pRun] -= 0.03;
                 continue;
             }
             else if(GetPlayerSpeed(i) > 50)
@@ -44,7 +44,7 @@ callback: RunCheck()
                     SetPVarInt(i, "Colddown", 1);
                     ApplyAnimation(i, "FAT", "IDLE_tired", 4.0, 1, 0, 0, 0, 0, 1);
                 }
-                PI[i][pRun] -= 0.02;
+                PI[i][pRun] -= 0.01;
                 continue;
             }
             else if(GetPlayerSpeed(i) > 0)
@@ -55,7 +55,7 @@ callback: RunCheck()
                     SetPVarInt(i, "Colddown", 1);
                     ApplyAnimation(i, "FAT", "IDLE_tired", 4.0, 1, 0, 0, 0, 0, 1);
                 }
-                PI[i][pRun] -= 0.005;
+                PI[i][pRun] -= 0.003;
                 continue;
             }
         }

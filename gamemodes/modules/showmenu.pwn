@@ -128,7 +128,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 1:
 					{
-                        if(PI[playerid][data_MASK] >= 1) return ShowArmyShop(playerid), SCM(playerid, COLOR_GREY, !"Вы не можете преобрести более 1-й маски");
+                        if(PI[playerid][pMask] >= 1) return ShowArmyShop(playerid), SCM(playerid, COLOR_GREY, !"Вы не можете преобрести более 1-й маски");
                         if(Discount == 0) 
                         {
                             if(GetPlayerMoneyID(playerid) < MASK) return ShowArmyShop(playerid), SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
@@ -143,7 +143,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                             new cef[10]; f(cef, 10, "-%dР", MASK/2);
                             cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка маски"), CEFSTR("fb4949"), CEFSTR(cef));
                         }
-						PI[playerid][data_MASK]++;
+						PI[playerid][pMask]++;
 						SCM(playerid, 0x00AA33FF, "Вы купили маску за {ff9977}150 руб{00aa33}. Чтобы надеть её используйте /mask");
 						ShowArmyShop(playerid);
 					}
@@ -218,10 +218,10 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 6:
 					{
-					    if(PI[playerid][data_MASK] >= 1) return SCM(playerid, COLOR_GREY, !"Вы не можете преобрести более 1-й маски");
+					    if(PI[playerid][pMask] >= 1) return SCM(playerid, COLOR_GREY, !"Вы не можете преобрести более 1-й маски");
 						if(GetPlayerMoneyID(playerid) < MASK) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 						GivePlayerMoneyLog(playerid,-MASK);
-						PI[playerid][data_MASK]++;
+						PI[playerid][pMask]++;
 					    UpdateBusinessData(b);
                         new cef[10]; f(cef, 10, "-%dР", MASK);
 						cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка маски"), CEFSTR("fb4949"), CEFSTR(cef));
@@ -244,7 +244,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                     }
                     case 9:
 					{
-						if(PI[playerid][data_FIXCOMPL] >= 3) return SCM(playerid, COLOR_GREY, !"Вы не можете преобрести более 3 Рем.Комплектов.");
+						if(PI[playerid][pFixPack] >= 3) return SCM(playerid, COLOR_GREY, !"Вы не можете преобрести более 3 Рем.Комплектов.");
 						if(GetPlayerMoneyID(playerid) < FIX_CAR) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно для покупки!");
 
                         new cef[10]; f(cef, 10, "-%dР", FIX_CAR);
@@ -252,7 +252,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						SCM(playerid, 0x00AA33FF, !"Вы купили Рем.Комплект {FF9977}1500р руб{00AA33}. Чтобы его использовать {FF9977}/fix");
 
 						GivePlayerMoneyLog(playerid, -FIX_CAR);
-						PI[playerid][data_FIXCOMPL] += 1;
+						PI[playerid][pFixPack] += 1;
 						ShowShopMenu(playerid);
 					}
 			    }

@@ -48,6 +48,7 @@ stock qeust_OnDialogResponse(playerid, dialogid, response, listitem)
                 GivePlayerMoneyLog(playerid, -250);
 
 				PI[playerid][pRentMoto] = CreateVehicle(462, 1483.1671,2054.8171,12.5316,269.5321, 1, 1, 3600);
+                CarInfo[PI[playerid][pRentMoto]][cFuel] = 50;
 				PutPlayerInVehicleAC(playerid, PI[playerid][pRentMoto], 0);
             }
         }

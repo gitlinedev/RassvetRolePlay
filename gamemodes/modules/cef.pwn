@@ -53,10 +53,6 @@ stock SendPlayerOfferNotify(playerid, type, message[], button1[], button2[], tim
 	OfferTimer[playerid] = SetTimerEx("ClearOffer", time*1000, false, "d", playerid);
 	return 1;
 }
-callback: ClearOffer(playerid)
-{
-	ClearRequest(playerid);
-}
 stock SendPlayerHudNotify(playerid, id, type[], message[], time) 
 {
 	cef_emit_event(playerid, "cef:send:notification:hud", CEFINT(id), CEFSTR(type), CEFSTR(message), CEFINT(time));

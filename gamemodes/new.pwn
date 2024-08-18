@@ -160,18 +160,6 @@ FixSVarString(str[], size = sizeof(str)) for (new i = 0; ((str[i] &= 0xFF) != '\
 #define cena_eat                2
 #define GATES_CLOSED  			1
 #define GATES_OPEN      		2
-#define MOVE_SPEED              35.0
-#define ACCEL_RATE              0.03
-#define CAMERA_MODE_NONE    	0
-#define CAMERA_MODE_FLY     	1
-#define MOVE_FORWARD    		1
-#define MOVE_BACK       		2
-#define MOVE_LEFT       		3
-#define MOVE_RIGHT      		4
-#define MOVE_FORWARD_LEFT       5
-#define MOVE_FORWARD_RIGHT      6
-#define MOVE_BACK_LEFT          7
-#define MOVE_BACK_RIGHT         8
 #define MAX_GANGZONE 			104
 #define AC_MAX_CODES 					53
 #define AC_MAX_CODE_LENGTH 				(3 + 1)
@@ -314,6 +302,7 @@ enum gangzone {
 }
 
 new OfferTimer[MAX_PLAYERS];
+new SetMarkerTimer[MAX_PLAYERS];
 
 new const weapon_names[][] = {
 /*  0 */{"Кулак"},                      /*  1 */{"Кастет"},                     /*  2 */{"Клюшка для гольфа"},
@@ -896,8 +885,19 @@ new NPC_ALL[30],
 	Pravo_givegun_pickup,
 	EnterArmyShop,
 	vch_givegun_pickup,
-	palata_vhod,
-	palata_vihod,
+
+	PalataExit,
+	PalataEnter_1,
+	PalataEnter_2,
+	PalataEnter_3,
+	PalataEnter_4,
+
+	LiftMedical_1,
+	LiftMedical_2,
+	LiftMedicalPersonal_1,
+	LiftMedicalPersonal_2,
+	LiftMedicalPersonal_3,
+
 	MineEnter,
 	MineExit,
 	Ordinatorskaya_Enter,
@@ -931,9 +931,8 @@ new NPC_ALL[30],
     Text:GZ[1],
 	police_barrier[2],
 	police_barrier_status[2],
-	BCRDEnter_1,
+	BCRDEnter,
 	BCRDExit,
-	BCRDExit1,
 	CRBPickCard,
 	Casino_Enter,
 	Casino_Exit,
@@ -1085,7 +1084,6 @@ enum P_DATA
 	Float:pHealthPoints,
 	Float:pArmour,
 	data_MED,
-	pPassiveMode,
 	data_MEDNUM,
 	data_SPAWN,
 	pHospital,
@@ -1142,7 +1140,7 @@ enum P_DATA
 	pLoadVehicleID,
 	pHealPack,
 	pHealthPackKD,
-	data_MASK,
+	pMask,
 	pMaskWorn,
 	data_CALL,
 	bool:data_CLICKTD,
@@ -1169,9 +1167,16 @@ enum P_DATA
 	Float:pOnMPZ,
 	pOnMP,
 	pTwarn,
-	data_FIXCOMPL,
+	pFixPack,
 	//TEMP INFO
+	pSetMarker,
 	Float:pRun,
+	pFlyMode,
+	pFlyInt,
+	pFlyVirtualWorld,
+	Float:pFlyX,
+	Float:pFlyY,
+	Float:pFlyZ,
 	pTempJob,
 	PTempJobValue_1,
 	PTempJobValue_2,
@@ -1260,8 +1265,6 @@ enum
 	dialog_GUN_POLICE,
 	dialog_ADMCOMMAND,
 	dialog_TP,
-    Dialog_PassiveMode,
-    Dialog_OffPassiveMode,
     Dialog_offpas,
 	dialog_schoolinfo,
 	dialog_schooltest,
@@ -1276,7 +1279,6 @@ enum
 	dialog_salonjob,
 	dialog_dbjob,
 	dialog_gorajob,
-	dialog_GIVEGUNMVD,
 	dialog_GIVEGUNPRAVO,
 	dialog_SETGZ
 };
@@ -1334,16 +1336,9 @@ static PedFeMale[6] = {10,12,13,31,38,39};
 #include "modules/organisation.pwn"
 #include "modules/anticheat.pwn"
 #include "modules/stamina.pwn"
+#include "modules/fly.pwn"
+#include "modules/police.pwn"
 //=========================================================================================//
-forward Float:GetDistanceBetweenPlayers(p1,p2);
-public Float:GetDistanceBetweenPlayers(p1,p2) 
-{
-    new Float:x1,Float:y1,Float:z1,Float:x2,Float:y2,Float:z2;
-    if(!IsPlayerConnected(p1) || !IsPlayerConnected(p2)) return -1.00;
-    GetPlayerPos(p1,x1,y1,z1);
-    GetPlayerPos(p2,x2,y2,z2);
-    return floatsqroot(floatpower(floatabs(floatsub(x2,x1)),2)+floatpower(floatabs(floatsub(y2,y1)),2)+floatpower(floatabs(floatsub(z2,z1)),2));
-}
 stock GivePlayerMetall(playerid, amount)
 {
     if(IsPlayerConnected(playerid))
@@ -1738,20 +1733,25 @@ stock GivePlayerArmour(playerid,Float:Armour, Float:Armplayer)
 public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart) return 1;
 public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart) 
 {
-    /*if(PI[playerid][pMember] == 3 && weaponid == 3) 
+    if(PI[playerid][pMember] == 3) 
 	{
-		new Float:health, Float:x, Float:y, Float:z;
-		GetPlayerHealth(damagedid,health);
-		GetPlayerPos(damagedid, x, y, z); ClearAnimations(damagedid);
-		ApplyAnimation(damagedid, "PED", "COWER", 4.0, 1, 0, 0, 0, 0);
+		if(weaponid == 23 || weaponid == 3)
+		{
+			new Float:health, Float:x, Float:y, Float:z;
+			GetPlayerHealth(damagedid,health);
+			GetPlayerPos(damagedid, x, y, z); ClearAnimations(damagedid);
 
-		SCMf(playerid,  COLOR_BLACKBLUE, "Вы успешно оглушили игрока: %s", PI[damagedid][pName]);
-		SCMf(damagedid, COLOR_BLACKBLUE, "Сотрудник Полиции %s оглушил вас на 20 секунд", PI[playerid][pName]);
+			SCMf(playerid,  COLOR_BLACKBLUE, "Вы успешно оглушили игрока: %s", PI[damagedid][pName]);
+			SCMf(damagedid, COLOR_BLACKBLUE, "Сотрудник Полиции %s оглушил вас на 15 секунд", PI[playerid][pName]);
 
-		TogglePlayerControllable(damagedid, 0);
-		SetTimerEx("TazerEffect", 20000, false, "d", damagedid);
-		SetPlayerHealth(damagedid, health+amount);
-	}*/
+			TogglePlayerControllable(damagedid, 0);
+			SetTimerEx("TazerEffect", 15*1000, false, "d", damagedid);
+
+			ApplyAnimation(damagedid, "PED", "COWER", 4.0, 1, 0, 0, 0, 0);
+
+			SetPlayerHealth(damagedid, health+amount);
+		}
+	}
 	new Float:Health, Float:hpcar, CarID = INVALID_VEHICLE_ID;
 	GetPlayerHealth(damagedid, Health);
 
@@ -1782,20 +1782,6 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 			SCM(playerid, COLOR_GREY, !"Урон заблокирован: игрок является Игровым Мастером");
 			return 0;
 		}
-		if(PI[damagedid][pPassiveMode] == 1) 
-		{
-			if(IsPlayerInAnyVehicle(damagedid)) SetVehicleHealth(CarID, hpcar);
-			SetPlayerHealthAC(damagedid, Health);
-			SCM(playerid, COLOR_GREY, !"Урон заблокирован: у игрока включен пассивный режим");
-			return 0;
-		}
-		if(PI[playerid][pPassiveMode] == 1)
-		{
-			if(IsPlayerInAnyVehicle(damagedid)) SetVehicleHealth(CarID, hpcar);
-			SetPlayerHealthAC(damagedid, Health);
-			SCM(playerid, COLOR_GREY, !"Урон заблокирован: у Вас включен пассивный режим");
-			return 0;
-		}	
 		if(!IsPlayerCops(playerid)) 
 		{
 			if(IsPlayerGreenZone(damagedid))
@@ -1974,8 +1960,8 @@ public OnGameModeInit()
 	ClearCapture();
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-	
 	CheckCarHP = SetTimer("CheckCarHealth", 1000, 1);
-	SetTimer("SecondTimer",1000,true);
-	SetTimer("MinutTimer",1000*60,true);
+	SetTimer("SecondTimer", 1000, true);
+	SetTimer("MinutTimer", 1000*60, true);
 	SetTimer("ChangeServer0", 500, false);
 	SetTimer("FlyTimer", 100, 1);
 	//
@@ -2223,6 +2209,10 @@ public OnPlayerDisconnect(playerid, reason)
 			ClearRequest(playerid);
 		}
 	}
+	if(PI[playerid][pSetMarker] == 1)
+	{
+		KillTimer(SetMarkerTimer[playerid]);
+	}
 	if(PI[playerid][pRentMoto] != INVALID_VEHICLE_ID) DestroyVehicle(PI[playerid][pRentMoto]);
 	if(PI[playerid][pLoadVehicleID] != INVALID_VEHICLE_ID) 
 	{
@@ -2260,6 +2250,7 @@ public OnPlayerDisconnect(playerid, reason)
 }
 public OnPlayerDeath(playerid, killerid, reason)
 {
+	nc_OnPlayerDeath(playerid);
 
 	PI[playerid][pMaskWorn] = 0;
     PI[playerid][pSchoolTestLvl] = 0;
@@ -2370,12 +2361,6 @@ public OnPlayerDeath(playerid, killerid, reason)
 				SetPlayerWantedLevel(killerid, PI[killerid][pWanted]);
 				SCMf(killerid, COLOR_TOMATO, "Ваш уровень розыска повышен за убийство игрока %s[%d]",PI[playerid][pName], playerid);
 				if(PI[killerid][pRespect] > -100) PI[killerid][pRespect]--;
-				if(PI[killerid][pPassiveMode] == 1)
-				{
-					SCM(killerid, COLOR_HINT, !"[Пассивный Режим] {FFFFFF}Пассивный Режим был выключен! Причина: Убийство человека!");
-					PI[killerid][pPassiveMode] = 0;
-					PassiveModeOff(killerid);
-				}
 			}
 		}
 	}
@@ -2995,7 +2980,8 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 	 	{ffffff}Мерия в г. Южном", "Закрыть", "");
 	}
 	//информационный пикап Министерства Внутренних Дел (МВД)
-	if(pickupid == MVDinfo) {
+	if(pickupid == MVDinfo) 
+	{
         return ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Информация о собеседование", "\
 		{ffff99}1. Название организации\n\
 		{ffffff}Полиция\n\
@@ -3378,25 +3364,77 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 		SetCameraBehindPlayer(playerid);
 		return Freeze(playerid);
 	}
-	if(pickupid == palata_vhod) {
-	    SetPlayerVirtualWorld(playerid, 0);
-	    SetPlayerInterior(playerid, 2);
-	    SetPlayerPos(playerid, 1326.9725,2505.1501,1002.1400);
-		SetPlayerFacingAngle(playerid, 267.5599);
-		SetCameraBehindPlayer(playerid);
-		return Freeze(playerid);
-    }
-	if(pickupid == palata_vihod) 
+	if(pickupid == PalataEnter_1) 
 	{
-		if(PI[playerid][pHospital] == 1) return SCM(playerid, COLOR_GREY, !"Вы должны пройти курс восстановления");
 	    SetPlayerVirtualWorld(playerid, 1);
 	    SetPlayerInterior(playerid, 1);
-	    SetPlayerPos(playerid, -689.3057,1619.0341,1002.0200);
-		SetPlayerFacingAngle(playerid, 0.1491);
+	    SetPlayerPos(playerid, 2105.5593,1462.6266,-47.5200);
+		SetPlayerFacingAngle(playerid, 178.9202);
 		SetCameraBehindPlayer(playerid);
 		return Freeze(playerid);
     }
-    if(pickupid == Ordinatorskaya_Enter) {
+	if(pickupid == PalataEnter_2) 
+	{
+	    SetPlayerVirtualWorld(playerid, 1);
+	    SetPlayerInterior(playerid, 2);
+	    SetPlayerPos(playerid, 2105.5593,1462.6266,-47.5200);
+		SetPlayerFacingAngle(playerid, 178.9202);
+		SetCameraBehindPlayer(playerid);
+		return Freeze(playerid);
+    }
+	if(pickupid == PalataEnter_3) 
+	{
+	    SetPlayerVirtualWorld(playerid, 1);
+	    SetPlayerInterior(playerid, 3);
+	    SetPlayerPos(playerid, 2105.5593,1462.6266,-47.5200);
+		SetPlayerFacingAngle(playerid, 178.9202);
+		SetCameraBehindPlayer(playerid);
+		return Freeze(playerid);
+    }
+	if(pickupid == PalataEnter_4) 
+	{
+	    SetPlayerVirtualWorld(playerid, 1);
+	    SetPlayerInterior(playerid, 4);
+	    SetPlayerPos(playerid, 2105.5593,1462.6266,-47.5200);
+		SetPlayerFacingAngle(playerid, 178.9202);
+		SetCameraBehindPlayer(playerid);
+		return Freeze(playerid);
+    }
+	if(pickupid == PalataExit) 
+	{
+		if(PI[playerid][pHospital] == 1) return SCM(playerid, COLOR_GREY, !"Вы должны пройти курс восстановления");
+
+		switch(GetPlayerInterior(playerid))
+		{
+			case 1:
+			{
+				SetPlayerPos(playerid, 2147.0642, 1494.2797, -47.5522);
+				SetPlayerFacingAngle(playerid, 179.5594);
+			}
+			case 2:
+			{
+				SetPlayerPos(playerid, 2144.4939,1495.2432,-47.5522);
+				SetPlayerFacingAngle(playerid, 177.8755);
+			}
+			case 3:
+			{
+				SetPlayerPos(playerid, 2144.3362,1493.7542,-47.5522);
+				SetPlayerFacingAngle(playerid, 356.4270);
+			}
+			case 4:
+			{
+				SetPlayerPos(playerid, 2147.3728,1494.1027,-47.5522);
+				SetPlayerFacingAngle(playerid, 357.2792);
+			}
+		}
+
+	    SetPlayerVirtualWorld(playerid, 1);
+	    SetPlayerInterior(playerid, 1);
+		SetCameraBehindPlayer(playerid);
+		return Freeze(playerid);
+    }
+    if(pickupid == Ordinatorskaya_Enter) 
+	{
   		if(PI[playerid][pMember] != 4) return SCM(playerid, COLOR_GREY, !"Вы не являетесь сотрудником БЦРБ");
 	    SetPlayerVirtualWorld(playerid, 0);
 	    SetPlayerInterior(playerid, 2);
@@ -3405,7 +3443,8 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 		SetCameraBehindPlayer(playerid);
 		return Freeze(playerid);
     }
-    if(pickupid == Ordinatorskaya_Exit) {
+    if(pickupid == Ordinatorskaya_Exit) 
+	{
 	    SetPlayerVirtualWorld(playerid, 1);
 	    SetPlayerInterior(playerid, 1);
   		SetPlayerPos(playerid, -688.8541,1662.8464,1002.0200);
@@ -3413,24 +3452,52 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 		SetCameraBehindPlayer(playerid);
 		return Freeze(playerid);
     }
-    if(pickupid == BCRDEnter_1)
+    if(pickupid == BCRDEnter)
     {
 	    SetPlayerVirtualWorld(playerid, 1);
 	    SetPlayerInterior(playerid, 1);
 
-  		SetPlayerPos(playerid, -682.8159,1632.3666,1002.0200);
-		SetPlayerFacingAngle(playerid, 88.3299);
+  		SetPlayerPos(playerid, 2147.1094,1530.8121,-47.2944);
+		SetPlayerFacingAngle(playerid, 357.9888);
 		SetCameraBehindPlayer(playerid);
 		Freeze(playerid);
 		return true;
     }
-   	if(pickupid == BCRDExit || pickupid == BCRDExit1)
+	if(pickupid == LiftMedical_1)
+    {
+	    SetPlayerVirtualWorld(playerid, 1);
+	    SetPlayerInterior(playerid, 1);
+
+  		SetPlayerPos(playerid, 2149.9568,1494.5905,-47.5522);
+		SetPlayerFacingAngle(playerid, 89.7152);
+		SetCameraBehindPlayer(playerid);
+		Freeze(playerid);
+		return true;
+    }
+	if(pickupid == LiftMedical_2)
+    {
+	    SetPlayerVirtualWorld(playerid, 1);
+	    SetPlayerInterior(playerid, 1);
+
+  		SetPlayerPos(playerid, 2164.1282,1535.7817,-47.2944);
+		SetPlayerFacingAngle(playerid, 90.6740);
+		SetCameraBehindPlayer(playerid);
+		Freeze(playerid);
+		return true;
+    }
+	if(pickupid == LiftMedicalPersonal_1 || pickupid == LiftMedicalPersonal_2 || pickupid == LiftMedicalPersonal_3)
+    {
+		if(PI[playerid][pMember] != 4) return SCM(playerid, COLOR_GREY, !"Вы не являетесь сотрудником БЦРБ");
+		ShowPlayerDialog(playerid, 1932, DIALOG_STYLE_LIST, "{ee3366}Лифт", "1 этаж\n2 этаж\n3 этаж", "Вызвать", "Закрыть");
+		return true;
+    }
+   	if(pickupid == BCRDExit)
     {
 	    SetPlayerVirtualWorld(playerid, 0);
 	    SetPlayerInterior(playerid, 0);
 
-  		SetPlayerPos(playerid, 2106.4307,1821.9447,12.2925);
-		SetPlayerFacingAngle(playerid, 89.1651);
+  		SetPlayerPos(playerid, 2107.5298,1821.8654,12.0540);
+		SetPlayerFacingAngle(playerid, 90.9506);
 		SetCameraBehindPlayer(playerid);
 		Freeze(playerid);
 		return true;
@@ -3458,18 +3525,8 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 		Freeze(playerid);
 		return true;
     }
-   	if(pickupid == BCRDExit1)
-    {
-	    SetPlayerVirtualWorld(playerid, 0);
-	    SetPlayerInterior(playerid, 0);
-
-  		SetPlayerPos(playerid, 2107.490722,1820.998901,12.220000);
-		SetPlayerFacingAngle(playerid, 89.012710);
-		SetCameraBehindPlayer(playerid);
-		Freeze(playerid);
-		return true;
-    }
-    if(pickupid == opgintvhod_offklub) {
+    if(pickupid == opgintvhod_offklub) 
+	{
         if(PI[playerid][pMember] != 7) return SCM(playerid, COLOR_GREY, !"Вы не являетесь участником ОПГ Кавказ");
 	    SetPlayerVirtualWorld(playerid, 1);
 	    SetPlayerInterior(playerid, 1);
@@ -3749,7 +3806,7 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 	if(pickupid == MVD_givegun_pickup) 
 	{
 		if(PI[playerid][pMember] != 3) return SCM(playerid, COLOR_GREY, !"У Вас нет доступа к этому складу");
-		ShowPlayerDialog(playerid, dialog_GIVEGUNMVD, DIALOG_STYLE_LIST, "{ee3366}Государственный склад", "1. Взять аптечки\n2. Взять оружие", "Взять", "Закрыть");
+		ShowPlayerDialog(playerid, 7622, DIALOG_STYLE_LIST, "{ee3366}Государственный склад", "1. Взять аптечки\n2. Взять оружие", "Взять", "Закрыть");
 	}
 	if(pickupid == vch_givegun_pickup) 
 	{
@@ -3820,6 +3877,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	mine_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 	nosov_OnPlayerKeyStateChange(playerid, newkeys);
 	kv_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
+	nc_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 
 	if(PRESSED(KEY_WALK)) 
 	{
@@ -4370,6 +4428,10 @@ callback: NoRoof(playerid)
 callback: anim2(playerid) return ApplyAnimation(playerid, "ped", "getup", 4.0, 0, 1, 0, 0, 0,0);
 public OnPlayerUpdate(playerid) 
 {
+
+	nc_OnPlayerUpdate(playerid);
+
+
     SetPlayerColor(playerid, (PI[playerid][pMaskWorn] != 0) ? 0x33333300 : PLAYER_COLOR_TEAM[PI[playerid][pMember]]);
 
     if (PlayerToPoint(4.0, playerid, 1469.9095,2050.7461,12.5316) && GetPVarInt(playerid, "HintHutton") == 0)
@@ -4771,54 +4833,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				mysql_tquery(mysql, global_str, "MysqlPromoCheck", "i", playerid);
 			}
 		}
-		case Dialog_OffPassiveMode: 
-		{
-		    if(!response) return 1;
-		    if(response) 
-			{
-		        switch(listitem) 
-				{
-                    case 0: 
-					{
-                    	ShowPlayerDialog(playerid, 7821, DIALOG_STYLE_MSGBOX, !"{ee3366}Пассивный Режим", "{FFFFFF}Вы действительно хотите отключить пассивный режим?", "Выбрать", "Отмена");
-                    }
-				}
-			}
-		}
-		case Dialog_PassiveMode: 
-		{
-		    if(!response) return 1;
-		    if(response) 
-			{
-		        switch(listitem) 
-				{
-                    case 0: 
-					{
-                    	ShowPlayerDialog(playerid, 7820, DIALOG_STYLE_MSGBOX, !"{ee3366}Пассивный Режим", "{FFFFFF}Вы действительно хотите включить пассивный режим?", "Выбрать", "Отмена");
-                    }
-				}
-			}
-		}
-		case 7820:
-		{
-		    if(!response) return 1;
-			if(response)
-			{
-				SCM(playerid, COLOR_HINT, !"[Пассивный Режим] {FFFFFF}Вы включили пассивный режим");
-				PI[playerid][pPassiveMode] = 1;
-				PassiveModeEnabled(playerid);
-			}
-		}
-		case 7821:
-		{
-		    if(!response) return 1;
-			if(response)
-			{
-				SCM(playerid, COLOR_HINT, !"[Пассивный Режим] {FFFFFF}Вы выключили пассивный режим");
-				PI[playerid][pPassiveMode] = 0;
-				PassiveModeOff(playerid);
-			}
-		}
 		case 9229: 
 		{
 			if(!response) return 1;
@@ -5192,12 +5206,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 									/d - чат депортамента\n\
 									/members - члены организации online\n\
 									/su - выдать розыск\n\
-									/pheal - поднять игрока из обморока\n\
 									/clear - обнулировать розыск\n\
 									/cuff - надеть наручники\n\
 									/uncuff - снять наручники\n\
 									/incar - посадить игрока в машину\n\
-									{/uncar - вытащить игрка из машины\n\
+									/uncar - вытащить игрка из машины\n\
 									/arrest - провести арест\n\
 									/wanted - список преступников\n\
 									/setmark - поиск преступника\n\
@@ -5484,40 +5497,40 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if(response)
 			{
 				new Float:X,Float:Y,Float:Z;
-				GetPlayerPos(targplayer[0], X, Y, Z);
+				GetPlayerPos(targplayer[playerid], X, Y, Z);
 				if(!PlayerToPoint(3.0, playerid, X, Y, Z)) return SCM(playerid, COLOR_GREY, !"Вы находетесь далеко друг от друга");
 
 				switch(listitem)
 				{
 					case 0:
 					{
-						return SendRequestForPlayer(playerid, targplayer[0], 0);
+						return SendRequestForPlayer(playerid, targplayer[playerid], 0);
 					}
 					case 1:
 					{
-						if(PI[targplayer[0]][pHealPack] >= 3) return SCM(playerid, COLOR_GREY, !"У игрока уже есть 3 набора аптечек");
-						return SendRequestForPlayer(playerid, targplayer[0], 2);
+						if(PI[targplayer[playerid]][pHealPack] >= 3) return SCM(playerid, COLOR_GREY, !"У игрока уже есть 3 набора аптечек");
+						return SendRequestForPlayer(playerid, targplayer[playerid], 2);
 					}
 					case 2:
 					{
-						return SendRequestForPlayer(playerid, targplayer[0], 3);
+						return SendRequestForPlayer(playerid, targplayer[playerid], 3);
 					}
 					case 3:
 					{
-						return SendRequestForPlayer(playerid, targplayer[0], 4);
+						return SendRequestForPlayer(playerid, targplayer[playerid], 4);
 					}
 					case 4:
 					{
-						return SendR(playerid);//SendRequestForPlayer(playerid, targplayer[0], 6);
+						return SendRequestForPlayer(playerid, targplayer[playerid], 5);
 					}
 					case 5:
 					{
-						return SendR(playerid);//SendRequestForPlayer(playerid, targplayer[0], 10);
+						return SendRequestForPlayer(playerid, targplayer[playerid], 7);
 					}
 					case 6:
 					{
-						if(PI[targplayer[0]][data_MASK] >= 1) return SCM(playerid, COLOR_GREY, !"У игрока уже есть маска");
-						return SendR(playerid);//SendRequestForPlayer(playerid, targplayer[0], 3);
+						if(PI[targplayer[playerid]][pMask] >= 1) return SCM(playerid, COLOR_GREY, !"У игрока уже есть маска");
+						return SendRequestForPlayer(playerid, targplayer[playerid], 8);
 					}
 				}
 			}
@@ -5720,6 +5733,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			    {
 					case 0:
 					{
+						if(!PlayerToPoint(50.0, playerid, 1158.0021,2572.6350,1112.4800)) return SendClientMessage(playerid, COLOR_LIGHTGREY, !"Вы должны находится в Мэрии (/gps > Важные места)");
 						ShowPlayerDialogf(playerid, 9227, DIALOG_STYLE_INPUT, !"{ee3366}Продажа транспорта", !"Продать", !"Закрыть",\
 						"{FFFFFF}Вы действительно хотите продать своё транспортное средство государству?\n\n\
 						Налог на продажу составит 35%% от государственной стоимости.\n\
@@ -5738,7 +5752,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				}
 	        }
 		}
-		/*case 9221:
+		case 9221:
 		{
 			new from_player = PI[playerid][pRequestFrom];
 
@@ -5747,14 +5761,15 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SCMf(from_player, COLOR_GREY, "%s отказался от Вашего предложения", getName(playerid), VehicleNames[CarInfo[PI[from_player][pLoadVehicleID]][cModel]-400]);
 				SCMf(playerid, COLOR_GREY, "Вы отказались от предложения игрока %s", PI[from_player][pName]);
 
-				ClearProposition(from_player);
+				ClearRequest(PI[playerid][pRequestFrom]);
+				ClearRequest(playerid);
 			}
 			if(response) 
 			{
 				if(ProxDetectorS(10.0, playerid, from_player))
 				{
-					new value = PI[from_player][pRequestValue];
-					new value_2 = PI[from_player][pRequestValueTwo];
+					new value = PI[from_player][pRequestValue_1];
+					new value_2 = PI[from_player][pRequestValue_2];
 
 					if(CarInfo[PI[from_player][pLoadVehicleID]][cPremium] == 1)
 					{
@@ -5772,10 +5787,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 
 					GivePlayerMoneyLog(playerid, -value);
-					GivePlayerMoneyLog(playerid, value);
+					GivePlayerMoneyLog(from_player, value);
 
 					UpdatePlayerDataInt(playerid, "Money", PI[playerid][pMoney]);
-					UpdatePlayerDataInt(from_player, "Money", from_player);
+					UpdatePlayerDataInt(from_player, "Money", PI[from_player][pMoney]);
 					//==========================================================
 					new carid = PI[from_player][pLoadVehicleID];
 					new Float: car_x, Float: car_y, Float: car_z;
@@ -5802,17 +5817,23 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					PI[from_player][pLoadVehicleID] = INVALID_VEHICLE_ID;
 					LoadedOwnable--;
 
-					ClearProposition(playerid);
+					ClearRequest(PI[playerid][pRequestFrom]);
+					ClearRequest(playerid);
 				}
-				else SCM(playerid, COLOR_LIGHTGREY, !"Данный игрок слишком далеко от Вас");
+				else 
+				{
+					SCM(playerid, COLOR_LIGHTGREY, !"Данный игрок слишком далеко от Вас");
+					ClearRequest(PI[playerid][pRequestFrom]);
+					ClearRequest(playerid);
+				}	
 			}
-		}*/
+		}
 		case 9227:
 		{
 			if(!PlayerToPoint(50.0, playerid, 1158.0021,2572.6350,1112.4800)) return SendClientMessage(playerid, COLOR_LIGHTGREY, !"Вы должны находится в Мэрии (/gps > Важные места)");
 			return 1;
 		}
-		/*case 9226:
+		case 9226:
 		{
 			if(!response) return 1;	
 			if(response) 
@@ -5840,7 +5861,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				if(!ProxDetectorS(10.0, playerid, id)) 
 					return SCM(playerid, COLOR_GREY, !"Данный игрок слишком далеко от Вас");
 
-				if(PI[id][pRequestFrom] != -1 && PI[id][pRequestIDFor] != -1) 
+				if(PI[id][pRequest] == 1) 
 					return SCM(playerid, COLOR_GREY, !"У игрока уже есть активное предложение");
 
 				if(PI[id][pLoadVehicleID] != INVALID_VEHICLE_ID) 
@@ -5850,23 +5871,15 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					if(cost+CarInfo[PI[playerid][pLoadVehicleID]][cCost]/100*20 > GetPlayerMoneyID(id)) return SCMf(playerid, COLOR_LIGHTGREY, "У игрока %s недостаточно денег на руках", getName(id));
 					
-					SendClientMessagef(playerid, 0x36e96cFF, "Вы предложили %s купить транспорт '%s' за %d руб", getName(id), VehicleNames[CarInfo[PI[playerid][pLoadVehicleID]][cModel]-400], cost);
-					SendClientMessagef(playerid, COLOR_LIGHTGREY, "Чтобы отменить предложение нажмите клавишу {ff6633}'N'");
-
-					SendR(playerid);//SendRequestForPlayer(playerid, id, 1, cost, CarInfo[PI[playerid][pLoadVehicleID]][cCost]/100*20);
+					SendRequestForPlayer(playerid, id, 9, cost, CarInfo[PI[playerid][pLoadVehicleID]][cCost]/100*20);
 				}
 				else
 				{
-					if(cost > GetPlayerMoneyID(id)) return SCMf(playerid, COLOR_LIGHTGREY, "У игрока %s недостаточно денег на руках", getName(id));
-
-					SendClientMessagef(playerid, 0x36e96cFF, "Вы предложили %s купить транспорт '%s' за %d руб", getName(id), VehicleNames[CarInfo[PI[playerid][pLoadVehicleID]][cModel]-400], cost);
-					SendClientMessagef(playerid, COLOR_LIGHTGREY, "Чтобы отменить предложение нажмите клавишу {ff6633}'N'");
-
-					SendR(playerid);//SendRequestForPlayer(playerid, id, 1, cost, CarInfo[PI[playerid][pLoadVehicleID]][cCost]/100*20); // отправляем игроку что ему кинули приглос на покупку
+					SendRequestForPlayer(playerid, id, 9, cost, CarInfo[PI[playerid][pLoadVehicleID]][cCost]/100*20);
 				}
 				return 1;
 			}
-		}*/
+		}
         case 7950: 
 		{
             if(!response) return 1;
@@ -6113,7 +6126,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			UpdateDynamic3DTextLabelText(army_sklad_text, -1, global_str);
 			SaveWarehouse();
 		}
-		case dialog_GIVEGUNMVD:
+		case 7622:
 		{
 			switch(listitem)
    			{
@@ -6208,6 +6221,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял снайперскую винтовку со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
    			    }
    			}
+			ShowPoliceStorage(playerid);
 		}
 		case 4980:
 		{
@@ -6848,7 +6862,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 				new b = GetPVarInt(playerid,"business"), cena = BizInfo[b][data_CENA]*30;
 
-				if(PI[playerid][data_FIXCOMPL] >= 3) 
+				if(PI[playerid][pFixPack] >= 3) 
 					return SCM(playerid, COLOR_GREY, !"У Вас уже есть ремонтный комплект, используйте /fix для починки");
 				if(GetPlayerMoneyID(playerid) < cena) 
 					return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
@@ -6856,7 +6870,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				BizInfo[b][bMoney] += cena;
 				GivePlayerMoneyLog(playerid,-cena);
 				UpdateBusinessData(b);
-				PI[playerid][data_FIXCOMPL] = 1;
+				PI[playerid][pFixPack] = 1;
 				SCM(playerid, COLOR_GREEN, "Вы приобрели ремонтный комплект. Для его использования введите команду: /fix.");
 			}
 		}
@@ -6919,13 +6933,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			SCM(playerid, -1, !"Используйте {ffb614}/setspawn{FFFFFF} для изменения спавна и {ffb614}/menu > Список команд для помощи");
 			SCMf(SenderID, 0x36e96cFF, "%s[%d] вступил в организацию по Вашему предложению. Игрок включён в стандартную группу", PI[playerid][pName], playerid);
 
-			if (PI[playerid][pPassiveMode] == 1)
-			{
-				SCM(playerid, COLOR_HINT, !"[Пасивный режим]: {FFFFFF}Пасивный режим был выключен! Причина: вступление в организацию");
-				PI[playerid][pPassiveMode] = 0;
-				PassiveModeOff(playerid);
-			}
-
 			mysql_string[0] = EOS, f(mysql_string, 75, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `default` = 1", PI[playerid][pMember]);
 			mysql_tquery(mysql, mysql_string, "SetPlayerStandartGroup", "i", playerid);
 
@@ -6954,9 +6961,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					case 2: ShowPlayerDialog(playerid, 4505, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Временные работы", "\
 																							Место\tРасполажение\n\
 																							1. Ферма {e1e187}[1+ уровень]\t\t{FFFFFF}Ашан (не работает)\n\
-																							2. Дайвинг {e1e187}[1+ уровень]\t\t{FFFFFF}с. Раговичи (не работает)\n\
-																							3. Шахта {e1e187}[1+ уровень]\t\t{FFFFFF}г. Лыткарино\n\
-																							4. Мясокомбинат {e1e187}[1+ уровень]\t\t{FFFFFF}г. Лыткарино (не работает)", "Отметить", "Назад");
+																							2. Шахта {e1e187}[1+ уровень]\t\t{FFFFFF}г. Лыткарино", "Отметить", "Назад");
 					case 3: ShowPlayerDialog(playerid, 4504, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Основные работы", "\
 																							Место\tРасполажение\n\
 																							1. Дальнобойщик {e1e187}[3+ уровень]\t\t{FFFFFF}г. Южный\n\
@@ -7058,7 +7063,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				        SetPlayerCheckpoint(playerid,2313.8247,-1924.8029,22.4338,5.0);
 		            }
 				}
-				cef_emit_event(playerid, "show-notify", CEFINT(17), CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), CEFSTR("4ea650"));
+				SendPlayerRadarNotify(playerid, 3, "green", "Пункт назначения отмечен у Вас на мини-карте", "", 5);
 			}
 		}
 		case 4503:
@@ -7097,7 +7102,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				        SetPlayerCheckpoint(playerid,2100.3179,1819.1858,12.2200,5.0);
 		            }
 		        }
-				cef_emit_event(playerid, "show-notify", CEFINT(17), CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), CEFSTR("4ea650"));
+				SendPlayerRadarNotify(playerid, 3, "green", "Пункт назначения отмечен у Вас на мини-карте", "", 5);
 		    }
 		}
 		case 4502:
@@ -7136,7 +7141,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				        SetPlayerCheckpoint(playerid,1894.9059,1186.5181,30.3239,5.0);
 		            }
 		        }
-				cef_emit_event(playerid, "show-notify", CEFINT(17), CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), CEFSTR("4ea650"));
+				SendPlayerRadarNotify(playerid, 3, "green", "Пункт назначения отмечен у Вас на мини-карте", "", 5);
 		    }
 		}
 		case 4506:
@@ -7204,7 +7209,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				        SetPlayerCheckpoint(playerid, 2452.4082,-756.4071,12.0969,5.0);
 					}
 				}
-				cef_emit_event(playerid, "show-notify", CEFINT(17), CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), CEFSTR("4ea650"));
+				SendPlayerRadarNotify(playerid, 3, "green", "Пункт назначения отмечен у Вас на мини-карте", "", 5);
 			}
 		}
 		case 4504:
@@ -7246,38 +7251,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			            SetPVarFloat(playerid, "gps_pos_x", 2129.8027);
 						SetPVarFloat(playerid, "gps_pos_y", 1791.4589);
 						SetPVarFloat(playerid, "gps_pos_z", 12.0000);
-				        SetPlayerCheckpoint(playerid,2129.8027,1791.4589,12.0000,5.0);
+				        SetPlayerCheckpoint(playerid, 2027.6515, 1396.8190, 26.1489,5.0);
 			        }
 			        case 1:
-			        {
-			            SetPVarFloat(playerid, "gps_pos_x", 1989.3259);
-						SetPVarFloat(playerid, "gps_pos_y", 992.9821);
-						SetPVarFloat(playerid, "gps_pos_z", 15.3557);
-				        SetPlayerCheckpoint(playerid,1989.3259,992.9821,15.3557,5.0);
-			        }
-			        case 2:
 			        {
 			            SetPVarFloat(playerid, "gps_pos_x", 2776.2747);
 						SetPVarFloat(playerid, "gps_pos_y", 2699.4124);
 						SetPVarFloat(playerid, "gps_pos_z", 16.7200);
 				        SetPlayerCheckpoint(playerid,2776.2747,2699.4124,16.7200,5.0);
 			        }
-			        case 3:
-			        {
-			            SetPVarFloat(playerid, "gps_pos_x", -2242.8171);
-						SetPVarFloat(playerid, "gps_pos_y", 265.1432);
-						SetPVarFloat(playerid, "gps_pos_z", 24.5337);
-				        SetPlayerCheckpoint(playerid,-2242.8171,265.1432,24.5337,5.0);
-			        }
-			        case 4:
-			        {
-			            SetPVarFloat(playerid, "gps_pos_x", 2398.7961);
-						SetPVarFloat(playerid, "gps_pos_y", -972.8578);
-						SetPVarFloat(playerid, "gps_pos_z", 2.1973);
-				        SetPlayerCheckpoint(playerid,2398.7961,-972.8578,2.1973,5.0);
-			        }
 				}
-				cef_emit_event(playerid, "show-notify", CEFINT(17), CEFSTR("Пункт назначения отмечен у Вас на мини-карте"), CEFSTR("4ea650"));
+				SendPlayerRadarNotify(playerid, 3, "green", "Пункт назначения отмечен у Вас на мини-карте", "", 5);
 			}
 		}
 		case dialog_EAT_MENU: 
@@ -7347,20 +7331,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			    switch(listitem) 
 				{
 			        case 0: ShowStats(playerid);
-			        case 1: PassiveMode(playerid);
-			        case 2: callcmd::help(playerid);
-					case 3: ShowHotKeys(playerid);
-					case 4: ReportDialog(playerid);
-					case 5: ShowSettings(playerid);
-					case 6: ShowDialogRule(playerid);
-                    case 7: ShowDialogResurs(playerid);
-			        case 8: ChangeNameMenu(playerid);
-                    case 9: 
+			        case 1: callcmd::help(playerid);
+					case 2: ShowHotKeys(playerid);
+					case 3: ReportDialog(playerid);
+					case 4: ShowSettings(playerid);
+					case 5: ShowDialogRule(playerid);
+                    case 6: ShowDialogResurs(playerid);
+			        case 7: ChangeNameMenu(playerid);
+                    case 8: 
 					{
 						mf(mysql, mysql_string, 86, "SELECT * FROM `fractions_blacklist` WHERE bl_name = '%e'",PI[playerid][pName]);
 						mysql_tquery(mysql, mysql_string, "CheckBlackListPlayer", "d", playerid);
 					}
-					case 10: 
+					case 9: 
 					{
 						mf(mysql, mysql_string, 66, "SELECT * FROM `accounts` WHERE `Name` = '%e'",PI[playerid][pName]);
 						mysql_function_query(mysql, mysql_string, true, "LoadDonate", "i", playerid);
@@ -8381,6 +8364,49 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				}
 			}
 		}
+		case 1932:
+		{
+			if(!response) return 1;
+			if(response) 
+			{
+				switch(listitem)
+				{
+					case 0: 
+					{
+						SetPlayerVirtualWorld(playerid, 1);
+						SetPlayerInterior(playerid, 1);
+
+						SetPlayerPos(playerid, 2129.0225,1536.2969,-47.2944);
+						SetPlayerFacingAngle(playerid, 271.4833);
+						SetCameraBehindPlayer(playerid);
+						Freeze(playerid);
+						return true;
+					}
+					case 1:
+					{
+						SetPlayerVirtualWorld(playerid, 1);
+						SetPlayerInterior(playerid, 1);
+
+						SetPlayerPos(playerid, 2114.1545,1494.5404,-47.5444);
+						SetPlayerFacingAngle(playerid, 269.2256);
+						SetCameraBehindPlayer(playerid);
+						Freeze(playerid);
+						return true;
+					}
+					case 2:
+					{
+						SetPlayerVirtualWorld(playerid, 1);
+						SetPlayerInterior(playerid, 1);
+
+						SetPlayerPos(playerid, 2067.2344,1502.3389,-47.5044);
+						SetPlayerFacingAngle(playerid, 270.2444);
+						SetCameraBehindPlayer(playerid);
+						Freeze(playerid);
+						return true;
+					}
+				}
+			}
+		}
 		case 5898: 
 		{
 			if(!response) return 1;
@@ -8514,13 +8540,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SetPlayerInterior(playerid, 0);
 				SetPlayerVirtualWorld(playerid, 0);
 
-				if(PI[playerid][pPassiveMode] == 1)
-				{
-					SCM(playerid, COLOR_HINT, !"[Пассивный Режим] {FFFFFF}Пассивный режим был выключен! Причина: МП!");
-					PI[playerid][pPassiveMode] = 0;
-					PassiveModeOff(playerid);
-				}
-
 				SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, 100*10);
 				SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, 100*10);
 				SetPlayerSkillLevel(playerid, WEAPONSKILL_DESERT_EAGLE, 100*10);
@@ -8553,7 +8572,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 				   	case 0: 
 					{
-						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_LIST, !"{ee3366}Команды игрового мастера",
+						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_MSGBOX, !"{ee3366}Команды игрового мастера",
 						!"admins - список администраторов в сети\n\
 						moders - список модераторов в сети\n\
 						spawn - заспавнить игрока\n\
@@ -8572,7 +8591,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 1: 
 					{
-						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_LIST, !"{ee3366}Команды игрового мастера",
+						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_MSGBOX, !"{ee3366}Команды игрового мастера",
 						!"gethere - телепортировать игрока к себе\n\
 						veh - создать транспортное средство\n\
 						dveh - удалить созданную машину\n\
@@ -8591,7 +8610,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 2: 
 					{
-						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_LIST, !"{ee3366}Команды игрового мастера",
+						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_MSGBOX, !"{ee3366}Команды игрового мастера",
 						!"spawncar - заспавнить транспортное средство\n\
 						setfuel - установить уровень топлива транспортному средству\n\
 						gun - выдать оружие игроку\n\
@@ -8609,7 +8628,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 3: 
 					{
-						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_LIST, !"{ee3366}Команды игрового мастера",
+						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_MSGBOX, !"{ee3366}Команды игрового мастера",
 						!"unwarn - снять предупреждение игроку\n\
 						giveskill - выдать навыки стрельбы игроку\n\
 						mphp - выдать здоровье игрокам на мероприятии\n\
@@ -8631,7 +8650,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 4: 
 					{
-						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_LIST, 
+						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_MSGBOX, 
 						!"{ee3366}Команды игрового мастера",\
 						!"ban - выдать блокировку игроку\n\
 						setgz - перекрасить территорию\n\
@@ -8651,21 +8670,21 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 5: 
 					{
-						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_LIST, !"{ee3366}Команды игрового мастера",
+						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_MSGBOX, !"{ee3366}Команды игрового мастера",
 						!"banip - выдать блокировку по IP\n\
 						unbanip - разблокировать IP адрес\n\n\
 						На данном уровне игрового мастера нет новых команд, но добавлена защита от оффлайн наказаний.", "Назад", "Выход");
 					}
 					case 6: 
 					{
-						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_LIST, !"{ee3366}Команды игрового мастера",
+						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_MSGBOX, !"{ee3366}Команды игрового мастера",
 						!"setsex - изменить пол игроку\n\
 						rasform - расформировать территории ОПГ\n\
 						stopcapture - остановить захват территории", "Назад", "Выход");
 					}
 					case 7: 
 					{
-						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_LIST, !"{ee3366}Команды игрового мастера",
+						ShowPlayerDialog(playerid, dialog_ABACK, DIALOG_STYLE_MSGBOX, !"{ee3366}Команды игрового мастера",
 						!"saveplayers - сохранить всех игроков на сервере\n\
 						addhouse - создать новый дом\n\
 						giveownable - выдать игроку машину на 14 дней\n\
@@ -8674,6 +8693,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						makegm - выдать уровень игрового мастера\n\
 						setstat - изменить статистику игроку\n\
 						givemoneyall - выдать деньги всем игрокам на сервере\n\
+						givevipall - выдать вип всем игрокам на сервере\n\
 						givedonate - выдать донат игроку\n\
 						apanel - админ панель", "Назад", "Выход");
 					}
@@ -8727,9 +8747,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				}
 		    }
 		}
-		case dialog_SETSKINDEV: {
+		case dialog_SETSKINDEV: 
+		{
 			if(!response) return 1;
-			if(response) {
+			if(response) 
+			{
 			    new p = GetPVarInt(playerid,"gPLAYER");
 				switch(PI[p][pMember]) {
 				    case 1: {
@@ -8820,16 +8842,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					{
 					    switch(listitem)
 						{
-						    case 0:PI[p][pOrgSkin] = 280;
-						    case 1:PI[p][pOrgSkin] = 281;
-						    case 2:PI[p][pOrgSkin] = 282;
-						    case 3:PI[p][pOrgSkin] = 285;
-						    case 4:PI[p][pOrgSkin] = 286;
-						    case 5:PI[p][pOrgSkin] = 288;
-						    case 6:PI[p][pOrgSkin] = 284;
-						    case 7:PI[p][pOrgSkin] = 284;
-						    case 8:PI[p][pOrgSkin] = 284;
-						    case 9:PI[p][pOrgSkin] = 284;
+						    case 0: PI[p][pOrgSkin] = 280;
+						    case 1: PI[p][pOrgSkin] = 281;
+						    case 2: PI[p][pOrgSkin] = 282;
+						    case 3: PI[p][pOrgSkin] = 285;
+						    case 4: PI[p][pOrgSkin] = 286;
+						    case 5: PI[p][pOrgSkin] = 288;
+						    case 6: PI[p][pOrgSkin] = 220;
+						    case 7: PI[p][pOrgSkin] = 284;
 						}
 					}
 					case 4:
@@ -9246,7 +9266,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					case 1: ShowPlayerDialog(playerid, 3411, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин{FFFFFF}\n2. ID 156\n3. ID 154\n4. ID 208\n5. ID 155\n6. ID 147\n7. ID 187", "Выбрать", "Отмена");
 					case 2: ShowPlayerDialog(playerid, 3411, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин{FFFFFF}\n2. ID 179\n3. ID 262\n4. ID 253\n5. ID 283\n6. ID 167\n7. ID 277\n8. ID 278\n9. ID 188\n10. ID 222\n11. ID 255\n12 ID 84\n13 ID 283", "Выбрать", "Отмена");
-					case 3: ShowPlayerDialog(playerid, 3411, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин{FFFFFF}\n2. ID 280\n3. ID 281\n4. ID 282\n5. ID 285\n6. ID 286\n7. ID 288\n8 ID 220\n9. ID 224\n10. ID 284\n11. ID 289", "Выбрать", "Отмена");
+					case 3: 
+					{
+						ShowPlayerDialog(playerid, 3411, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", 
+						!"{FFFF99}1. Сбросить мужской скин{FFFFFF}\n\
+						2. ID 280\n\
+						3. ID 281\n\
+						4. ID 282\n\
+						5. ID 285\n\
+						6. ID 286\n\
+						7. ID 288\n\
+						8 ID 220\n\
+						9. ID 284", "Выбрать", "Отмена");
+					}
 					case 4: ShowPlayerDialog(playerid, 3411, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин{FFFFFF}\n2. ID 276\n3. ID 71\n4. ID 275\n5. ID 70", "Выбрать", "Отмена");
 					case 5: ShowPlayerDialog(playerid, 3411, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин{FFFFFF}\n2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
 					case 6: ShowPlayerDialog(playerid, 3411, DIALOG_STYLE_LIST, "{ee3366}Выберете форму одежды", "{FFFF99}1. Сбросить мужской скин{FFFFFF}\n2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
@@ -9299,17 +9331,15 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					{
 					    switch(listitem)
 						{
-							case 0:SetPVarInt(playerid, "sking", 0);
-						    case 1:SetPVarInt(playerid, "sking", 280);
-						    case 2:SetPVarInt(playerid, "sking", 281);
-						    case 3:SetPVarInt(playerid, "sking", 282);
-						    case 4:SetPVarInt(playerid, "sking", 285);
-						    case 5:SetPVarInt(playerid, "sking", 286);
-						    case 6:SetPVarInt(playerid, "sking", 288);
-						    case 7:SetPVarInt(playerid, "sking", 220);
-						    case 8:SetPVarInt(playerid, "sking", 224);
-						    case 9:SetPVarInt(playerid, "sking", 284);
-						    case 10:SetPVarInt(playerid, "sking", 289);
+							case 0: SetPVarInt(playerid, "sking", 0);
+						    case 1: SetPVarInt(playerid, "sking", 280);
+						    case 2: SetPVarInt(playerid, "sking", 281);
+						    case 3: SetPVarInt(playerid, "sking", 282);
+						    case 4: SetPVarInt(playerid, "sking", 285);
+						    case 5: SetPVarInt(playerid, "sking", 286);
+						    case 6: SetPVarInt(playerid, "sking", 288);
+						    case 7: SetPVarInt(playerid, "sking", 220);
+						    case 8: SetPVarInt(playerid, "sking", 284);
 						}
 					}
 					case 4:
@@ -9514,7 +9544,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						{
 							case 1: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 156\n3. ID 154\n4. ID 208\n5. ID 155\n6. ID 147\n7. ID 187", "Выбрать", "Отмена");
 							case 2: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 179\n3. ID 262\n4. ID 253\n5. ID 283\n6. ID 167\n7. ID 277\n8. ID 278\n9. ID 188\n10. ID 222\n11. ID 255\n12 ID 84", "Выбрать", "Отмена");
-							case 3: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. ID 280\n3. ID 281\n4. ID 282\n5. ID 285\n6. ID 286\n7. ID 288", "Выбрать", "Отмена");
+							case 3: 
+							{
+								ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", 
+								!"{FFFF99}1. Сбросить мужской скин\n\
+								{FFFFFF}2. ID 280\n\
+								3. ID 281\n\
+								4. ID 282\n\
+								5. ID 285\n\
+								6. ID 286\n\
+								7. ID 288\n\
+								8. ID 220\n\
+								9. ID 284", "Выбрать", "Отмена");
+							}
 							case 4: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин{FFFFFF}\n2. ID 280\n3. ID 281\n4. ID 282\n5. ID 285\n6. ID 286\n7. ID 288\n8 ID 220\n9. ID 224\n10. ID 284\n11. ID 289", "Выбрать", "Отмена");
 							case 5: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
 							case 6: ShowPlayerDialog(playerid, 3450, DIALOG_STYLE_LIST, !"{ee3366}Выберете форму одежды", !"{FFFF99}1. Сбросить мужской скин\n{FFFFFF}2. [1-4 ранг]\n3. [5-7 ранг]\n4. [Стрелковый состав 1-7 ранг]\n5. [8-9 ранг]\n6. [10 ранг]", "Выбрать", "Отмена");
@@ -9690,6 +9732,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						    case 4:SetPVarInt(playerid, "Temp_GroupSkin", 285);
 						    case 5:SetPVarInt(playerid, "Temp_GroupSkin", 286);
 						    case 6:SetPVarInt(playerid, "Temp_GroupSkin", 288);
+							case 7:SetPVarInt(playerid, "Temp_GroupSkin", 220);
+							case 8:SetPVarInt(playerid, "Temp_GroupSkin", 284);
 						}
 					}
 					case 4:
@@ -10415,18 +10459,25 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if(!response) return 1;
 			if(response) 
 			{
-				new gun = GetPlayerWeapon(GetPVarInt(playerid, "from_player"));
+				new from_player = PI[playerid][pRequestFrom];
+				new value = PI[from_player][pRequestValue_1];
+
+				new gun = GetPlayerWeapon(from_player);
 				new gunslot = getWeaponIdSlot(gun);
-				if(PI[GetPVarInt(playerid, "from_player")][data_GUN][gunslot] == 0 || gunslot == 0) return SCM(GetPVarInt(playerid, "from_player"), COLOR_GREY,"Чтобы передать оружие, нужно взять его в руки");
-				if(PI[GetPVarInt(playerid, "from_player")][data_AMMO][gunslot] < GetPVarInt(playerid, "value_1")) return SCM(GetPVarInt(playerid, "from_player"), COLOR_GREY, "У Вас нет такого количества патронов");
-				new ammonew = PI[GetPVarInt(playerid, "from_player")][data_AMMO][gunslot] - GetPVarInt(playerid, "value_1");
-				SetWeapon(GetPVarInt(playerid, "from_player"), gun, ammonew);
-				GiveWeapon(playerid, gun, GetPVarInt(playerid, "value_1"));
+
+				if(PI[from_player][data_GUN][gunslot] == 0 || gunslot == 0) return SCM(from_player, COLOR_GREY, "Чтобы передать оружие, нужно взять его в руки");
+				if(PI[from_player][data_AMMO][gunslot] < value) return SCM(from_player, COLOR_GREY, "У Вас нет такого количества патронов");
+				new ammonew = PI[from_player][data_AMMO][gunslot] - value;
+				SetWeapon(from_player, gun, ammonew);
+				GiveWeapon(playerid, gun, value);
 				new string[60];
-				format(string, sizeof(string), "%s передал(а) оружие %s",PI[GetPVarInt(playerid, "from_player")][pName],PI[playerid][pName]);
-				ProxDetector(30.0, GetPVarInt(playerid, "from_player"), string, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
-				SetPlayerChatBubble(GetPVarInt(playerid, "from_player"), "передал(а) оружие", 0xFF99CCFF, 20.0, 4000);
-				SCMf(GetPVarInt(playerid, "from_player"), 0xFF99CCFF, "%s взял у Вас %s (%d пт)",PI[playerid][pName], weapon_names[gun], GetPVarInt(playerid, "value_1"));
+				format(string, sizeof(string), "%s передал(а) оружие %s",PI[from_player][pName],PI[playerid][pName]);
+				ProxDetector(30.0, from_player, string, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
+				SetPlayerChatBubble(from_player, "передал(а) оружие", 0xFF99CCFF, 20.0, 4000);
+				SCMf(from_player, 0xFF99CCFF, "%s взял у Вас %s (%d пт)",PI[playerid][pName], weapon_names[gun], value);
+
+				ClearRequest(PI[playerid][pRequestFrom]);
+				ClearRequest(playerid);
 			}
 		}
 		case 7515: 
@@ -10436,13 +10487,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 			    switch(listitem) 
 				{
-   					case 0: ShowPlayerDialog(playerid, 9315, DIALOG_STYLE_LIST, "Государственная волна", "Запланировать за 30 минут", "Выбрать", "Назад");
-      				case 1: ShowPlayerDialog(playerid, 9316, DIALOG_STYLE_LIST, "Государственная волна", "Запланировать за 15 минут", "Выбрать", "Назад");
-      				case 2: ShowPlayerDialog(playerid, 9323, DIALOG_STYLE_LIST, "Государственная волна", "Запланировать за 5 минут", "Выбрать", "Назад");
-      				case 3: ShowPlayerDialog(playerid, 9312, DIALOG_STYLE_LIST, "Государственная волна", "Начать собеседование", "Выбрать", "Назад");
-      				case 4: ShowPlayerDialog(playerid, 9313, DIALOG_STYLE_LIST, "Государственная волна", "Продолжить собеседование", "Выбрать", "Назад");
-      				case 5: ShowPlayerDialog(playerid, 9314, DIALOG_STYLE_LIST, "Государственная волна", "Закончить собеседование", "Выбрать", "Назад");
-      				case 6: ShowPlayerDialog(playerid, 9328, DIALOG_STYLE_LIST, "Государственная волна", "Отменить собеседование", "Выбрать", "Назад");
+   					case 0: ShowPlayerDialog(playerid, 9315, DIALOG_STYLE_LIST, !"Государственная волна", !"Запланировать за 30 минут", "Выбрать", "Назад");
+      				case 1: ShowPlayerDialog(playerid, 9316, DIALOG_STYLE_LIST, !"Государственная волна", !"Запланировать за 15 минут", "Выбрать", "Назад");
+      				case 2: ShowPlayerDialog(playerid, 9323, DIALOG_STYLE_LIST, !"Государственная волна", !"Запланировать за 5 минут", "Выбрать", "Назад");
+      				case 3: ShowPlayerDialog(playerid, 9312, DIALOG_STYLE_LIST, !"Государственная волна", !"Начать собеседование", "Выбрать", "Назад");
+      				case 4: ShowPlayerDialog(playerid, 9313, DIALOG_STYLE_LIST, !"Государственная волна", !"Продолжить собеседование", "Выбрать", "Назад");
+      				case 5: ShowPlayerDialog(playerid, 9314, DIALOG_STYLE_LIST, !"Государственная волна", !"Закончить собеседование", "Выбрать", "Назад");
+      				case 6: ShowPlayerDialog(playerid, 9328, DIALOG_STYLE_LIST, !"Государственная волна", !"Отменить собеседование", "Выбрать", "Назад");
 
 				}
 			}
@@ -11459,10 +11510,10 @@ callback: LoadPlayerData(playerid)
 		cache_get_field_content(0, "healthchest", temp), PI[playerid][pHealPack] = strval (temp);
 		cache_get_field_content(0, "HEALPACKSKLAD", temp), PI[playerid][pHealthPackKD] = strval (temp);
 		cache_get_field_content(0, "Сanister", temp), PI[playerid][pCanisters] = strval (temp);
-		cache_get_field_content(0, "mask", temp), PI[playerid][data_MASK] = strval (temp);
+		cache_get_field_content(0, "mask", temp), PI[playerid][pMask] = strval (temp);
 		cache_get_field_content(0, "VkontakteID", temp), PI[playerid][pVkontakteID] = strval (temp);
 		cache_get_field_content(0, "twarn", temp), PI[playerid][pTwarn] = strval (temp);
-		cache_get_field_content(0, "fixnabor", temp), PI[playerid][data_FIXCOMPL] = strval (temp);
+		cache_get_field_content(0, "fixnabor", temp), PI[playerid][pFixPack] = strval (temp);
         cache_get_field_content(0, "military", temp), PI[playerid][pMilitaryID] = strval (temp);
         cache_get_field_content(0, "medcard", temp), PI[playerid][pMedCard] = strval (temp);
 	    cache_get_field_content(0, "ProgressAmmo", temp), PI[playerid][pProgressAmmo] = strval (temp);
@@ -11731,7 +11782,7 @@ callback: PlayerUpdate(playerid)
 	    PI[playerid][data_3SECOND] = 0;
 	    if(PI[playerid][pHospital] == 1 && GetPlayerSpecialAction(playerid) != PLAYER_STATE_WASTED && GetPlayerSpecialAction(playerid) != PLAYER_STATE_SPAWNED) 
 		{
-			if(PlayerToPoint(100.0, playerid, 1331.8745,2505.1877,1002.1400) || PlayerToPoint(100.0, playerid, 743.4705,1523.0537,2002.1899)) 
+			if(PlayerToPoint(100.0, playerid, 2105.4143,1459.2950,-47.5200)) 
 			{
 				new Float:Health;
 				GetPlayerHealth(playerid, Health);
@@ -11746,12 +11797,6 @@ callback: PlayerUpdate(playerid)
 					SCM(playerid, COLOR_WHITE, !"Если Вас не устраивает состояние здоровья, обратитесь к дежурному врачу");
 
 					UpdatePlayerDataInt(playerid, "hospital", PI[playerid][pHospital]);
-
-					if(PI[playerid][pPassiveMode] == 1)
-					{
-						SCM(playerid, COLOR_HINT, !"[Пасивный режим]: {FFFFFF}Пасивный режим был выключен! Причина: находитесь в больнице");
-						PassiveModeOff(playerid);
-					}
 				}
 			}
 		}
@@ -13024,7 +13069,7 @@ stock ShowStats(playerid, forid = -1)
                         PI[playerid][pUserDrugs],
                         PI[playerid][pMetall], PI[playerid][pVIP] ? 80 : 40,
                         PI[playerid][pAmmo], PI[playerid][pVIP] ? 800 : 400,
-                        PI[playerid][data_MASK],
+                        PI[playerid][pMask],
                         PI[playerid][pHealPack],
                         Fraction_Name[PI[playerid][pMember]],
                         RangOrg,
@@ -13039,6 +13084,8 @@ stock ShowStats(playerid, forid = -1)
 }
 stock ClearPlayerData(playerid) 
 {
+	nc_ClearPlayerData(playerid);
+
 	PI[playerid][pTempJob] = 0; 
 
 	PI[playerid][pCinematicMode] = 0;
@@ -13053,6 +13100,13 @@ stock ClearPlayerData(playerid)
 
 	PI[playerid][pOnCapture] = 0;
 	PI[playerid][pCaptureManager] = 0;
+
+	PI[playerid][pFlyMode] = 0;
+	PI[playerid][pFlyInt] = 0;
+	PI[playerid][pFlyVirtualWorld] = 0;
+	PI[playerid][pFlyX] = 0;
+	PI[playerid][pFlyY] = 0;
+	PI[playerid][pFlyZ] = 0;
 
     ClearRequest(playerid);
 
@@ -13122,13 +13176,13 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pHospital] = 0;
 	PI[playerid][data_JOB] = 0;
 	PI[playerid][pHealPack] = 0;
-	PI[playerid][data_MASK] = 0;
+	PI[playerid][pMask] = 0;
 	PI[playerid][pMaskWorn] = 0;
 	PI[playerid][data_CALL] = -1;
 	PI[playerid][data_CLICKTD] = false;
 	PI[playerid][data_CLOTHESMENU] = false;
 	PI[playerid][pInAutoSalon] = false;
-	PI[playerid][data_FIXCOMPL] = 0;
+	PI[playerid][pFixPack] = 0;
 	PI[playerid][pCanisters] = 0;
 	PI[playerid][pSkillPistol] = 0;
 	PI[playerid][pSkillSDPistol] = 0;
@@ -13156,7 +13210,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pPlayerDetecting] = 0;
 	PI[playerid][pOnMP] = 0;
 	TimerForPlayer[playerid] = 0;
-	FollowBy[playerid] = 0;
+	FollowBy[playerid] = INVALID_PLAYER_ID;
 	PI[playerid][pDeathOnCapture] = 0;
 
 	RegisterNow[playerid] = false;
@@ -13280,8 +13334,6 @@ stock GetPlayerFPS(playerid)
 }
 stock SettingSpawn(playerid) 
 {	
-	printf("%s, SettingSpawn", getName(playerid));
-
 	TogglePlayerControllable(playerid, true);
 	new skin = GetSkinOfPlayer(playerid);
 
@@ -13350,9 +13402,9 @@ stock SettingSpawn(playerid)
 		}
 		else 
 		{
-			SetSpawnInfoEx(playerid, skin, 1331.8745,2505.1877,1002.1400, 180.0);
-			SetPlayerVirtualWorld(playerid, 1); // был 0
-			SetPlayerInterior(playerid,	2);
+			SetSpawnInfoEx(playerid, skin, 2105.5105, 1456.7489, -47.5200, 359.7946);
+			SetPlayerVirtualWorld(playerid, 1);
+			SetPlayerInterior(playerid,	RandomEX(1, 4));
 			Freeze(playerid);
 		}
 		return true;
@@ -13400,7 +13452,7 @@ stock SettingSpawn(playerid)
 				}
 				case 4:
 				{
-					SetSpawnInfoEx(playerid, skin, -2842.3259,2814.4868,1002.1600, 180.0);
+					SetSpawnInfoEx(playerid, skin, 2072.0264,1508.5125,-47.5053,177.6455);
 					SetPlayerVirtualWorld(playerid,1);
 					SetPlayerInterior(playerid,1);
 					Freeze(playerid);
@@ -13561,8 +13613,10 @@ stock AddHouse(playerid)
     mysql_function_query(mysql, mysql_string, false, "", "");
 	return 1;
 }
-stock IsPlayerCops(playerid) {
-	switch(PI[playerid][pMember]) {
+stock IsPlayerCops(playerid) 
+{
+	switch(PI[playerid][pMember]) 
+	{
  		case 3: return 1;
 	}
 	return 0;
@@ -13760,17 +13814,31 @@ CMD:card(playerid,params[])
     if(PI[playerid][pMedCard] == 0) return SCM(playerid, COLOR_GREY, !"У Вас нет медицинской карты, получить её можно в здании БЦРБ.");
     if(sscanf(params, "u", params[0])) 
 	{
-		return ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_LIST, "{ee3366}Лицензии", "Закрыть", "", "\
-		ЦРБ птг. Батырево: \t\tДокумент №%d\n\
-		Гражданин РФ\t\t\t{3377cc}%s\n\
-		Анализы\t\t\tПройдены\n\
-		Физическое состояние\tНормальное\n\
-		Зависимость\t\t\tНет", PI[playerid][data_MEDNUM], getName(playerid));
+		return ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_LIST, !"{ee3366}Лицензии", "Закрыть", "", "\
+		{FFFFFF}ЦРБ птг. Батырево: \t\tДокумент №%d\n\
+		{FFFFFF}Гражданин РФ\t\t\t{3377cc}%s\n\
+		{FFFFFF}Анализы\t\t\tПройдены\n\
+		{FFFFFF}Физическое состояние\tНормальное\n\
+		{FFFFFF}Зависимость\t\t\tНет", PI[playerid][data_MEDNUM], getName(playerid));
 	}
 	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /card [ид игрока]");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	if(!ProxDetectorS(10.0, playerid, params[0])) return SCM(playerid, COLOR_GREY, !"Игрок слишком далеко от Вас");
-	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 6);
+	return SendRequestForPlayer(playerid, params[0], 5);
+}
+CMD:vb(playerid,params[]) 
+{
+	if(sscanf(params, "u", params[0])) 
+	{
+		return ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Военный билет", !"Закрыть", !"", \
+		"{FFFFFF}Войсковая часть г. Батырево\n\
+		Гражданин РФ: {3377cc}%s\n\
+		{FFFFFF}Военный билет: %s", getName(playerid), (PI[playerid][pMilitaryID]) ? ("есть") : ("нету"));
+	}
+	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /vb [ид игрока]");
+	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	if(!ProxDetectorS(10.0, playerid, params[0])) return SCM(playerid, COLOR_GREY, !"Игрок слишком далеко от Вас");
+	return SendRequestForPlayer(playerid, params[0], 6);
 }
 CMD:lic(playerid,params[]) 
 {
@@ -13803,8 +13871,8 @@ CMD:dice(playerid,params[])
 	new Float:x, Float:y, Float:z;
 	GetPlayerPos(params[0], x, y, z);
 	if(!ProxDetectorS(10.0, playerid, params[0])) return SCM(playerid, COLOR_GREY, !"Игрок находится слишком далеко");
-    if(!PlayerToPoint(100.0, playerid, 2330.7095,1766.8969,-13.9100)) return SCM(playerid, COLOR_GREY, !"Нужно находиться в казино");
-	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 8, params[1]);
+    if(!PlayerToPoint(30.0, playerid, 597.6772, -118.6722, 728.1455)) return SCM(playerid, COLOR_GREY, !"Нужно находиться в казино");
+	return SendRequestForPlayer(playerid, params[0], 11, params[1]);
 }
 CMD:pass(playerid,params[]) 
 {
@@ -13840,7 +13908,7 @@ CMD:skill(playerid,params[])
 	new Float:x,Float:y,Float:z;
 	GetPlayerPos(params[0],x,y,z);
 	if(!PlayerToPoint(10.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Игрок находится слишком далеко");
-	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 10);
+	return SendRequestForPlayer(playerid, params[0], 7);
 }
 CMD:invite(playerid,params[]) 
 {
@@ -13877,7 +13945,20 @@ CMD:setskin(playerid,params[])
 		{
 			case 1: ShowPlayerDialog(playerid, dialog_SETSKIN, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Выберете форму одежды", "Номер\t\tID Скина\n1\t\t\t156\n2\t\t154\n3\t\t208\n4\t\t155\n5\t\t147\n6\t\t187", "Выбрать", "Отмена");
 			case 2: ShowPlayerDialog(playerid, dialog_SETSKIN, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Выберете форму одежды", "Номер\t\tID Скина\n1\t\t\t179\n2\t\t262\n3\t\t253\n4\t\t283\n5\t\t167\n6\t\t277\n7\t\t278\n8\t\t279\n9\t\t188\n10\t\t222\n11\t\t255\n\t\t84", "Выбрать", "Отмена");
-			case 3: ShowPlayerDialog(playerid, dialog_SETSKIN, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Выберете форму одежды", "Номер\t\tID Скина\n1\t\t\t280\n2\t\t281\n3\t\t282\n4\t\t285\n5\t\t286\n6\t\t288\n6\t\t288\n7\t\t220\n8\t\t224\n8\t\t284\n9\t\t289", "Выбрать", "Отмена");
+			case 3: 
+			{
+				ShowPlayerDialog(playerid, dialog_SETSKIN, DIALOG_STYLE_TABLIST_HEADERS, 
+				!"{ee3366}Выберете форму одежды", 
+				!"Номер\t\tID Скина\n\
+				1\t\t\t280\n\
+				2\t\t281\n\
+				3\t\t282\n\
+				4\t\t285\n\
+				5\t\t286\n\
+				6\t\t288\n\
+				7\t\t220\n\
+				8\t\t284", "Выбрать", "Отмена");
+			}
 			case 4: ShowPlayerDialog(playerid, dialog_SETSKIN, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Выберете форму одежды", "Номер\t\tID Скина\n1\t\t\t276\n2\t\t71\n3\t\t275\n4\t\t70", "Выбрать", "Отмена");
 			case 5: ShowPlayerDialog(playerid, dialog_SETSKIN, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Выберете форму одежды", "Группа и Номер\t\tID Скина\n[1-4 ранг]\t\t\t8\n[5-7 ранг]\t\t17\n[Стрелковый состав 1-7 ранг]\t\t28\n[8-9 ранг]\t\t126\n[10 ранг]\t\t117", "Выбрать", "Отмена");
 			case 6: ShowPlayerDialog(playerid, dialog_SETSKIN, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Выберете форму одежды", "Группа и Номер\t\tID Скина\n[1-4 ранг]\t\t\t115\n[5-7 ранг]\t\t116\n[Стрелковый состав 1-7 ранг]\t\t114\n[8-9 ранг]\t\t111\n[10 ранг]\t\t236", "Выбрать", "Отмена");
@@ -14038,17 +14119,20 @@ cmd:free(playerid, params[])
     	if(sscanf(params, "u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /free [ID игрока]");
     	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 		if(!IsPlayerLogged{params[0]}) return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+
 		new Float:x,Float:y,Float:z;
 		GetPlayerPos(params[0],x,y,z);
+
 		if(!PlayerToPoint(10.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Вы находитесь далеко от данного игрока");
 		if(PI[params[0]][pJail] == 0) return SCM(playerid, COLOR_GREY, !"Данный игрок не находится в тюрьме");
-		switch(PI[params[0]][pJailTime]) {
-			case 0..600: SetPVarInt(params[0],"free_money",1000);
-			case 601..1200: SetPVarInt(params[0],"free_money",2500);
-			case 1201..1800: SetPVarInt(params[0],"free_money",5000);
-			case 1801..3600: SetPVarInt(params[0],"free_money",10000);
+		switch(PI[params[0]][pJailTime]) 
+		{
+			case 0..600: SetPVarInt(params[0], "FreeMoney",1000);
+			case 601..1200: SetPVarInt(params[0], "FreeMoney",2500);
+			case 1201..1800: SetPVarInt(params[0], "FreeMoney",5000);
+			case 1801..3600: SetPVarInt(params[0], "FreeMoney",10000);
 		}
-		SendR(playerid);//SendRequestForPlayer(playerid, params[0], 12, GetPVarInt(params[0],"free_money"));
+		SendRequestForPlayer(playerid, params[0], 12, GetPVarInt(params[0], "FreeMoney"));
     }
     else SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
 	return 1;
@@ -14067,12 +14151,12 @@ CMD:givelic(playerid,params[])
 		if(params[1] == 1) 
 		{
 			if(PI[params[0]][pDriveLicense] == 1) return SCM(playerid, COLOR_GREY, !"У игрока уже есть водительские права");
-			SendR(playerid);//SendRequestForPlayer(playerid, params[0], 14);
+			SendRequestForPlayer(playerid, params[0], 13);
 		}
 		else 
 		{
 		    if(PI[params[0]][pGunLicense] == 1) return SCM(playerid, COLOR_GREY, !"У игрока уже есть лицензия на оружие");
-		    SendR(playerid);//SendRequestForPlayer(playerid, params[0], 13);
+		    SendRequestForPlayer(playerid, params[0], 14);
 		}
 	}
 	else SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
@@ -14123,7 +14207,7 @@ CMD:healme(playerid,params[])
 }
 CMD:mask(playerid,params[]) 
 {
-    if(PI[playerid][data_MASK] == 0) return SCM(playerid, COLOR_GREY, !"У Вас нет маски");
+    if(PI[playerid][pMask] == 0) return SCM(playerid, COLOR_GREY, !"У Вас нет маски");
     if(PI[playerid][pMaskWorn] != 0) return SCM(playerid, COLOR_GREY, !"Вы уже надели маску");
 	if(GangWarStatus != 0) 
 	{
@@ -14133,7 +14217,7 @@ CMD:mask(playerid,params[])
 		}
 	}
 	new string[145];
-    PI[playerid][data_MASK]--;
+    PI[playerid][pMask]--;
     PI[playerid][pMaskWorn] = 1;
 	foreach(new i:Player) SetPlayerColor(playerid, 0x33333300);
     format(string, sizeof(string), "%s натянул маску на лицо",getName(playerid));
@@ -14169,7 +14253,7 @@ CMD:heal(playerid,params[])
 	new Float:x,Float:y,Float:z;
 	GetPlayerPos(params[0],x,y,z);
 	if(!PlayerToPoint(10.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Игрок находится слишком далеко");
-	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 17);
+	return SendRequestForPlayer(playerid, params[0], 10);
 }
 CMD:call(playerid,params[]) 
 {
@@ -14270,267 +14354,6 @@ CMD:sms(playerid,params[])
 	return SCM(playerid, COLOR_GREY, !"Аппарат абонента выключен или находится вне зоны действия сети");
 }
 CMD:gps(playerid) return ShowGPS(playerid);
-CMD:unmask(playerid, params[])
-{
-    new Float: X, Float: Y, Float: Z; GetPlayerPos(playerid, X, Y, Z);
-    if(!IsPlayerInRangeOfPoint(playerid, 1.5, X, Y, Z)) return SCM(playerid, COLOR_GREY, !"Игрок далеко от вас");
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unmask [ID игрока]");
-   	new Float:x,Float:y,Float:z;
-	GetPlayerPos(params[0],x,y,z);
-	if(!PlayerToPoint(10.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Игрок слишком далеко от Вас");
-	PI[params[0]][pMaskWorn] = 0;
-	SCM(params[0], COLOR_BLUE, !"Полицейский снял с вас маску!");
-	SCMf(playerid, COLOR_BLUE, "Вы сняли маску игроку %s",getName(params[0]));
-	SendPlayerCenterNotify(playerid, 3, "Маска снята", 5);
-    return 1;
-}
-CMD:su(playerid, params[]) 
-{
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params, "us[50]", params[0], params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /su [ID игрока] [причина]");
-    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Нельзя выдать розыск самому себе");
-	if(PI[playerid][pMember] == PI[params[0]][pMember]) return SCM(playerid, COLOR_GREY, !"Вы не можете выдать розыск сотруднику Полиции");
-	if(PI[playerid][pRang] < 2 && PI[playerid][pMember] != 8) return SCM(playerid, COLOR_GREY, !"Ваш ранг слишком мал для использования данной команды");
-	if(PI[params[0]][pWanted] == 6) return SCM(playerid, COLOR_GREY, !"У игрока максимальный уровень розыска");
-	PI[params[0]][pWanted]++;
-	if(PI[params[0]][pPassiveMode] == 1)
-	{
-		SCM(params[0], COLOR_HINT, !"[Пасивный режим]: {FFFFFF}Пасивный режим был выключен! Причина: арест");
-		PassiveModeOff(params[0]);
-	}
-	SetPlayerWantedLevel(params[0],PI[params[0]][pWanted]);
-	if(PI[params[0]][pRespect] > 0) PI[params[0]][pRespect]--;
-	SendFractionMessagef(PI[playerid][pMember], COLOR_YELLOW, "%s %s[%d] объявил %s[%d] в розыск [%d|6]. Причина: %s.", rang_police[PI[playerid][pRang]-1][frName],getName(playerid),playerid, getName(params[0]),params[0],PI[params[0]][pWanted], params[1]);
-	return SCMf(params[0],0x93baffFF, "%s %s[%d] объявил Вас в розыск [%d|6]. Причина: %s", rang_police[PI[playerid][pRang]-1][frName],getName(playerid),playerid,PI[params[0]][pWanted], params[1]);
-}
-CMD:search(playerid, params[])
-{
-    new Float: X, Float: Y, Float: Z; GetPlayerPos(playerid, X, Y, Z);
-    if(!IsPlayerInRangeOfPoint(playerid, 1.5, X, Y, Z)) return SCM(playerid, COLOR_GREY, !"Игрок далеко от вас");
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-   	if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Вы не можете обыскать самого себя");
-    if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /chest [ID игрока]");
-    SetPlayerChatBubble(playerid, "Обыскивает игрока!", 0xFF99CCFF, 20.0, 4000);
-    new str[145];
-   	format(str,sizeof(str),"%s надел резиновые перчатки резким движением руки",getName(playerid));
- 	ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
- 	format(str,sizeof(str),"Резиновые перчатки на руках (%s)",getName(playerid));
- 	ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
-	format(str,sizeof(str),"Процесс (%s)",getName(playerid));
- 	ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
- 	SCMf(playerid, -1, "___________________________________________", PI[params[0]]);
-	SCMf(playerid, -1, "Вы успешно обыскали гражданина %s:", getName(params[0]));
-	SCMf(playerid, -1, "Патрон в кармане: {ff0000}%d{08008d}", PI[params[0]][pAmmo]);
-	SCMf(playerid, -1, "Нарктоиков в кармане: {ff0000}%d{08008d}", PI[params[0]][pDrugs]);
-	SCMf(playerid, -1, "Металла: {ff0000}%d",PI[params[0]][pMetall]);
-	ApplyAnimation(playerid,"COP_AMBIENT","Coplook_watch",4.1,0,0,0,0,0);
-	SCMf(playerid, -1, "___________________________________________", PI[params[0]]);
-   	format(str,sizeof(str),"Полицейский %s произвёл обыск у гражданина %s",getName(playerid),getName(params[0]));
-    return 1;
-}
-CMD:remove(playerid, params[])
-{
-    new Float: X, Float: Y, Float: Z; GetPlayerPos(playerid, X, Y, Z);
-    if(!IsPlayerInRangeOfPoint(playerid, 1.5, X, Y, Z)) return SCM(playerid, COLOR_GREY, !"Игрок далеко от вас");
-	if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Вы не можете изъять у самого себя");
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /remove [ID игрока]");
-    PI[params[0]][pAmmo] = 0;
-    PI[params[0]][pDrugs] = 0;
-    PI[params[0]][data_AMMO] = 0;
-    return 1;
-}
-CMD:clear(playerid,params[]) 
-{
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(PI[playerid][pRang] < 8) return SCM(playerid, COLOR_GREY, !"Снять розыск игрока можно с 8 ранга");
-	if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /clear [ID игрока]");
-    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-    if(PI[params[0]][pWanted] == 0) return SCM(playerid, COLOR_GREY, !"У игрока нет розыска");
-	if(!PlayerToPoint(3.0, playerid, 1456.4865,1627.6499,697.1956)) return SCM(playerid, COLOR_GREY, !"Чтобы снять розыск игрока Вы и игрока должны находится в ДЧ");
-	if(!PlayerToPoint(3.0, params[0], 1456.4865,1627.6499,697.1956)) return SCM(playerid, COLOR_GREY, !"Чтобы снять розыск игрока Вы и игрока должны находится в ДЧ");
-	PI[params[0]][pWanted] = 0;
-	SetPlayerWantedLevel(params[0],PI[params[0]][pWanted]);
-	SendFractionMessagef(PI[playerid][pMember], COLOR_YELLOW, "%s закрыл уголовное дело %s",getName(playerid),getName(params[0]));
-	return SCMf(params[0],0x0099ccFF, "%s закрыл ваше уголовное дело",getName(playerid));
-}
-CMD:cuff(playerid,params[]) 
-{
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /cuff [ID игрока]");
-    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-	if(!IsPlayerLogged{params[0]}) return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	if(PI[playerid][pRang] < 2 && PI[playerid][pMember] != 8) return SCM(playerid, COLOR_GREY, !"Эта команда доступна для 2+ звания.");
-	if(PI[playerid][pMember] == PI[params[0]][pMember]) return SCM(playerid, COLOR_GREY, "Вы не можете надеть наручиники на сотрудника Полиции");
-	new Float:x,Float:y,Float:z,str[145];
-	GetPlayerPos(params[0],x,y,z);
-	if(!PlayerToPoint(3.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Данный игрок слишком далеко от Вас");
-    if(GetPVarInt(params[0],"PlayerCuffed") == 1) return SCM(playerid, COLOR_GREY, !"Данный игрок уже в наручниках");
-	SetPlayerSpecialAction(params[0], SPECIAL_ACTION_CUFFED);
-	SetPlayerAttachedObject(params[0],5,19418,6,0.020000,0.049999,-0.015000,-11.899997,-13.999941,-103.800086,1.110999,1.042000,1.934998);
-	SetPVarInt(params[0],"PlayerCuffed",1);
-	FreezePlayer(params[0]);
-	if(PI[params[0]][pPassiveMode] == 1)
-	{
-		SCM(params[0], COLOR_LIGHTBLUE, "[Пасивный режим]: {FFFFFF}Пасивный режим был выключен! Причина: арест");
-		PassiveModeOff(params[0]);
-	}
-	SCMf(playerid, 0x4671acff, "Вы надели наручники на %s", getName(playerid));
-	format(str,sizeof(str), "%s надел наручники на %s",getName(playerid),getName(params[0]));
- 	return ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
-}
-CMD:uncuff(playerid,params[]) 
-{
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /uncuff [ID игрока]");
-    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-	if(!IsPlayerLogged{params[0]}) return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	if(PI[playerid][pRang] < 2 && PI[playerid][pMember] != 8) return SCM(playerid, COLOR_GREY, !"Ваш ранг слишком мал для использования данной команды");
-	new Float:x,Float:y,Float:z;
-	GetPlayerPos(params[0],x,y,z);
-	if(!PlayerToPoint(3.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Данный игрок слишком далеко от Вас");
-    if(GetPVarInt(params[0],"PlayerCuffed") == 0) return SCM(playerid, COLOR_GREY, !"Данный игрок без наручников");
-	SetPlayerSpecialAction(params[0], 0);
-	RemovePlayerAttachedObject(params[0], 5);
-	DeletePVar(params[0],"PlayerCuffed");
-	UnfreezePlayer(params[0]);
-	new str[145];
-	format(str,sizeof(str),"%s снял наручники с %s",getName(playerid),getName(params[0]));
- 	return ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
-}
-CMD:incar(playerid,params[]) 
-{
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /incar [ID игрока]");
-    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-	if(!IsPlayerLogged{params[0]}) return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-    if(PI[playerid][pRang] < 2 && PI[playerid][pMember] != 8) return SCM(playerid, COLOR_GREY, !"Ваш ранг слишком мал для использования данной команды");
-    if(GetPVarInt(params[0],"PlayerCuffed") == 0) return SCM(playerid, COLOR_GREY, !"Игрок должен находиться в наручниках");
-	if(!IsPlayerInAnyVehicle(playerid)) return  SCM(playerid, COLOR_GREY, !"Вы должны находиться в автомобиле");
-	new Float:x,Float:y,Float:z;
-	new car = GetPlayerVehicleID(playerid);
-	GetPlayerPos(params[0],x,y,z);
-	if(!PlayerToPoint(5.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Данный игрок слишком далеко от Вас");
-    if(car == police_car[0] || car == police_car[1] ||car == police_car[2] || car == police_car[3] || car == police_car[4] || car == police_car[5] || car == police_car[6] || car == police_car[7]) 
-	{
-	    if(GetFreeSeat(car) == -1) return SCM(playerid, COLOR_GREY, !"В машине нет места");
-	   
-	    new str[25+MAX_PLAYER_NAME*2];
-	    
-		PutPlayerInVehicleAC(params[0],car,GetFreeSeat(car));
-     	FreezePlayer(params[0]);
-	    format(str,sizeof(str),"%s затащил в автомобиль %s",getName(playerid),getName(params[0]));
-	    ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
-	}
-	else SCM(playerid, COLOR_GREY, !"Данный транспорт не предназначен для перевозки преступников");
-	return 1;
-}
-CMD:uncar(playerid,params[]) 
-{
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /uncar [ID игрока]");
-    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-	if(!IsPlayerLogged{params[0]}) return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-    if(PI[playerid][pRang] < 2 && PI[playerid][pMember] != 8) return SCM(playerid, COLOR_GREY, !"Ваш ранг слишком мал для использования данной команды");
-    if(!IsPlayerInAnyVehicle(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок должен находиться в транспорте");
-	new Float:x,Float:y,Float:z,str[145];
-	GetPlayerPos(playerid,x,y,z);
-	if(!PlayerToPoint(5.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Данный игрок слишком далеко от Вас");
- 	UnfreezePlayer(params[0]);
- 	SetPlayerPosAC(params[0],x+1.0,y,z);
-  	format(str,sizeof(str),"%s вытащил из автомобиля %s",getName(playerid),getName(params[0]));
-  	return ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
-}
-CMD:arrest(playerid, params[])
-{
-    new targetid;
-    if (!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if (sscanf(params, "u", targetid)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /arrest [ID игрока]");
-    if (!IsPlayerConnected(targetid)) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-    if (!IsPlayerLogged{targetid}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-    if (PI[playerid][pRang] < 2 && PI[playerid][pMember] != 8) return SCM(playerid, COLOR_GREY, !"Ваш ранг слишком мал для использования данной команды");
-
-    new Float:x, Float:y, Float:z;
-    GetPlayerPos(targetid, x, y, z);
-    if (!PlayerToPoint(3.0, playerid, x, y, z)) return SCM(playerid, COLOR_GREY, !"Игрок находится слишком далеко");
-    if (GetPVarInt(targetid, "PlayerCuffed") == 0) return SCM(playerid, COLOR_GREY, !"Данный игрок должен находиться в наручниках");
-    if (PI[targetid][pWanted] == 0) return SCM(playerid, COLOR_GREY, !"Данный игрок не находится в розыске");
-    
-    if (PlayerToPoint(20.0, playerid, -289.9960, -1548.9326, 41.1223)) 
-    {
-        SendFractionMessagef(PI[playerid][pMember], COLOR_YELLOW, "[Всем постам] %s %s арестовал подозреваемого %s", rang_police[PI[playerid][pRang] - 1][frName], getName(playerid), getName(targetid));
-        new reward = 3000 * PI[targetid][pWanted];
-        GivePlayerMoneyLog(playerid, reward);
-
-        new pay[16];
-        format(pay, sizeof(pay), "+%dР", reward);
-        SendPlayerRadarNotify(playerid, 99, "green", "Премия за арест преступника", pay, 5);
-
-        HidePlayerSpeedometer(targetid);
-    } 
-    else return SCM(playerid, COLOR_GREY, !"Нужно находиться возле здания Полиции");
-
-    PI[targetid][pJailTime] = 600 * PI[targetid][pWanted];
-    UnfreezePlayer(targetid);
-    PI[targetid][pWanted] = 0;
-    SetPlayerWantedLevel(targetid, 0);
-    PlayerSpawn(targetid);
-    SetPlayerSpecialAction(targetid, 0);
-    RemovePlayerAttachedObject(targetid, 5);
-    ResetWeaponAll(targetid);
-    
-    return DeletePVar(targetid, "PlayerCuffed");
-}
-CMD:setmark(playerid, params[])
-{
-    new targetid;
-    if (!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if (sscanf(params, "d", targetid)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setmark [ID игрока]");
-    if (!IsPlayerConnected(targetid)) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-    if (!IsPlayerLogged{targetid}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-    if (GetPlayerInterior(targetid) != 0) return SCM(playerid, COLOR_GREY, !"Игрок находится в интерьере");
-    if (PI[targetid][pWanted] == 0) return SCM(playerid, COLOR_GREY, !"Данный игрок не находится в розыске");
-
-    if (GetPVarInt(playerid, "Counting_setmark") > gettime()) return SCM(playerid, COLOR_GREY, !"Данную функцию можно использовать только один раз в минуту");
-
-    new Float:x, Float:y, Float:z;
-    GetPlayerPos(targetid, x, y, z);
-    SetPVarFloat(playerid, "gps_pos_x", x);
-    SetPVarFloat(playerid, "gps_pos_y", y);
-    SetPVarFloat(playerid, "gps_pos_z", z);
-    DisablePlayerCheckpoint(playerid);
-    SetPlayerCheckpoint(playerid, x, y, z, 5.0);
-
-    SCM(playerid, 0x6699cc3FF, !"Последнее местоположение подозреваемого отмечено у Вас на мини-карте");
-    SCM(playerid, 0x6699cc3FF, !"Оно будет автоматически обновляться в течение 30 секунд");
-
-    SetPVarInt(playerid, "Counting_setmark", gettime() + 60);
-    return 1;
-}
-CMD:wanted(playerid)
-{
-    if (!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-
-    new str_3[1024], bugfix;
-    for (new i = 0; i < MAX_PLAYERS; i++) 
-    {
-        if (!IsPlayerConnected(i)) continue;
-        if (PI[i][pWanted] != 0) 
-        {
-            bugfix = 1;
-            format(str_3, sizeof(str_3), "%s\n{FFFFFF}Дело №%d, имя: %s, уровень розыска: %d\n", str_3, i, PI[i][pName], PI[i][pWanted]);
-        }
-    }
-
-    if (bugfix == 0) 
-        return ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, "{ee3366}Преступники", "Область чиста, преступники не обнаружены!", "Закрыть", "");
-
-    return ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, "{ee3366}Преступники", str_3, "Закрыть", "");
-}
 CMD:accept(playerid, params[])
 {
     new targetid;
@@ -14706,25 +14529,6 @@ CMD:lock(playerid)
 			}
 		}
 	}
-	return 1;
-}
-CMD:m(playerid,params[]) 
-{
-    if(sscanf(params, "s[80]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /m [текст]");
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    new car = GetPlayerVehicleID(playerid);
-	if(GetVehicleModel(car) == 598 ||
-	GetVehicleModel(car) == 551 ||
-	GetVehicleModel(car) == 427 ||
-	GetVehicleModel(car) == 443 ||
-	GetVehicleModel(car) == 597 ||
-	GetVehicleModel(car) == 427 ||
-	GetVehicleModel(car) == 599 || GetVehicleModel(car) == 490) {
-	    new string[145];
-		format(string, sizeof(string), "[М] %s[%d]: %s",getName(playerid),playerid,params[0]);
-		ProxDetector(50.0, playerid, string, 0xFACC2EFF, 0xFACC2EFF, 0xFACC2EFF, 0xFACC2EFF, 0xFACC2EFF);
-	}
-	else SCM(playerid, COLOR_GREY, !"Данный транспорт не оснащен мегафоном");
 	return 1;
 }
 callback: CheckCarHealth() 
@@ -15131,130 +14935,17 @@ stock ShowDialogResurs(playerid)
 	{FFFFFF}Сообщество ВКонтакте\t\t{FFFF99}vk.com/"VK"", !"Закрыть", !"");
 	return 1;
 }
-CMD:tome(playerid, params[]) 
-{
-	new gotplayer;
-	if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-	if(sscanf(params, "u", gotplayer)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /tome [ID игрока]"); 
-	{
-            if(playerid == gotplayer) return SCM(playerid, COLOR_GREY, !"Вы не можите сопровождать самого себя ");
-            else if(!IsPlayerConnected(gotplayer)) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-            else if(IsPlayerInAnyVehicle(playerid)) return SCM(playerid, COLOR_GREY, !"Вы не можете потащить с машины");
-            else if(FollowBy[playerid] != MAX_PLAYERS) return SCM(playerid, COLOR_GREY, !"Вы не можете вести больше игроков");
-            else if(GetPVarInt(params[0],"PlayerCuffed") == 1) return SCM(playerid, COLOR_GREY, !"Игрок должен быть в наручниках");
-            else if(IsPlayerInAnyVehicle(gotplayer)) return SCM(playerid, COLOR_GREY, !"Вы не можете потащить за собой когда игрок в машине");
-            new Float: X, Float: Y, Float: Z; GetPlayerPos(gotplayer, X, Y, Z);
-            if(!IsPlayerInRangeOfPoint(playerid, 1.5, X, Y, Z)) return SCM(playerid, COLOR_GREY, !"Игрок далеко от вас");
-            else if(FollowBy[gotplayer] != MAX_PLAYERS) 
-			{
-                SetPVarInt(playerid, "TempFollowBy", -1);
-                FollowBy[gotplayer] = MAX_PLAYERS;
-                KillTimer(TimerForPlayer[gotplayer]);
-                TimerForPlayer[gotplayer] = MAX_PLAYERS;
-                ClearAnimations(playerid);
-                TogglePlayerControllable(gotplayer, 1);
-                SCMf(playerid, COLOR_GREY, "Вы больше не контролируете %s", PI[gotplayer][pName]);
-                return SCMf(gotplayer, COLOR_GREY, "%s %s перестал Вас контролировать", rang_police[PI[playerid][pRang]-1][frName], PI[gotplayer][pName]);
-            }
-            if(GetPVarInt(playerid, "TempFollowBy") != -1) return SCM(playerid, COLOR_GREY, !"Вы не можете сопровождать больше 2х игроков одновременно");
-            FollowBy[gotplayer] = playerid;
-            SetPVarInt(playerid, "TempFollowBy", gotplayer);
-            TimerForPlayer[gotplayer] = SetTimerEx("FollowToPlayer", 1000, 1, "i", gotplayer);
-            SCMf(playerid, COLOR_GREY, "Вы начали контролировать игрока %s", PI[gotplayer][pName]);
-            return SCMf(gotplayer, COLOR_GREY, "Сотрудник Полции %s начал Вас контролировать", PI[gotplayer][pName]);
-    }
-}
-callback: FollowToPlayer(playerid)
-{
-    static AnimShot[MAX_PLAYERS];
-    if(!IsPlayerConnected(FollowBy[playerid]))
-    {
-        KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
-        FollowBy[playerid] = MAX_PLAYERS;
-        TogglePlayerControllable(playerid, 1);
-        ClearAnimations(playerid);
-        AnimShot[playerid] = false;
-        return 1;
-    }
-    else if(!IsPlayerConnected(playerid))
-    {
-		SCMf(FollowBy[playerid], COLOR_GREY, "Вы больше не контролируете %s",PI[GetPVarInt(playerid, "TempFollowBy")][pName]);
-        SetPVarInt(FollowBy[playerid], "TempFollowBy", -1);
-        KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
-        AnimShot[playerid] = false;
-        FollowBy[playerid] = MAX_PLAYERS;
-        return 1;
-    }
-    else if(FollowBy[playerid] == MAX_PLAYERS)
-    {
-        KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
-        AnimShot[playerid] = false;
-        TogglePlayerControllable(playerid, 1);
-        ClearAnimations(playerid);
-        return 1;
-    }
-    else if(IsPlayerInAnyVehicle(playerid))
-    {
-		SCMf(FollowBy[playerid], COLOR_GREY, "Вы больше не контролируете %s",PI[GetPVarInt(playerid, "TempFollowBy")][pName]);
-        SetPVarInt(FollowBy[playerid], "TempFollowBy", -1);
-        KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
-        AnimShot[playerid] = false;
-        FollowBy[playerid] = MAX_PLAYERS;
-        return 1;
-    }
-    else if(GetPlayerVirtualWorld(FollowBy[playerid]) != GetPlayerVirtualWorld(playerid) || GetPlayerInterior(FollowBy[playerid]) != GetPlayerInterior(playerid))
-    {
-        new Float: X, Float: Y, Float: Z;
-        GetPlayerPos(FollowBy[playerid], X, Y, Z);
-        SetPlayerPos(playerid, X, Y, Z);
-        SetPlayerVirtualWorld(playerid, GetPlayerVirtualWorld(FollowBy[playerid]));
-        SetPlayerInterior(playerid, GetPlayerInterior(FollowBy[playerid]));
-        TogglePlayerControllable(playerid, 0);
-        AnimShot[playerid] = false;
-        return 1;
-    }
-    new Float: GotDistance = GetDistanceBetweenPlayers(playerid, FollowBy[playerid]);
-    if(GotDistance < 0.95)
-    {
-        TogglePlayerControllable(playerid, 0);
-        SetPlayerToFacePlayer(playerid, FollowBy[playerid]);
-        AnimShot[playerid] = false;
-        return 1;
-    }
-    else if(GotDistance > 29.0)
-    {
-		SCMf(FollowBy[playerid], COLOR_GREY, "Вы больше не контролируете %s",PI[GetPVarInt(playerid, "TempFollowBy")][pName]);
-        SetPVarInt(FollowBy[playerid], "TempFollowBy", -1);
-        TogglePlayerControllable(playerid, 1);
-        ClearAnimations(playerid);
-        KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
-        FollowBy[playerid] = MAX_PLAYERS;
-        return 1;
-    }
-    else
-    {
-        TogglePlayerControllable(playerid, 1);
-        SetPlayerToFacePlayer(playerid, FollowBy[playerid]);
-        ApplyAnimation(playerid, "ped", "WALK_civi", 6.0, 1, 1, 1, 1, 0, 1);
-    }
-    return 1;
-}
 CMD:givemask(playerid,params[]) 
 {
     if(sscanf(params,"iii", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givemask [ID игрока]");
 	if(playerid == params[0]) return SCM(playerid, COLOR_GREY, !"Нельзя передать маску самому себе");
-	if(PI[playerid][data_MASK] == 0) return SCM(playerid, COLOR_GREY, !"У вас нет маски");
-	if(PI[params[0]][data_MASK] >= 1) return SCM(playerid, COLOR_GREY, !"У игрока уже есть маска");
+	if(PI[playerid][pMask] == 0) return SCM(playerid, COLOR_GREY, !"У вас нет маски");
+	if(PI[params[0]][pMask] >= 1) return SCM(playerid, COLOR_GREY, !"У игрока уже есть маска");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	new Float:x,Float:y,Float:z;
 	GetPlayerPos(params[0],x,y,z);
 	if(!PlayerToPoint(10.0, playerid, x,y,z)) return SCM(playerid, COLOR_GREY, !"Игрок слишком далеко от Вас");
-	SendR(playerid);//SendRequestForPlayer(playerid, params[0], 3);
+	SendRequestForPlayer(playerid, params[0], 8);
 	return 1;
 }
 stock LMenuGovernment(playerid) 
@@ -15414,9 +15105,10 @@ CMD:anim(playerid)
 		return true;
 	}
 	if(GetPlayerState(playerid) != PLAYER_STATE_ONFOOT) return SCM(playerid, COLOR_GREY, !"Нельзя использовать в транспорте!");
-	ShowPlayerDialog(playerid,dialog_ANIM,DIALOG_STYLE_LIST,"{ee3366}Список анимаций:", "\
-	1. Поднять руки вверх\n\
-	2. Курить\n3. Мыть руки\n\
+	ShowPlayerDialog(playerid,dialog_ANIM,DIALOG_STYLE_LIST, !"{ee3366}Список анимаций:", 
+	!"1. Поднять руки вверх\n\
+	2. Курить\n\
+	3. Мыть руки\n\
 	4. Сесть на землю\n\
 	5. Лечь на спину\n\
 	6. Лечь и приподнять ногу\n\
@@ -15440,17 +15132,6 @@ CMD:anim(playerid)
 	24. Справить нужду", "Выбрать","Отмена");
 	return true;
 }
-callback: DialogGiveGun(playerid) {
-
-    new gun = GetPlayerWeapon(GetPVarInt(playerid, "from_player"));
-
-	ShowPlayerDialogf(playerid, 8790, DIALOG_STYLE_MSGBOX, !"{ee3366}Передача оружия", "Принять", "Нет", "Владелец: %s[%d]\nОружие: %s (%d пт)\n\nВы действительно хотите принять это предложение",
-		PI[GetPVarInt(playerid, "from_player")][pName],
-		GetPVarInt(playerid, "from_player"),
-		weapon_names[gun],
-		GetPVarInt(playerid, "value_1"));
-	return 1;
-}
 CMD:givegun(playerid, params[]) 
 {
 	if(!IsPlayerOPG(playerid))  return SCM(playerid, COLOR_GREY,"Вы не состоите в ОПГ");
@@ -15471,7 +15152,7 @@ CMD:givegun(playerid, params[])
 	if(params[1] < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
 	if(PI[playerid][data_GUN][gunslot] == 0 || gunslot == 0) return SCM(playerid, COLOR_GREY,"Чтобы передать оружие, нужно взять его в руки");
 	if(PI[playerid][data_AMMO][gunslot] < params[1]) return SCM(playerid, COLOR_GREY, "У Вас нет такого количества патронов");
-	return SendR(playerid);//SendRequestForPlayer(playerid, params[0], 16, params[1]);
+	return SendRequestForPlayer(playerid, params[0], 15, params[1]);
 }
 stock PlayerGetsChatBan(playerid, text[]) 
 {
@@ -15513,16 +15194,9 @@ stock IsAtBankomat(playerid, Float:distance)
 	}
 	return 0;
 }
-CMD:vb(playerid,params[]) 
-{
-	return ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Военный билет", !"Закрыть", !"", \
-	"Войсковая часть г. Батырево\n\
-	Гражданин РФ: {3377cc}%s\n\
-	{FFFFFF}Военный билет: %s", getName(playerid), (PI[playerid][pMilitaryID]) ? ("(есть)") : ("(нету)"));
-}
 CMD:time(playerid)
 {
-	if(GetPlayerState(playerid) == PLAYER_STATE_ONFOOT) ApplyAnimation(playerid,"COP_AMBIENT","Coplook_watch",4.1,0,0,0,0,0);
+	if(GetPlayerState(playerid) == PLAYER_STATE_ONFOOT) ApplyAnimation(playerid, "COP_AMBIENT", "Coplook_watch", 4.1, 0, 0, 0, 0, 0);
   	new hour, minuite, Year, Month, Day, month[10];
   	gettime(hour,minuite);
 	getdate(Year, Month, Day);
@@ -15553,9 +15227,11 @@ callback: WbookOff(playerid, name[])
 	{
 		cache_get_field_content(0, "id", temp), w_player = strval(temp);
 		cache_get_field_content(0, "rank", temp), w_rank = strval(temp);
+
 		new text[24];
 		GetPVarString(playerid,"text_wbook", text, sizeof(text));
 		FixSVarString(text);
+
 		new year, month, day ;
 		getdate(year, month, day);
 
@@ -15570,12 +15246,13 @@ callback: PhoneBook(playerid)
     cache_get_data(rows, fields);
 	new str_1[185];
 	new str_3[185];
-    for(new i = 0; i < rows; i++) {
+    for(new i = 0; i < rows; i++) 
+	{
 		cache_get_field_content(i, "number", temp), p_number = strval(temp);
 		cache_get_field_content(i, "name", p_name, mysql, 32);
 		format(str_3,sizeof(str_3),"%s{FFFFFF}%s\t\tт. %d\n", str_3, p_name, p_number);
 	}
-	format(str_1,sizeof(str_1),"{FFFF99}Добавить контакт{FFFFFF}\n%s",str_3);
+	format(str_1,sizeof(str_1), "{FFFF99}Добавить контакт{FFFFFF}\n%s",str_3);
 	ShowPlayerDialog(playerid, 7229, DIALOG_STYLE_TABLIST, "{ee3366}Телефонная книга", str_1, "Далее", "Назад");
 	return 1;
 }
@@ -15790,6 +15467,7 @@ stock IsPlayerGreenZone(playerid)
 	PlayerToKvadrat(playerid, 1784, 2060.5, 1878, 2132.5) && GetPlayerVirtualWorld(playerid) == 0 || // Правительство
 	PlayerToKvadrat(playerid, 1765, 2476.5, 1846, 2536.5) && GetPlayerVirtualWorld(playerid) == 0 || // рудник
 	PlayerToKvadrat(playerid, 1851, 1837.5, 1918, 1906.5) && GetPlayerVirtualWorld(playerid) == 0 || // казино
+	PlayerToKvadrat(playerid, 1851, 1837.5, 1918, 1906.5) && GetPlayerVirtualWorld(playerid) == 0 || // спавн новичков 1
 	PlayerToKvadrat(playerid, 1771.5, 1418.1666259765625, 1871.5, 1518.1666259765625) && GetPlayerVirtualWorld(playerid) == 0) return true; // автошкола
 	return 0;
 }
@@ -16189,19 +15867,6 @@ callback: NameCallback(playerid)
 	}
 	return true;
 }
-
-CMD:pheal(playerid,params[]) 
-{
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params, "ud", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /pheal [ID игрока] [причина]");
-	if(PI[playerid][pHealPack] == 0) return SCM(playerid, COLOR_GREY, !"У Вас нет медицинской аптечки");
-    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
-	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	if(GetPVarInt(params[0], "PlayerObmorok") == 0) return SCMf(playerid, COLOR_GREY, !"Игрок не нуждается в лечении");
-	SCMf(playerid, COLOR_GREY,"Вы подняли игрока %s[%d] из состояния обморока", getName(params[0]),params[0]);
-	SCMf(params[0], COLOR_GREY,"Сотрудник %s[%d] подняли Вас из состояния обморока", getName(playerid),playerid);
-	return 1;
-}
 CMD:j(playerid,params[])
 {
     if(PI[playerid][pMute] == 1) return SCM(playerid, COLOR_GREY, !"Ваш чат временно заблокирован");
@@ -16597,25 +16262,6 @@ CMD:help(playerid)
 	7. Команды лидера/заместителя", "Выбрать", "Закрыть");
     return true;
 }
-stock PassiveMode(playerid)
-{
-    if(PI[playerid][pWanted] > 0) return ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Пассивный режим", !"{FFFFFF}Пасивный режим недоступен c розыском", !"Закрыть", !"");
-    if(PI[playerid][pMember] == 5 || PI[playerid][pMember] == 6 || PI[playerid][pMember] == 7 || PI[playerid][pMember] == 1 || PI[playerid][pMember] == 2 || PI[playerid][pMember] == 3) return ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Пасивный режим", !"{FFFFFF}Пасивный режим недоступен в вашей организации!", !"Закрыть", !"");
-	switch(PI[playerid][pPassiveMode])
-	{
-		case 0: ShowPlayerDialog(playerid, Dialog_PassiveMode, DIALOG_STYLE_LIST, !"{ee3366}Пассивный режим", !"{ffffff}Пассивный режим \t\t{ce6c4f} Отключен", !"Выбрать", !"Отмена");
-		case 1: ShowPlayerDialog(playerid, Dialog_OffPassiveMode, DIALOG_STYLE_LIST, !"{ee3366}Пассиный режим", !"{ffffff}Пассивный режим \t\t{4eaa77} Включен", !"Выбрать", !"Отмена");
-	}
-	return 1;
-}
-stock PassiveModeEnabled(playerid)
-{
-    return DisableRemoteVehicleCollisions(playerid, 1);
-}
-stock PassiveModeOff(playerid)
-{
-    return DisableRemoteVehicleCollisions(playerid, 0);
-}
 stock MaskEnabled(playerid)
 {
     return DisableRemoteVehicleCollisions(playerid, true);
@@ -16963,9 +16609,9 @@ CMD:fix(playerid, params[])
 	if(vehicle) 
 	{
 		if(IsPlayerInAnyVehicle(playerid)) return SCM(playerid, COLOR_GREY, !"Вы не должны находиться в транспорте");
-		if(PI[playerid][data_FIXCOMPL] == 0) return SCM(playerid, COLOR_GREY, !"У Вас нет ремонтных комплектов.");
-	    PI[playerid][data_FIXCOMPL]--;
-	    SCMf(playerid, 0x69b867FF, "Для починки был использован Ремотный набор #1 (Общий) (осталось: %d шт)", PI[playerid][data_FIXCOMPL]);
+		if(PI[playerid][pFixPack] == 0) return SCM(playerid, COLOR_GREY, !"У Вас нет ремонтных комплектов.");
+	    PI[playerid][pFixPack]--;
+	    SCMf(playerid, 0x69b867FF, "Для починки был использован Ремотный набор #1 (Общий) (осталось: %d шт)", PI[playerid][pFixPack]);
 		if(vehicle) RepairVehicle(vehicle);
 		else SCM(playerid, COLOR_GREY, !"Рядом с Вами нет транспорта");
 	}
@@ -16977,7 +16623,7 @@ CMD:fuel(playerid, params[])
     if(PI[playerid][pCanisters] == 0) return SCM(playerid, COLOR_GREY, !"У Вас нет канистры. Купить ее можно на любом АЗС.");
 	new carid = GetPlayerVehicleID(playerid);
 	if(carid == INVALID_VEHICLE_ID) return SCM(playerid, COLOR_GREY, !"Нужно находиться в автомобиле");
-	if(CarInfo[carid][cFuel] == 50) return SCM(playerid, COLOR_GREY, !"Бак автомобиля полон");
+	if(CarInfo[carid][cFuel] == 50) return SCM(playerid, COLOR_GREY, !"Бак автомобиля полн");
 	if(CarInfo[carid][cFuel] < 50 && CarInfo[carid][cFuel] >= 40) CarInfo[carid][cFuel] = 50;
 	else CarInfo[carid][cFuel] += 10;
 	SCM(playerid, 0x69b867FF, !"Вы заправили автомобиль.");
@@ -17218,7 +16864,7 @@ callback: LoadOwnableCars(playerid)
 
 			if(Temp != -1)
 			{
-				SendClientMessagef(playerid, COLOR_HINT, "[Подсказка]: {FFFFFF}У Вас есть временная машина %s.", VehicleNames[Model_ID-400]);
+				//SendClientMessagef(playerid, COLOR_HINT, "[Подсказка]: {FFFFFF}У Вас есть временная машина %s.", VehicleNames[Model_ID-400]);
 				if(Temp <= gettime()) 
 				{
 					SendClientMessagef(playerid, COLOR_LIGHTORANGE, "[!!!] {FFFF99}Ваш временный автомобиль %s был удален.", VehicleNames[Model_ID-400]);
@@ -17382,10 +17028,11 @@ CMD:gift(playerid)
 {
 	if(PI[playerid][pCarGift] == 1) return SCM(playerid, COLOR_GREY, !"Вы уже получали временный автомобиль");
 	
-	new const RadnomGift[4] = {541, 540, 558, 559};
+	new const RadnomGift[4] = {405, 579, 560, 540};
 	new gift_car = RandomEX(1, 4);
 
-	GivePlayerOwnable(playerid, RadnomGift[gift_car], 0, 50, 1, 1, 1, 336);
+	GivePlayerOwnable(playerid, RadnomGift[gift_car], 0, 50, 137, 137, 1, 336);
+
 
 	PI[playerid][pCarGift] = 1;
 	UpdatePlayerDataInt(playerid, "CarGift", PI[playerid][pCarGift]);
@@ -17429,19 +17076,17 @@ stock ShowHotKeys(playerid)
 }
 stock ShowMainMenu(playerid) 
 {
-	return ShowPlayerDialogf(playerid, 101, DIALOG_STYLE_LIST, "{ee3366}Меню игрока", "Выбрать", "Отмена", "\
-	{FFFFFF}1. Статистика\n\
-	{FFFFFF}2. Пассивный режим\t %s\n\
-	{FFFFFF}3. Команды сервера\n\
-	{FFFFFF}4. Горячие клавиши\n\
-	{FFFFFF}5. Помощь / жалоба\n\
-	{FFFFFF}6. Настройки аккаунта\n\
-	{FFFFFF}7. Общие правила\n\
-	{FFFFFF}8. Ресурсы игры\n\
-	{FFFFFF}9. Изменить никнейм\n\
-	{FFFFFF}10. Чёрный список организаций\n\
-	{5fc2f1}11. Дополнительные услуги", 
-	PI[playerid][pPassiveMode] ? ("{66cc66}(Включён)") : ("{ff6633}(Отключён)"));
+	return ShowPlayerDialog(playerid, 101, DIALOG_STYLE_LIST, !"{ee3366}Меню игрока", 
+	!"{FFFFFF}1. Статистика\n\
+	{FFFFFF}2. Команды сервера\n\
+	{FFFFFF}3. Горячие клавиши\n\
+	{FFFFFF}4. Помощь / жалоба\n\
+	{FFFFFF}5. Настройки аккаунта\n\
+	{FFFFFF}6. Общие правила\n\
+	{FFFFFF}7. Ресурсы игры\n\
+	{FFFFFF}8. Изменить никнейм\n\
+	{FFFFFF}9. Чёрный список организаций\n\
+	{5fc2f1}10. Дополнительные услуги", !"Выбрать", !"Отмена");
 }
 public OnPlayerStreamIn(playerid, forplayerid) 
 {
@@ -17747,8 +17392,8 @@ callback: SavePlayerData(playerid)
 			PI[playerid][pHealPack],
 			PI[playerid][pHealthPackKD],
 			PI[playerid][pCanisters],
-			PI[playerid][data_MASK],
-			PI[playerid][data_FIXCOMPL],
+			PI[playerid][pMask],
+			PI[playerid][pFixPack],
 			PI[playerid][pProgressAmmo],
 			PI[playerid][pProgressMetall],
 			PI[playerid][pPromoCodeUse],
@@ -18041,4 +17686,28 @@ CMD:setspawn(playerid)
 				3. Дом / квартира", 
 				"Выбрать", "Закрыть"
 			);
+}
+stock SetVehicleSpeed(vehid, Float:speed)
+{
+    new Float:x1, Float:y1, Float:z1, Float:x2, Float:y2, Float:z2, Float:a;
+    GetVehicleVelocity(vehid,x1,y1,z1);
+    GetVehiclePos(vehid,x2,y2,z2);
+    GetVehicleZAngle(vehid,a); a=360-a;
+    x1=(floatsin(a,degrees)*(speed/100))+x1;
+    y1=(floatcos(a,degrees)*(speed/100))+y1;
+    SetVehicleVelocity(vehid,x1,y1,z1);
+}
+stock ShowPoliceStorage(playerid)
+{
+	ShowPlayerDialog(playerid, 5980, DIALOG_STYLE_TABLIST_HEADERS, !"{ee3366}Оружейный склад", "\
+	Оружие\tНужный ранг\tПатроны\n\
+	{FFFFFF}Полицейская дубинка\t\t1+\t\t1\n\
+	Полицейский жезл\t\t1+\t\t1\n\
+	Бронежилет\t2+\t\t-\n\
+	Балончик с краской\t\t2+\t\t500\n\
+	ПЛ-15\t\t2+\t\t70\n\
+	Тайзер\t\t7+\t\t70\n\
+	АКС-74У\t\t3+\t\t180\n\
+	АК-47\t\t5+\t\t180\n\
+	Снайперская винтовка\t5+\t\t20", !"Взять", !"Закрыть");
 }

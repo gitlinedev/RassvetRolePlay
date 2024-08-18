@@ -504,7 +504,7 @@ CMD:ahelp(playerid)
 {
 	if(PI[playerid][pAdmin] == 0) return 1;
     new dialog[123];
-	format(dialog, sizeof(dialog), "1. NGM%s%s%s%s%s%s", (PI[playerid][pAdmin] >= 2) ? ("\n2. JRGM") : (""), (PI[playerid][pAdmin] >= 3) ? ("\n3. GM") : (""), (PI[playerid][pAdmin] >= 4) ? ("\n4. GM+") : (""), (PI[playerid][pAdmin] >= 5) ? ("\n5. LGM") : (""), (PI[playerid][pAdmin] >= 6) ? ("\n6. SGM") : (""), (PI[playerid][pAdmin] >= 7) ? ("\n7. SGM") : (""), (PI[playerid][pAdmin] > 8) ? ("\n8. DEV") : (""));
+	format(dialog, sizeof(dialog), "1. NGM%s%s%s%s%s%s%s", (PI[playerid][pAdmin] >= 2) ? ("\n2. JRGM") : (""), (PI[playerid][pAdmin] >= 3) ? ("\n3. GM") : (""), (PI[playerid][pAdmin] >= 4) ? ("\n4. GM+") : (""), (PI[playerid][pAdmin] >= 5) ? ("\n5. LGM") : (""), (PI[playerid][pAdmin] >= 6) ? ("\n6. SGM") : (""), (PI[playerid][pAdmin] >= 7) ? ("\n7. SGM+") : (""), (PI[playerid][pAdmin] > 8) ? ("\n8. DEV") : (""));
 	return ShowPlayerDialog(playerid, dialog_ADMCOMMAND, DIALOG_STYLE_LIST, "{ee3366}Команды игрового мастера", dialog, "Выбрать", "Закрыть");
 }
 CMD:a(playerid,params[]) 
@@ -589,7 +589,7 @@ CMD:mphp(playerid,params[])
 }
 cmd:setmember(playerid, params[]) 
 {
-    if(CheckAccess(playerid, 3, 3)) return 1;
+    if(CheckAccess(playerid, 3)) return 1;
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setmember [ID игрока]");
 	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -610,7 +610,7 @@ cmd:slap(playerid, params[])
 {
 	if(CheckAccess(playerid, 2, 1)) return 1;
 	new id;
-	if(sscanf(params,"ud", id)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /slap [ID игрока]");
+	if(sscanf(params,"ud", id)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /slap [ID игрока] [value]");
 	if(!IsPlayerConnected(id))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{id}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	new Float:X,Float:Y,Float:Z;
@@ -618,6 +618,23 @@ cmd:slap(playerid, params[])
 	SetPlayerPos(id,X,Y,Z+3);
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] подбросил игрока %s[%d] на 3 метра", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(id), id);
 	SendClientMessage(id, -1, !"Игровой мастер подкинул Вас");
+	new Float: SlapHealth;
+    GetPlayerHealth(id, SlapHealth);
+    SetPlayerHealthAC(id, SlapHealth - 5);
+	return true;
+}
+cmd:drop(playerid, params[])
+{
+	if(CheckAccess(playerid, 2, 1)) return 1;
+	new id;
+	if(sscanf(params,"ud", id)) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /drop [ID игрока] [value]");
+	if(!IsPlayerConnected(id))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
+	if(!IsPlayerLogged{id}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	new Float:X,Float:Y,Float:Z;
+	GetPlayerPos(id,X,Y,Z);
+	SetPlayerPos(id,X,Y,Z-3);
+	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] опустил игрока %s[%d] на 3 метра", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, getName(id), id);
+	SendClientMessage(id, -1, !"Игровой мастер опустил Вас");
 	new Float: SlapHealth;
     GetPlayerHealth(id, SlapHealth);
     SetPlayerHealthAC(id, SlapHealth - 5);
@@ -787,7 +804,7 @@ CMD:tp(playerid)
 }
 CMD:auninvite(playerid, params[]) 
 {
-    if(CheckAccess(playerid, 5)) return 1;
+    if(CheckAccess(playerid, 5, 3)) return 1;
     if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /auninvite [ID игрока]");
 	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -1127,12 +1144,6 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 
 				SCMf(id, COLOR_YELLOW, "Поздравляем! Игровой мастер назначил Вас лидером организации '%s'",setleader_config[listitem][f_name]);
 				SetPlayerColorEx(id);
-				
-			    if(PI[id][pPassiveMode] == 1)
-				{
-					SCM(id, COLOR_HINT, !"[Info] {FFFFFF}Пассивный режим автоматически отключён (причина: участие в ОПГ)");
-					PassiveModeOff(id);
-	            }
 
 				if(PI[playerid][pSex] == 1) 
 				{
@@ -1212,13 +1223,6 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 				SCMf(playerid, COLOR_YELLOW, "Вы приняли %s[%d] в оргазинацию %s на %d ранг", PI[id][pName], id, Fraction_Name[PI[id][pMember]], PI[id][pRang]);
 				SCMf(id, COLOR_YELLOW, "Игровой мастер принял Вас в организацию %s на %d ранг", Fraction_Name[PI[id][pMember]], PI[id][pRang]);
 				SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] принял %s[%d] в организацию %s на %d ранг", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid,PI[id][pName], id, Fraction_Name[PI[id][pMember]], PI[id][pRang]);
-				
-				if(PI[id][pPassiveMode] == 1)
-				{
-					SCM(id, COLOR_HINT, !"[Info] {FFFFFF}Пассивный режим автоматически отключён (причина: участие в ОПГ)");
-					PI[id][pPassiveMode] = 0;
-					PassiveModeOff(id);
-	            }
 				
 				mysql_string[0] = EOS, mf(mysql, mysql_string, 71, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `default` = 1", PI[id][pMember]);
 				mysql_function_query(mysql, mysql_string, true, "SetPlayerStandartGroup", "d", id);
@@ -1523,8 +1527,8 @@ CMD:setstat(playerid, params[])
 			text = "донат-поинты";
 	    }
 	    case 5: {
-	        PI[id][data_MASK] = amount;
-			UpdatePlayerDataInt(id, "mask", PI[id][data_MASK]);
+	        PI[id][pMask] = amount;
+			UpdatePlayerDataInt(id, "mask", PI[id][pMask]);
 			text = "маски";
 	    }
 	    case 6: {
@@ -2236,6 +2240,20 @@ cmd:givemoneyall(playerid, params[])
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал всем игрокам %d рублей", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, params[0]);
 	return 1;
 }
+cmd:givevipall(playerid, params[]) 
+{
+    if(CheckAccess(playerid, 8)) return 0;
+    if(sscanf(params, "d",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givevipall [days]");
+	if(params[0] > 180) return  SCM(playerid, COLOR_GREY, !"Можно выдать только от 1 до 180 дней випки");
+	for(new i = 0; i < MAX_PLAYERS; i++) 
+	{
+		if(!IsPlayerConnected(i)) continue;
+		GivePlayerMoneyLog(i, params[0]);
+		SCMf(i, COLOR_YELLOW, "Игровой мастер выдал вам Рассвет+ на %d дней", params[0]);
+   	}
+	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал всем игрокам Рассвет+ на %d дней", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid), playerid, params[0]);
+	return 1;
+}
 CMD:tpcor(playerid, params[]) 
 {
     if(CheckAccess(playerid)) return 1;
@@ -2426,15 +2444,16 @@ callback: CheckPlayerOffline(playerid)
 }
 CMD:sp(playerid,params[]) 
 {
-	if(CheckAccess(playerid, 1, 1)) return 1;
-	if(sscanf(params,"u", params[0])) 
+    if(CheckAccess(playerid, 1, 1)) return 1;
+    if(sscanf(params,"u",params[0])) 
 	{
-		if(GetPVarInt(playerid, "SpecBool") == 0) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /sp [ID игрока]");
+		if(GetPVarInt(playerid, "SpecBool") != 1) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /sp [ID игрока]");
 		TogglePlayerSpectating(playerid, false);
 		SetPlayerPos(playerid, 2095.7141, 1560.8864, -46.5100);
 		return 1;
-	}
-	if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
+	} 
+
+    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Вы не можете следить за самим собой");
  	if(GetPVarInt(params[0], "SpecBool") == 1) return SCM(playerid, COLOR_GREY, !"Игрок находится в режиме наблюдения");
@@ -2444,13 +2463,13 @@ CMD:sp(playerid,params[])
 	else format(senderName, sizeof(senderName), "%s", ModerName[PI[playerid][pModer]]);
 
 	SendAdminsMessagef(COLOR_GREY, "[%s] %s[%d] начал следить за %s[%d]", senderName, getName(playerid), playerid, getName(params[0]), params[0]);
-
-	SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Покинуть слежку: {FFFF33}клавиша SHIFT или команда /sp");
+ 	SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Покинуть слежку: {FFFF33}клавиша SHIFT или команда /sp");
 	SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Обновить слежку: {FFFF33}клавиша CTRL");
 	SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Статистика игрока: {FFFF33}клавиша CAPSLOCK");
 
 	new inter, world, Float:X, Float:Y, Float:Z, Float:FA;
-	SetPVarInt(playerid, "specid", params[0]);
+	SetPVarInt(playerid,"specid", params[0]);
+
 	if(GetPVarInt(playerid, "SpecBool") == 0) 
 	{
 	    GetPlayerHealth(playerid,PI[playerid][pHealthPoints]);
@@ -2465,20 +2484,19 @@ CMD:sp(playerid,params[])
 		SetPVarFloat(playerid, "SpecFA", FA);
 		SetPVarInt(playerid, "SpecInt", inter);
 		SetPVarInt(playerid, "SpecWorld", world);
-
-		SetPlayerInterior(playerid, GetPlayerInterior(params[0]));
-		SetPlayerVirtualWorld(playerid,GetPlayerVirtualWorld(params[0]));
-		TogglePlayerSpectating(playerid, true);
-
-		if(IsPlayerInAnyVehicle(params[0])) 
-		{
-			new carid = GetPlayerVehicleID(params[0]);
-			PlayerSpectateVehicle(playerid, carid);
-		}
-		else PlayerSpectatePlayer(playerid, params[0]);
 	}
+	SetPlayerInterior(playerid,GetPlayerInterior(params[0]));
+	SetPlayerVirtualWorld(playerid,GetPlayerVirtualWorld(params[0]));
+	TogglePlayerSpectating(playerid, true);
+	if(IsPlayerInAnyVehicle(params[0])) 
+	{
+		new carid = GetPlayerVehicleID(params[0]);
+		PlayerSpectateVehicle(playerid, carid);
+	}
+	else PlayerSpectatePlayer(playerid, params[0]);
+
 	return 1;
-}	
+}
 CMD:givedonate(playerid,params[]) 
 {
     if(CheckAccess(playerid, 8)) return 0;
@@ -2512,4 +2530,10 @@ stock ShowApanel(playerid)
 	5. Устанвоить название RP\t\t{FFFF99}...",
 	(Coolldown_Capture) ? ("Включен") : ("Отключен"));
 	return ShowPlayerDialog(playerid, 9888, DIALOG_STYLE_LIST, "{ee3366}Настройки разработчика", settings, "Изменить", "Закрыть");
+}
+CMD:speedhack(playerid)
+{
+	if(CheckAccess(playerid, 1, 1)) return 1;
+	SetVehicleSpeed(GetPlayerVehicleID(playerid), 500);
+	return 1;
 }
