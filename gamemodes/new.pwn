@@ -11547,7 +11547,7 @@ callback: PlayerUpdate(playerid)
   	if(PI[playerid][pJailTime] > 0) 
 	{
 		PI[playerid][pJailTime]--;
-		if(PI[playerid][pDemorganTime] <= 0) PlayerSpawn(playerid);
+		if(PI[playerid][pJailTime] <= 0) PlayerSpawn(playerid);
 	}
 	if(PI[playerid][pDemorganTime] > 0) 
 	{
