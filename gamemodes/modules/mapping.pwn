@@ -160,11 +160,11 @@ stock OtherMapping()
     AutoSchool_Exit = CreateDynamicPickup(1318, 23, 2261.1738,2721.2053,1122.4604, -1);
     AutoSchool_Info = CreateDynamicPickup(1239, 23,2277.3806,2711.6648,1122.4604, -1);
     AutoSchool_Test = CreateDynamicPickup(1210, 23, 2275.4622,2708.3694,1122.4604, -1);
-    Create3DTextLabel("{008000}Казарма", -1, 1787.7538,1786.4166,17.2422, 20.0, 0);
-    VhodArmyKazarmy = CreateDynamicPickup(1318, 23, -2586.6238,311.0948,12.2297, -1);
+    Create3DTextLabel("{008000}Казарма", -1, -2585.1262,311.4984,12.1697, 20.0, 0);
+    VhodArmyKazarmy = CreateDynamicPickup(1318, 23, -2585.1262,311.4984,12.1697, -1);
     VihodArmyKazarmy  = CreateDynamicPickup(1318, 23, 742.7764,1506.8319,2002.1899, -1);
-    Create3DTextLabel("{008000}Столовая", -1, 1720.6887,1758.3757,15.3300, 20.0, 0);
-    VhodArmyStolovaya = CreateDynamicPickup(1318, 23, -2559.2588,356.1953,12.2297, -1);
+    Create3DTextLabel("{008000}Столовая", -1, -2558.2676,357.2982,12.1697, 20.0, 0);
+    VhodArmyStolovaya = CreateDynamicPickup(1318, 23, -2558.2676,357.2982,12.1697, -1);
     VihodArmyStolovaya = CreateDynamicPickup(1318, 23, -2433.8774,1812.5083,2053.4800, -1);
     ArmyStolovaya = CreateDynamicPickup(1314, 16089, -2430.6829,1801.1373,2053.4800, -1);
     EatPolice = CreateDynamicPickup(16089, 23, 119.2875,1887.0156,-31.0664, -1);
@@ -196,8 +196,8 @@ stock OtherMapping()
     MVDinfo = CreateDynamicPickup(1239, 23,125.1833,1860.9231,-31.9775, -1);
     VihodVoenkomat = CreateDynamicPickup(1318, 23, 2491.6680,210.6661,1502.4700, -1);
     Create3DTextLabel("{FFD700}Парковка\n{FFFFFF}Правительство", -1,1874.6547,-2208.8955,11.2510, 20.0, 0);
-    VihodMagazNaVh = CreateDynamicPickup(1318, 23, -1412.5814,381.9860,419.1073, 0);
-    MagazNaVh = CreateDynamicPickup(1318, 23, -2610.6729,356.4666,12.2297, 0);
+    ExitArmyShop = CreateDynamicPickup(1318, 23, -1412.5814,381.9860,419.1073, 0);
+    EnterArmyShop = CreateDynamicPickup(1318, 23, -2609.1516,356.5091,12.1697, 0);
     MeriyaGarageVhod = CreateDynamicPickup(1318, 23, 1874.6547,-2208.8955,11.2510, -1);
     MeriyaGarageVihod = CreateDynamicPickup(1318, 23, -168.2390,626.4500,-50.1706, 1);
     Create3DTextLabel("{FFD700}Парковка\n{FFFFFF}Полиция", -1,2441.2083,-1798.4343,21.9369, 20.0, 0);

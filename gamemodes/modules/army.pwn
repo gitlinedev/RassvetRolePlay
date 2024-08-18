@@ -2,7 +2,7 @@ new TimetTheftCartridges[MAX_PLAYERS];
 
 callback: TheftCartridges(playerid)
 {
-	if(!PlayerToPoint(1.7, playerid, 1567.5477,1823.2529,15.6548)) return KillTimer(TimetTheftCartridges[playerid]);
+	if(!PlayerToPoint(4.0, playerid, -2569.5515, 450.8403, 10.9216)) return KillTimer(TimetTheftCartridges[playerid]);
     if(army_wh[2] == 0) return SendClientMessage(playerid, COLOR_GREY, !"Склад организации 'Воинская часть' закрыт игровым мастером"), KillTimer(TimetTheftCartridges[playerid]);
 	switch(PI[playerid][pMember]) 
 	{
@@ -23,8 +23,10 @@ callback: TheftCartridges(playerid)
 						SaveWarehouse();
 						UpdatePlayerDataInt(playerid, "met", PI[playerid][pMetall]);
 						UpdatePlayerDataIntNoLog(playerid, "patr", PI[playerid][pAmmo]);
-						format(str,sizeof(str),"Загружено патронов: %d / 400 шт", PI[playerid][pAmmo]);
-						cef_emit_event(playerid, "show-ammo-notify", CEFSTR(str), CEFSTR("7fa1a1"));
+
+						format(str, sizeof(str), "Загружено патронов: %d / 400 шт", PI[playerid][pAmmo]);
+						SendPlayerHudNotify(playerid, 3, "artichoke", str, 5);
+
 						HidePlayerSpeedometer(playerid);
 				    }
 					else SCM(playerid, COLOR_GREY, !"У Вас полные карманы патронов, места больше нет");
@@ -42,16 +44,17 @@ callback: TheftCartridges(playerid)
 						SaveWarehouse();
 						UpdatePlayerDataInt(playerid, "met", PI[playerid][pMetall]);
 						UpdatePlayerDataIntNoLog(playerid, "patr", PI[playerid][pAmmo]);
-						format(str,sizeof(str),"Загружено патронов: %d / 800 шт", PI[playerid][pAmmo]);
-						cef_emit_event(playerid, "show-ammo-notify", CEFSTR(str), CEFSTR("7fa1a1"));
+
+						format(str, sizeof(str), "Загружено патронов: %d / 800 шт", PI[playerid][pAmmo]);
+						SendPlayerHudNotify(playerid, 3, "artichoke", str, 5);
+
 						HidePlayerSpeedometer(playerid);
 					}
 				    else SCM(playerid, COLOR_GREY, !"У Вас полные карманы патронов, места больше нет");
 				}
 			}
-			new str_1[256];
-			format(str_1,sizeof(str_1),"{f18c2b}Армейский склад\n\n{FFFFFF}Металл: %d кг.\n{fccf39}Патроны: %d шт.",army_wh[0],army_wh[1]);
-			UpdateDynamic3DTextLabelText(army_sklad_text, -1, str_1);
+			global_str[0] = EOS, f(global_str, 100, "{f18c2b}Армейский склад\n\n{FFFFFF}Металл: %d кг.\n{fccf39}Патроны: %d шт.",army_wh[0],army_wh[1]);
+			UpdateDynamic3DTextLabelText(army_sklad_text, -1, global_str);
 		}
 	}
 	return 1;

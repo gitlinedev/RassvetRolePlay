@@ -64,6 +64,57 @@ stock gm_OnDialogResponse(playerid, dialogid, response, listitem)
 				if(PI[i][pModer] >= 1) Iter_Add(Moder, playerid);
 			}
         }
+		case 2840:
+		{
+			if(!response) return 1;
+			if(response)
+   			{
+				switch(listitem)
+				{
+				    case 0: 
+					{
+						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, !"{ee3366} оманды игрового модератора", !"\
+						mhelp - команды модератора\n\
+						flip - починить машину\n\
+						sp - следить за игроком\n\
+						spawn - заспавнить игрока\n\
+						goto - телепортироватьс€ к игроку\n\
+						a - админ чат\n\
+						tp (F2) - меню телепортации\n\
+						gethere - телепортировать игрока к себе\n\
+						slap - подкинуть игрока\n\
+						ans - ответить игроку", !"«акрыть", !"");
+					}
+					case 1: 
+					{
+						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, !"{ee3366} оманды игрового модератора", !"\
+						unjail - выпустить из деморгана\n\
+						jail - посадить игрока в тюрьму\n\
+						unprison - выпустить из тюрьмы\n\
+						skin - выдать скин\n\
+						unmute - сн€ть блокировку текстового чата\n\
+						mute - выдать блокировку текстовго чата\n\
+						spawncar - заспавнить автомобиль\n\
+						setfuel - установить уровень топлива машине\n\
+						agivelic - выдать водительские права\n\
+						getcar - телепортировать автомобиль к себе\n\
+						giveskill - выдать навыки стрельбы игроку", !"«акрыть", !"");
+					}
+					case 2: 
+					{
+						ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, !"{ee3366} оманды игрового модератора", !"\
+						veh - создать автомобиль\n\
+						dveh - удалить автомобиль\n\
+						givevb - выдать игроку военный билет\n\
+						setarm - выдать броню\n\
+						setmember - выдать ранг в организации\n\
+						vmute - выдать блокировку голосового чата\n\
+						unvmute - сн€ть блокировку голосового чата\n\
+						kick - кикнуть игрока", !"«акрыть", !"");
+					}
+				}
+			}
+		}
 	}
 	return 1;
 }
@@ -85,4 +136,12 @@ CMD:moders(playerid)
 
 	}
 	return 1;
+}
+
+CMD:mhelp(playerid) 
+{
+	if(CheckAccess(playerid, 1, 1)) return 0;
+    new dialog[123];
+	format(dialog, sizeof(dialog), "1. Junior Moderator%s%s", (PI[playerid][pModer] >= 2) ? ("\n2. Moderator") : (""), (PI[playerid][pModer] >= 3) ? ("\n3. Senior Moderator") : (""));
+	return ShowPlayerDialog(playerid, 2840, DIALOG_STYLE_LIST, "{ee3366} оманды игрового модератора", dialog, "¬ыбрать", "«акрыть");
 }
