@@ -662,18 +662,23 @@ stock capture_SecondTimer()
 }
 stock FinishRound(playerid)
 {
-	if(PI[playerid][pDeathOnCapture] == 1)
+	if(PI[playerid][pOnCapture] == 1)
 	{
-		SetTimerEx("DeathFinishRound", 4900, false, "d", playerid);
-	}
-	else 
-	{
-		TogglePlayerControllable(playerid, false);
-		SetTimerEx("NoDeathFinishRound", 4900, false, "d", playerid);
+		if(PI[playerid][pDeathOnCapture] == 1)
+		{
+			SetTimerEx("DeathFinishRound", 4900, false, "d", playerid);
+		}
+		else 
+		{
+			TogglePlayerControllable(playerid, false);
+			SetTimerEx("NoDeathFinishRound", 4900, false, "d", playerid);
+		}
 	}
 }
 callback: DeathFinishRound(playerid)
 {
+	if(PI[playerid][pOnCapture] != 1) return 1;
+
 	for(new i = 0; i < 13; i++) 
 	{
 	    if(PI[playerid][data_GUN][i] != 0 && PI[playerid][data_AMMO][i] != 0) GivePlayerWeapon(playerid, PI[playerid][data_GUN][i], PI[playerid][data_AMMO][i]);
@@ -743,6 +748,8 @@ stock capture_OnDialogResponse(playerid, dialogid, response, listitem)
                 if(!AddPlayerToCapture(playerid)) return SendClientMessage(playerid, COLOR_LIGHTGREY, !"Свободных мест уже нет (7/7)");
                 else 
                 {
+					if(GangWarStatus > 1) return SendClientMessage(playerid, COLOR_LIGHTGREY, !"Захват территории уже начался");
+
 					new count = GetCountonGanwWar(PI[playerid][pMember]);
 
                     SendFractionMessagef(PI[playerid][pMember], 0x69b867FF, "[R] %s %s[%d] присоединился к участникам стрелы (%d/7)",\
@@ -1084,6 +1091,24 @@ stock capture_OnGameModeInit()
 	EnterCaptureDoor_4 = CreatePickup(1318, 23, 1633.8164,-1251.9113,19.3209, -1);
 	ExitCaptureDoor_4 = CreatePickup(1318, 23, 1632.8217,-1251.9086,19.3756, -1);
 }
+stock CaptureStart(gz, playerid)
+{
+	PI[playerid][pPayDayMoney] += 2000;
+	PI[playerid][pProgressCapture]+= 1;
+
+	GangWarStatus = 1;
+	//
+	WarTime = 300;
+	WarZone = gz;
+	//
+	CommandKill[0]= 0;
+	CommandKill[1]= 0;
+	CommandRounds[0] = 0;
+	CommandRounds[1] = 0;
+
+	Command[0] = PI[playerid][pMember];
+	Command[1] = gz_info[gz][gzopg];
+}
 //===============================================================[ CMD ]===============================================================//
 cmd:capture(playerid) 
 {
@@ -1122,23 +1147,7 @@ cmd:capture(playerid)
 	}
     if(gz_info[gz][gzid] == 101) return 1;
 
-    new warname[15];
-	if(gz_info[gz][gzopg] == 5) warname = "'Скинхеды'";
-	if(gz_info[gz][gzopg] == 6) warname = "'Гопота'";
-	if(gz_info[gz][gzopg] == 7) warname = "'Кавказцы'";
-
-	PI[playerid][pPayDayMoney] += 2000;
-	PI[playerid][pProgressCapture]+= 1;
-
-	GangWarStatus = 1;
-	//
-	WarTime = 300;
-	WarZone = gz;
-	//
-	CommandKill[0]= 0;
-	CommandKill[1]= 0;
-	Command[0] = PI[playerid][pMember];
-	Command[1] = gz_info[gz][gzopg];
+	CaptureStart(gz, playerid);
 
 	SCM(playerid, COLOR_YELLOW, !"За инициацию захвата территории Вы получите вознаграждение в PayDay"); 
 	foreach(new i:Player) 
