@@ -9531,17 +9531,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				    case 0: 
 					{
 						mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
-	                    mysql_tquery(mysql, mysql_string, "InfoGroup", "i", playerid);
+						mysql_function_query(mysql, mysql_string, true, "InfoGroup", "i", playerid);
 					}
 					case 1: 
 					{
-					    mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
-	                    mysql_tquery(mysql, mysql_string, "IDGroup", "i", playerid);
+						mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], grouptext);
+						mysql_function_query(mysql, mysql_string, true, "IDGroup", "i", playerid);
 					}
 					case 2: 
 					{
 						mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e' AND `default` = '1'", PI[playerid][pMember], grouptext);
-	                    mysql_tquery(mysql, mysql_string, "CheckStandart", "i", playerid);
+						mysql_function_query(mysql, mysql_string, true, "CheckStandart", "i", playerid);
 					}
 					case 3: 
 					{

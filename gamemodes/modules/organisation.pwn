@@ -301,8 +301,8 @@ callback: CheckStandart(playerid)
 		GetPVarString(playerid,"gtext", GroupName, sizeof(GroupName));
 		FixSVarString(GroupName);
 
-        mysql_string[0] = EOS, f(mysql_string, 110, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], GroupName);
-        mysql_tquery(mysql, mysql_string, "SetStandart", "i", playerid);
+		mysql_string[0] = EOS, mf(mysql, mysql_string, 150, "SELECT * FROM `group` WHERE `fraction` = '%d' AND `group_name` = '%e'", PI[playerid][pMember], GroupName);
+		mysql_function_query(mysql, mysql_string, true, "SetStandart", "i", playerid);
 
 		DeletePVar(playerid, "gtext");
 	}

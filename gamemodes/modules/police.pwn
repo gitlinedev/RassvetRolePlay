@@ -23,7 +23,7 @@ CMD:arrest(playerid, params[])
     if (GetPVarInt(targetid, "PlayerCuffed") == 0) return SCM(playerid, COLOR_GREY, !"ƒанный игрок должен находитьс€ в наручниках");
     if (PI[targetid][pWanted] == 0) return SCM(playerid, COLOR_GREY, !"ƒанный игрок не находитс€ в розыске");
     
-    if (PlayerToPoint(20.0, playerid, -289.9960, -1548.9326, 41.1223)) 
+    if (PlayerToPoint(20.0, playerid, 2422.7039, -1808.4011, 21.9369)) 
     {
         SendFractionMessagef(PI[playerid][pMember], COLOR_YELLOW, "[¬сем постам] %s %s арестовал подозреваемого %s", rang_police[PI[playerid][pRang] - 1][frName], getName(playerid), getName(targetid));
         new reward = 3000 * PI[targetid][pWanted];
