@@ -47,6 +47,7 @@ CMD:setrang(playerid, params[])
 		getName(params[0]), params[0], NameRang(params[0]), PI[params[0]][pRang]);
 
 	UpdatePlayerDataInt(params[0], "rank", PI[params[0]][pRang]);
+	PI[params[0]][pRankUPTime] = gettime()+86400;
 	UpdatePlayerDataInt(params[0], "RankUPTime", gettime()+86400);
 	SavePlayerData(params[0]);
 	return 1;

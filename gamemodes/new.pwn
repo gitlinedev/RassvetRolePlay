@@ -45,7 +45,6 @@ new
 #include foreach
 #include cef
 #include a_http
-#include sampp
 #include nex-ac
 
 #define SCM SendClientMessage
@@ -1172,6 +1171,7 @@ enum P_DATA
 	pTwarn,
 	data_FIXCOMPL,
 	//TEMP INFO
+	Float:pRun,
 	pTempJob,
 	PTempJobValue_1,
 	PTempJobValue_2,
@@ -1329,12 +1329,11 @@ static PedFeMale[6] = {10,12,13,31,38,39};
 //#include "modules/apartments.pwn"
 #include "modules/floats.pwn"
 #include "modules/voicechat.pwn"
-#include "modules/fly.pwn"
 #include "modules/mapping.pwn"
 #include "modules/game_moder.pwn"
 #include "modules/organisation.pwn"
 #include "modules/anticheat.pwn"
-//#include "modules/stamina.pwn"
+#include "modules/stamina.pwn"
 //=========================================================================================//
 forward Float:GetDistanceBetweenPlayers(p1,p2);
 public Float:GetDistanceBetweenPlayers(p1,p2) 
@@ -1979,6 +1978,8 @@ public OnGameModeInit()
 	SetTimer("MinutTimer",1000*60,true);
 	SetTimer("ChangeServer0", 500, false);
 	SetTimer("FlyTimer", 100, 1);
+	//
+	RunTimer = SetTimer("RunCheck", 10, 1);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	ArmyStorageZone = CreateDynamicCircle(-2569.5022, 450.7665, 5.0, -1, -1, -1);
 	WarZoneCube = CreateDynamicCube(1540.5142, -1188.6774, 1.9030, 1647.0428, -1296.2592, 45.9030, 0, 0, -1);
@@ -2071,6 +2072,7 @@ public OnGameModeExit()
 	SaveServer();
 	if (gstream) SvDeleteStream(gstream);
 	KillTimer(CheckCarHP);
+	KillTimer(RunTimer);
 	DisconnectMySQL();
 	return 1;
 }
@@ -2103,6 +2105,8 @@ public OnPlayerConnect(playerid)
         if (gstream) SvAttachListenerToStream(gstream, playerid);
         SvAddKey(playerid, 0x58);
     }
+
+	PI[playerid][pRun] = 120.0;
 
     SetPlayerColor(playerid, 0xB5BBBA00);
 	//
@@ -3816,7 +3820,6 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	mine_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 	nosov_OnPlayerKeyStateChange(playerid, newkeys);
 	kv_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
-	fly_OnPlayerKeyStateChange(playerid, newkeys);
 
 	if(PRESSED(KEY_WALK)) 
 	{
@@ -4367,8 +4370,6 @@ callback: NoRoof(playerid)
 callback: anim2(playerid) return ApplyAnimation(playerid, "ped", "getup", 4.0, 0, 1, 0, 0, 0,0);
 public OnPlayerUpdate(playerid) 
 {
-	fly_OnPlayerUpdate(playerid);
-
     SetPlayerColor(playerid, (PI[playerid][pMaskWorn] != 0) ? 0x33333300 : PLAYER_COLOR_TEAM[PI[playerid][pMember]]);
 
     if (PlayerToPoint(4.0, playerid, 1469.9095,2050.7461,12.5316) && GetPVarInt(playerid, "HintHutton") == 0)
@@ -8949,13 +8950,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(PI[playerid][pAdminWatherDriver] == 1) 
 						{
 			        	    PI[playerid][pAdminWatherDriver] = 0;
-							TogglePlayerDriveOnWater(playerid, false);
+							//TogglePlayerDriveOnWater(playerid, false);
 							SCM(playerid, COLOR_HINT, !"[AdminSettings]: {FFFFFF}Вы отключили езду по воде");
 						}
 						else
 						{
 			        	    PI[playerid][pAdminWatherDriver] = 1;
-							TogglePlayerDriveOnWater(playerid, true);
+							//TogglePlayerDriveOnWater(playerid, true);
 							SCM(playerid, COLOR_HINT, !"[AdminSettings]: {FFFFFF}Вы включили езду по воде");
 						}
 					}
@@ -8964,13 +8965,13 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(PI[playerid][pAdminNoReload] == 1) 
 						{
 			        	    PI[playerid][pAdminNoReload] = 0;
-							SetPlayerNoReload(playerid, false);
+							//SetPlayerNoReload(playerid, false);
 							SCM(playerid, COLOR_HINT, !"[AdminSettings]: {FFFFFF}Вы отключили стрельбу без перезарядки");
 						}
 						else
 						{
 			        	    PI[playerid][pAdminNoReload] = 1;
-							SetPlayerNoReload(playerid, true);
+							//SetPlayerNoReload(playerid, true);
 							SCM(playerid, COLOR_HINT, !"[AdminSettings]: {FFFFFF}Вы включили стрельбу без перезарядки");
 						}
 					}
@@ -11496,8 +11497,6 @@ callback: LoadPlayerData(playerid)
 			CheckGangWar(playerid);
 			for(new g; g <= totalgz; g++) GangZoneShowForPlayer(playerid, g, GetGZFrac(g));
 		}
-
-		cef_emit_event(playerid, "cef:hud:run", CEFINT(100));
 
 		if(PI[playerid][pSkin] == 0) return PI[playerid][pSkin] = 23;
 
