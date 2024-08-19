@@ -158,7 +158,7 @@ stock capture_SecondTimer()
 
 		if(CommandKill[0] == CommadCount[1] || CommandKill[1] == CommadCount[0])
 		{
-			Round(4, "завершение битвы");
+			Round(4, "завершение раунда");
 		}
 	}
 	if(GangWarStatus == 4) // конец раунда (1)
@@ -183,7 +183,7 @@ stock capture_SecondTimer()
 
 		if(CommandKill[0] >= CommadCount[1] || CommandKill[1] >= CommadCount[0])
 		{
-			Round(7, "завершение битвы");
+			Round(7, "завершение раунда");
 		}
 	}
 	if(GangWarStatus == 7) // конец раунда (2)
@@ -208,7 +208,7 @@ stock capture_SecondTimer()
 
 		if(CommandKill[0] >= CommadCount[1] || CommandKill[1] >= CommadCount[0])
 		{
-			Round(10, "завершение битвы");
+			Round(10, "завершение раунда");
 		}	
 	}
 	if(GangWarStatus == 10) // конец раунда (3)
@@ -233,7 +233,7 @@ stock capture_SecondTimer()
 
 		if(CommandKill[0] >= CommadCount[1] || CommandKill[1] >= CommadCount[0])
 		{
-			Round(13, "завершение битвы");
+			Round(13, "завершение раунда");
 		}			
 	}
 	if(GangWarStatus == 13) // конец раунда (4)
@@ -258,7 +258,7 @@ stock capture_SecondTimer()
 
 		if(CommandKill[0] >= CommadCount[1] || CommandKill[1] >= CommadCount[0])
 		{
-			Round(16, "завершение битвы");
+			Round(16, "завершение раунда");
 		}	
 	}
 	if(GangWarStatus == 16) // конец раунда (5)
@@ -283,7 +283,7 @@ stock capture_SecondTimer()
 
 		if(CommandKill[0] >= CommadCount[1] || CommandKill[1] >= CommadCount[0])
 		{
-			Round(19, "завершение битвы");
+			Round(19, "завершение раунда");
 		}	
 	}
 	if(GangWarStatus == 19) // конец раунда (6)
@@ -308,7 +308,7 @@ stock capture_SecondTimer()
 
 		if(CommandKill[0] >= CommadCount[1] || CommandKill[1] >= CommadCount[0])
 		{
-			Round(22, "завершение битвы");
+			Round(22, "завершение раунда");
 		}	
 	}
 	if(GangWarStatus == 22) // конец раунда (7)
@@ -333,7 +333,7 @@ stock capture_SecondTimer()
 
 		if(CommandKill[0] >= CommadCount[1] || CommandKill[1] >= CommadCount[0])
 		{
-			Round(25, "завершение битвы");
+			Round(25, "завершение раунда");
 		}
 	}
 	if(GangWarStatus == 25) // конец раунда (8)
@@ -972,7 +972,7 @@ stock CaptureStart(gz, playerid)
 
 	GangWarStatus = 1;
 	//
-	WarTime = 60;
+	WarTime = 600;
 	WarZone = gz;
 	//
 	CommandKill[0]= 0;
@@ -1039,7 +1039,7 @@ cmd:capture(playerid)
 			cef_emit_event(i, "cef:capture:gang:name", CEFINT(2), CEFSTR(Fraction_Name[Command[1]]));
 			cef_emit_event(i, "cef:capture:gang:score", CEFINT(1), CEFINT(0));
 			cef_emit_event(i, "cef:capture:gang:score", CEFINT(2), CEFINT(0));
-			cef_emit_event(i, "cef:capture:start", CEFSTR("подготовка к битве"), CEFINT(60));
+			cef_emit_event(i, "cef:capture:start", CEFSTR("подготовка к битве"), CEFINT(600));
 
 			GangZoneFlashForPlayer(i, gz, 0xFF000055);	
 		}
