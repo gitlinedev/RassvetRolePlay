@@ -14,7 +14,7 @@ CMD:setrang(playerid, params[])
 	if(PI[playerid][pMember] <= 0) return 0;
     if(PI[playerid][pRang] < 9) return SCM(playerid, COLOR_GREY, !"Данная команда доступна только лидерам и заместителям");
 
-    if(sscanf(params,"rs[3]",  params[0], params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setrang [ID игрока] [+/-]");
+    if(sscanf(params,"us[3]",  params[0], params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setrang [ID игрока] [+/-]");
 
     if(PI[params[0]][pRankUPTime] > gettime()) return SendClientMessage(playerid, COLOR_GREY, !"Понижать/повышать можно раз в 24 часа");
     if(PI[params[0]][pRang] == 10) return SCM(playerid, COLOR_GREY, !"Вы не можете изменять ранг лидеру");
@@ -29,6 +29,9 @@ CMD:setrang(playerid, params[])
     if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не найден");
 
     new oldrang = PI[params[0]][pRang];
+
+	PI[params[0]][pRankUPTime] = gettime()+86400;
+	UpdatePlayerDataInt(params[0], "RankUPTime", gettime()+86400);
 
     if(params[1] == 43) // повысить 
     {
@@ -47,8 +50,6 @@ CMD:setrang(playerid, params[])
 		getName(params[0]), params[0], NameRang(params[0]), PI[params[0]][pRang]);
 
 	UpdatePlayerDataInt(params[0], "rank", PI[params[0]][pRang]);
-	PI[params[0]][pRankUPTime] = gettime()+86400;
-	UpdatePlayerDataInt(params[0], "RankUPTime", gettime()+86400);
 	SavePlayerData(params[0]);
 	return 1;
 }

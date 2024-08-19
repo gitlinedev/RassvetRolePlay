@@ -33,6 +33,18 @@ CMD:arrest(playerid, params[])
         format(pay, sizeof(pay), "+%dР", reward);
         SendPlayerRadarNotify(playerid, 99, "green", "Премия за арест преступника", pay, 5);
 
+        if(FollowBy[targetid] != INVALID_PLAYER_ID) 
+        {
+            SetPVarInt(playerid, "TempFollowBy", -1);
+            FollowBy[targetid] = INVALID_PLAYER_ID;
+            KillTimer(TimerForPlayer[targetid]);
+            TimerForPlayer[targetid] = INVALID_PLAYER_ID;
+            ClearAnimations(playerid);
+            TogglePlayerControllable(targetid, 1);
+            SCMf(playerid, COLOR_GREY, "Вы больше не контролируете %s", PI[targetid][pName]);
+            return SCMf(targetid, COLOR_GREY, "%s %s перестал Вас контролировать", rang_police[PI[playerid][pRang]-1][frName], PI[playerid][pName]);
+        }
+
         HidePlayerSpeedometer(targetid);
     } 
     else return SCM(playerid, COLOR_GREY, !"Нужно находиться возле здания Полиции");
@@ -125,12 +137,12 @@ CMD:clear(playerid,params[])
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
     if(PI[params[0]][pWanted] == 0) return SCM(playerid, COLOR_GREY, !"У игрока нет розыска");
-	if(!PlayerToPoint(3.0, playerid, 1456.4865,1627.6499,697.1956)) return SCM(playerid, COLOR_GREY, !"Чтобы снять розыск игрока Вы и игрока должны находится в ДЧ");
-	if(!PlayerToPoint(3.0, params[0], 1456.4865,1627.6499,697.1956)) return SCM(playerid, COLOR_GREY, !"Чтобы снять розыск игрока Вы и игрока должны находится в ДЧ");
+	if(!PlayerToPoint(30.0, playerid, 127.5578,1863.0262,-31.9775)) return SCM(playerid, COLOR_GREY, !"Чтобы снять розыск игрока Вы и игрока должны находится в ДЧ");
+	if(!PlayerToPoint(30.0, params[0], 127.5578,1863.0262,-31.9775)) return SCM(playerid, COLOR_GREY, !"Чтобы снять розыск игрока Вы и игрока должны находится в ДЧ");
 	PI[params[0]][pWanted] = 0;
 	SetPlayerWantedLevel(params[0],PI[params[0]][pWanted]);
 	SendFractionMessagef(PI[playerid][pMember], COLOR_YELLOW, "%s закрыл уголовное дело %s",getName(playerid),getName(params[0]));
-	return SCMf(params[0],0x0099ccFF, "%s закрыл ваше уголовное дело",getName(playerid));
+	return SCMf(params[0], 0x0099ccFF, "%s закрыл ваше уголовное дело",getName(playerid));
 }
 CMD:cuff(playerid,params[]) 
 {
@@ -286,16 +298,16 @@ CMD:tome(playerid, params[])
         else if(IsPlayerInAnyVehicle(id)) return SCM(playerid, COLOR_GREY, !"Вы не можете потащить за собой когда игрок в машине");
         new Float: X, Float: Y, Float: Z; GetPlayerPos(id, X, Y, Z);
         if(!IsPlayerInRangeOfPoint(playerid, 1.5, X, Y, Z)) return SCM(playerid, COLOR_GREY, !"Игрок далеко от вас");
-        else if(FollowBy[id] != MAX_PLAYERS) 
+        else if(FollowBy[id] != INVALID_PLAYER_ID) 
         {
             SetPVarInt(playerid, "TempFollowBy", -1);
-            FollowBy[id] = MAX_PLAYERS;
+            FollowBy[id] = INVALID_PLAYER_ID;
             KillTimer(TimerForPlayer[id]);
-            TimerForPlayer[id] = MAX_PLAYERS;
+            TimerForPlayer[id] = INVALID_PLAYER_ID;
             ClearAnimations(playerid);
             TogglePlayerControllable(id, 1);
             SCMf(playerid, COLOR_GREY, "Вы больше не контролируете %s", PI[id][pName]);
-            return SCMf(id, COLOR_GREY, "%s %s перестал Вас контролировать", rang_police[PI[playerid][pRang]-1][frName], PI[id][pName]);
+            return SCMf(id, COLOR_GREY, "%s %s перестал Вас контролировать", rang_police[PI[playerid][pRang]-1][frName], PI[playerid][pName]);
         }
         if(GetPVarInt(playerid, "TempFollowBy") != -1) return SCM(playerid, COLOR_GREY, !"Вы не можете сопровождать больше 2х игроков одновременно");
         FollowBy[id] = playerid;
@@ -311,8 +323,8 @@ callback: FollowToPlayer(playerid)
     if(!IsPlayerConnected(FollowBy[playerid]))
     {
         KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
-        FollowBy[playerid] = MAX_PLAYERS;
+        TimerForPlayer[playerid] = INVALID_PLAYER_ID;
+        FollowBy[playerid] = INVALID_PLAYER_ID;
         TogglePlayerControllable(playerid, 1);
         ClearAnimations(playerid);
         AnimShot[playerid] = false;
@@ -323,15 +335,15 @@ callback: FollowToPlayer(playerid)
 		SCMf(FollowBy[playerid], COLOR_GREY, "Вы больше не контролируете %s",PI[GetPVarInt(playerid, "TempFollowBy")][pName]);
         SetPVarInt(FollowBy[playerid], "TempFollowBy", -1);
         KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
+        TimerForPlayer[playerid] = INVALID_PLAYER_ID;
         AnimShot[playerid] = false;
-        FollowBy[playerid] = MAX_PLAYERS;
+        FollowBy[playerid] = INVALID_PLAYER_ID;
         return 1;
     }
     else if(FollowBy[playerid] == MAX_PLAYERS)
     {
         KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
+        TimerForPlayer[playerid] = INVALID_PLAYER_ID;
         AnimShot[playerid] = false;
         TogglePlayerControllable(playerid, 1);
         ClearAnimations(playerid);
@@ -342,9 +354,9 @@ callback: FollowToPlayer(playerid)
 		SCMf(FollowBy[playerid], COLOR_GREY, "Вы больше не контролируете %s",PI[GetPVarInt(playerid, "TempFollowBy")][pName]);
         SetPVarInt(FollowBy[playerid], "TempFollowBy", -1);
         KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
+        TimerForPlayer[playerid] = INVALID_PLAYER_ID;
         AnimShot[playerid] = false;
-        FollowBy[playerid] = MAX_PLAYERS;
+        FollowBy[playerid] = INVALID_PLAYER_ID;
         return 1;
     }
     else if(GetPlayerVirtualWorld(FollowBy[playerid]) != GetPlayerVirtualWorld(playerid) || GetPlayerInterior(FollowBy[playerid]) != GetPlayerInterior(playerid))
@@ -373,8 +385,8 @@ callback: FollowToPlayer(playerid)
         TogglePlayerControllable(playerid, 1);
         ClearAnimations(playerid);
         KillTimer(TimerForPlayer[playerid]);
-        TimerForPlayer[playerid] = MAX_PLAYERS;
-        FollowBy[playerid] = MAX_PLAYERS;
+        TimerForPlayer[playerid] = INVALID_PLAYER_ID;
+        FollowBy[playerid] = INVALID_PLAYER_ID;
         return 1;
     }
     else

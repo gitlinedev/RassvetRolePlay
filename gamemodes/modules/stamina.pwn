@@ -6,6 +6,7 @@ callback: RunCheck()
     new al[32], an[32];
     for(new i = 0; i < MAX_PLAYERS; i++)
     {
+        if(PI[i][pAFK] >= 1) continue;
         if(!IsPlayerConnected(i)) continue;
 
         cef_emit_event(i, "cef:hud:run", CEFINT(floatround(PI[i][pRun], floatround_round)));

@@ -253,13 +253,15 @@ CMD:gethere(playerid,params[])
     if(sscanf(params, "u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /gethere [ID игрока]");
     if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
     if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Вы не можете телепортировать себя");
-	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	if(PI[params[0]][pOnCapture] == 1 && GangWarStatus >= 2) return SCM(playerid, COLOR_GREY, !"Игрок участвует в захватае за терииторию");
+
     new Float:x, Float:y, Float:z;
     DeletePVar(params[0], "ac_fly");
     GetPlayerPos(playerid,x,y,z);
     SetPlayerPosAC(params[0],x+1,y,z+1.0);
-    SetPlayerInterior(params[0],GetPlayerInterior(playerid));
-    SetPlayerVirtualWorld(params[0],GetPlayerVirtualWorld(playerid));
+    SetPlayerInterior(params[0], GetPlayerInterior(playerid));
+    SetPlayerVirtualWorld(params[0], GetPlayerVirtualWorld(playerid));
 	HidePlayerSpeedometer(params[0]);
 
 	new senderName[MAX_PLAYER_NAME + 20];
@@ -278,6 +280,8 @@ CMD:goto(playerid, params[])
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	if(GetPVarInt(params[0], "SpecBool") == 1) return SCM(playerid, COLOR_GREY, !"Игрок/Игровой мастер находится в режиме наблюдения");
+	if(PI[params[0]][pOnCapture] == 1 && GangWarStatus >= 2) return SCM(playerid, COLOR_GREY, !"Игрок участвует в захватае за терииторию");
+
     new Float:x, Float:y, Float:z;
     GetPlayerPos(params[0],x,y,z);
     SetPlayerPosAC(playerid,x+1,y,z);
@@ -291,26 +295,32 @@ CMD:goto(playerid, params[])
     SendAdminsMessagef(COLOR_ADMINCHAT, "[%s] %s[%d] телепортировался к игроку %s[%d]", senderName, PI[playerid][pName], playerid, getName(params[0]), params[0]);
     return 1;
 }
-CMD:veh(playerid,params[]) 
+CMD:veh(playerid, params[]) 
 {
     if(CheckAccess(playerid, 2, 3)) return 1;
-    if(sscanf(params, "ddd",params[0], params[1], params[2])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /veh [ID машины] [цвет] [цвет]");
-    if(params[0] < 400 || params[0] > 611 && params[0]) return SCM(playerid, COLOR_GREY, !"Номер Транспортного средства не может быть ниже 400 или выше 611 !");
+    if(sscanf(params, "dddd", params[0], params[1], params[2], params[3])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /veh [ID игрока] [ID машины] [цвет] [цвет]");
+    if(params[1] < 400 || params[1] > 611 && params[0]) return SCM(playerid, COLOR_GREY, !"Номер Транспортного средства не может быть ниже 400 или выше 611 !");
 
-	if(params[0] == 432 || params[0] == 460 || params[0] == 476 || params[0] == 511 || 
-		params[0] == 512 || params[0] == 513 || params[0] == 519 || params[0] == 520 || params[0] == 553 ||
-		params[0] == 577 || params[0] == 592 || params[0] == 593) return SCM(playerid, COLOR_GREY, !"Этот транспорт запрещен разработчиками сервера");
+	if(params[0] == INVALID_PLAYER_ID || !IsPlayerLogged{params[0]} || !IsPlayerConnected(params[0])) 
+		return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
+	
+	if(params[1] == 432 || params[1] == 460 || params[1] == 476 || params[1] == 511 || 
+		params[1] == 512 || params[1] == 513 || params[1] == 519 || params[1] == 520 || params[1] == 553 ||
+		params[1] == 577 || params[1] == 592 || params[1] == 593) return SCM(playerid, COLOR_GREY, !"Этот транспорт запрещен разработчиками сервера");
 
-    new Float:pos[3]; GetPlayerPos(playerid,pos[0],pos[1],pos[2]);
-    new vehc = CreateVehicle(params[0],pos[0],pos[1],pos[2],0,params[1],params[2],-1);
+    new Float:pos[3]; GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+    new vehc = CreateVehicle(params[1], pos[0], pos[1], pos[2], 0, params[1], params[2], -1);
+
     SetVehicleVirtualWorld(vehc, GetPlayerVirtualWorld(playerid));
-	PutPlayerInVehicle(playerid, vehc, 0);
+	PutPlayerInVehicle(params[0], vehc, 0);
+
     ClearCarData(vehc);
     CarInfo[vehc][cFuel] = 50;
     CarInfo[vehc][cCreate] = 1;
 	new vehicadm = GetVehicleModel(vehc);
 	SetVehicleNumberPlate(vehc, "ADMIN");
-    SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] создал %s[%d] (id: %d, цвет: %d, %d)", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid, VehicleNames[vehicadm-400], vehc, params[0], params[1], params[2]);
+    SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] создал %s[%d] (id: %d, цвет: %d, %d)",\
+		AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName],playerid, VehicleNames[vehicadm-400], vehc, params[1], params[2], params[3]);
 	return 1;
 }
 CMD:dveh(playerid) 
@@ -437,6 +447,9 @@ CMD:gun(playerid,params[])
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	else if(params[1] > 47 || params[1] < 1) return SCM(playerid, COLOR_GREY, !"Такого оружия не существует");
     else if(params[2] > 100000 || params[2] < 1) return SCM(playerid, COLOR_GREY, !"Используй: /gun [ID игрока] [оружие] [патроны > 1]");
+
+	if(PI[params[0]][pOnCapture] == 1 && GangWarStatus >= 2) return SCM(playerid, COLOR_GREY, !"Игрок участвует в захватае за терииторию");
+
 	if(params[1] == 35 || params[1] == 36 || params[1] == 37 || params[1] == 38 || params[1] == 39 || params[1] == 40) return SCM(playerid, COLOR_GREY, !"Это оружие запрещен разработчиками сервера");
     GiveWeapon(params[0], params[1], params[2]);
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] выдал %s[%d] %s[%d] (%d пт)", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]), params[0], weapon_names[params[1]], params[1], params[2]);
@@ -511,8 +524,8 @@ CMD:a(playerid,params[])
 {
     if(CheckAccess(playerid, 1, 1)) return 1;
 	if(sscanf(params,"s[90]",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /a [текст]");
-
-	SendAdminsMessagef(0x99CC00FF, "%s %s[%d]: %s", PI[playerid][pAdmin] ? "[A]" : "[M]", PI[playerid][pName], playerid, params[0]);
+	// old color - 0x99CC00FF
+	SendAdminsMessagef(0x4F83C6FF, "%s %s[%d]: %s", PI[playerid][pAdmin] ? "[Game Master]" : "[Moder]", PI[playerid][pName], playerid, params[0]);
     return 1;
 }
 CMD:kick(playerid,params[]) 
@@ -718,7 +731,7 @@ CMD:mpgun(playerid,params[])
 	GetPlayerPos(playerid, x,y,z);
    	for(new i = 0; i < MAX_PLAYERS; i++) 
 	{
-		if(i == playerid) continue;
+		//if(i == playerid) continue;
 		if(!IsPlayerConnected(i)) continue;
 		if(PlayerToPoint(100.0, i, x,y,z)) 
 		{
@@ -819,12 +832,6 @@ CMD:auninvite(playerid, params[])
 	('%d','%d','%s','Увольнение игровым мастером','%d','%d','%d','%d')",\
 		PI[params[0]][pID], PI[params[0]][pMember], getName(params[0]), PI[params[0]][pRang], day, month, year);
 
-	if(PI[params[0]][pOnCapture] == 1)
-	{
-		AutoKickCapture(params[0]);
-		CheckCount(params[0]);
-	}
-
 	SCMf(params[0], COLOR_YELLOW, "Игровой мастер уволил Вас из организации %s (%d ранг)",
 		Fraction_Name[PI[params[0]][pMember]], PI[params[0]][pRang]);
 
@@ -851,6 +858,12 @@ CMD:auninvite(playerid, params[])
 	GangZoneStopFlashForPlayer(params[0], WarZone);
 
 	SavePlayerData(params[0]);
+
+	if(PI[params[0]][pOnCapture] == 1)
+	{
+		AutoKickCapture(params[0]);
+		CheckCount(params[0]);
+	}
 
 	ClearGroup(params[0]);
 	return SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] уволил из организцаии игрока %s[%d]", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid,getName(params[0]), params[0]);
@@ -1189,6 +1202,12 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 				SetPlayerTeam(id, PI[id][pMember]);
 				SavePlayerData(id);
 
+				if(PI[id][pOnCapture] == 1)
+				{
+					AutoKickCapture(id);
+					CheckCount(id);
+				}
+
 				DeletePVar(playerid,"setMember");
 			}
 		}
@@ -1229,6 +1248,11 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
 
 				SavePlayerData(id);
 
+				if(PI[id][pOnCapture] == 1)
+				{
+					AutoKickCapture(id);
+					CheckCount(id);
+				}
 				DeletePVar(playerid,"setMember");
 			}
 		}
@@ -2179,7 +2203,7 @@ CMD:stopcapture(playerid,params[])
 	if(sscanf(params,"s[35]",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /stopcapture [причина]");
 	foreach(new i:Player)  
 	{
-		if(5 <= PI[i][pMember] || PI[i][pMember] >= 7) 
+		if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1]) 
 		{
 			GangZoneHideForPlayer(i, CaptZone);
 			GangZoneStopFlashForPlayer(i, WarZone);
@@ -2394,7 +2418,7 @@ callback: CheckPlayerOffline(playerid)
     if(rows) 
 	{
         new Name[24], LoginIP[16], RegIP[16], Referal[24], Email[75], RegisterDate[35], LoginDate[35];
-		new Donate, ID, JailTime, DemorganTime, MuteTime, VMuteTime, AdminLevel, Level, Skin, SkinMember;
+		new Donate, ID, JailTime, DemorganTime, MuteTime, VMuteTime, AdminLevel, Level, Skin, SkinMember, Money;
         cache_get_field_content(0, "Name", Name, mysql);
 		cache_get_field_content(0, "Referal", Referal, mysql);
 		cache_get_field_content(0, "Email", Email, mysql);
@@ -2404,6 +2428,7 @@ callback: CheckPlayerOffline(playerid)
 		cache_get_field_content(0, "LoginDate", LoginDate, mysql);
 
 		cache_get_field_content(0, "Donate", temp), Donate = strval (temp);
+		cache_get_field_content(0, "Money", temp), Money = strval (temp);
 		cache_get_field_content(0, "id", temp), ID = strval (temp);
 		cache_get_field_content(0, "jailtime", temp), JailTime = strval (temp);
 		cache_get_field_content(0, "demorgan_time", temp), DemorganTime = strval (temp);
@@ -2416,25 +2441,26 @@ callback: CheckPlayerOffline(playerid)
 
 		if(AdminLevel == 8) return SCM(playerid, COLOR_GREY, !"Вы не можете просмотреть информацию об этом аккаунте");
 		ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Статистика игрока", "Ок", "", "\
-																				\t\t\t{FFFFF99}Donate-Points: %d (Account ID: %d)\n\n\
+																				\t\t\t{FFFF99}Donate-Points: %d (Account ID: %d)\n\n\
 																				{3366cc}Основная информация\n\
-																				{FFFFFF}Никнейм: \t\t{FFFF99}%s\n\
-																				{FFFFFF}Реферал: \t\t{FFFF99}%s\n\
-																				{FFFFFF}RegIP: \t\t\t{FFFF99}%s\n\
-																				{FFFFFF}LoginIP: \t\t{FFFF99}%s\n\
-																				{FFFFFF}Почта: \t\t\t{FFFF99}%s\n\n\
+																				{FFFFFF}Никнейм: \t\t\t{FFFF99}%s\n\
+																				{FFFFFF}Деньги: \t\t\t{FFFF99}%d\n\
+																				{FFFFFF}Реферал: \t\t\t{FFFF99}%s\n\
+																				{FFFFFF}RegIP: \t\t\t\t{FFFF99}%s\n\
+																				{FFFFFF}LoginIP: \t\t\t{FFFF99}%s\n\
+																				{FFFFFF}Почта: \t\t\t\t{FFFF99}%s\n\n\
 																				{3366cc}Остальная информация\n\
 																				{FFFFFF}Дата регистрации: \t\t{FFFF99}%s\n\
 																				{FFFFFF}Дата авторизации: \t\t{FFFF99}%s\n\
-																				{FFFFFF}DemorganTime: \t{FFFF99}%d sek\n\
-																				{FFFFFF}JailTime: \t\t{FFFF99}%d sek\n\
-																				{FFFFFF}MuteTime: \t\t{FFFF99}%d sek\n\
-																				{FFFFFF}VMuteTime: \t\t{FFFF99}%d sek\n\
-																				{FFFFFF}Уровень админ-прав: \t\t{FFFF99}%d lvl\n\
+																				{FFFFFF}DemorganTime: \t\t{FFFF99}%d сек\n\
+																				{FFFFFF}JailTime: \t\t\t{FFFF99}%d сек\n\
+																				{FFFFFF}MuteTime: \t\t\t{FFFF99}%d сек\n\
+																				{FFFFFF}VMuteTime: \t\t\t{FFFF99}%d сек\n\
+																				{FFFFFF}Уровень админ-прав: \t\t{FFFF99}%d уровень\n\
 																				{FFFFFF}Уровень: \t\t\t{FFFF99}%d\n\
-																				{FFFFFF}Скин: \t\t\t{FFFF99}%d\n\
-																				{FFFFFF}Skin Member: \t\t{FFFF99}%d", 
-																				Donate, ID, Name, Referal, RegIP, LoginIP, Email, RegisterDate, LoginDate,
+																				{FFFFFF}Скин: \t\t\t\t{FFFF99}%d\n\
+																				{FFFFFF}Скин организации: \t\t\t{FFFF99}%d", 
+																				Donate, ID, Name, Money, Referal, RegIP, LoginIP, Email, RegisterDate, LoginDate,
 																				DemorganTime, JailTime, MuteTime, VMuteTime, AdminLevel, Level, Skin, SkinMember);
 
 		SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] просматривает информацию аккаунта %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid, Name);
@@ -2464,8 +2490,8 @@ CMD:sp(playerid,params[])
 
 	SendAdminsMessagef(COLOR_GREY, "[%s] %s[%d] начал следить за %s[%d]", senderName, getName(playerid), playerid, getName(params[0]), params[0]);
  	SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Покинуть слежку: {FFFF33}клавиша SHIFT или команда /sp");
-	SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Обновить слежку: {FFFF33}клавиша CTRL");
-	SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Статистика игрока: {FFFF33}клавиша CAPSLOCK");
+	/*SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Обновить слежку: {FFFF33}клавиша CTRL");
+	SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Статистика игрока: {FFFF33}клавиша CAPSLOCK");*/
 
 	new inter, world, Float:X, Float:Y, Float:Z, Float:FA;
 	SetPVarInt(playerid,"specid", params[0]);
@@ -2541,8 +2567,33 @@ CMD:az(playerid)
 {
 	if(CheckAccess(playerid, 1)) return 1;
 	SetPlayerPos(playerid, 2095.6086,1560.5791,-46.5100);
-	SetPlayerVirtualWorld(playerid,0);
-	SetPlayerInterior(playerid,0);
+	SetPlayerVirtualWorld(playerid, 0);
+	SetPlayerInterior(playerid, 0);
 	SetPlayerHealthAC(playerid, 200);
 	return 1;
+}
+CMD:capture_stat(playerid)
+{
+	if(CheckAccess(playerid, 5)) return 1;
+
+	SCMf(playerid, -1, "pOnCapture - %d", PI[playerid][pOnCapture]);
+
+	new string[1048] = "", count = 0;
+
+    for (new i = 0; i < MAX_PLAYERS; i++)
+    {
+        if (!IsPlayerConnected(i)) continue;
+		if (GangWarInfo[i][gMember] == -1) continue;
+
+        if (GangWarInfo[i][gPlayerID] != INVALID_PLAYER_ID) 
+        {
+            ShowTeam[playerid][count] = GangWarInfo[i][gPlayerID];
+            count++;
+            f(string, sizeof(string), "%s{FFFFFF}(Count %d) | {FFFF99}(%s NAME) - (%d ORG) - (%d ID){FFFFFF}\n", 
+                   string, count, 
+                   getName(GangWarInfo[i][gPlayerID]), GangWarInfo[i][gMember], GangWarInfo[i][gPlayerID]
+			);
+        }
+    }
+	return ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, "{ee3366}Список участников захвата", string, "Ок", "");
 }

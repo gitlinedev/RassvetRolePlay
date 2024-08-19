@@ -80,6 +80,7 @@ new XDON = 2;
 #define ENERGO 		       "RassvetEnegrgy"
 #define GAMEMODENAME 	   "Main"
 #define VIP_TAG			   "R+"
+#define MAXIMUM_ACCESS	   "Vladimir_Gitlinov"
 //======================[ Конфигурация ТС ]======================//
 #define GARAGE_INT_MERIYA 1
 #define GARAGE_INT_MVD 2
@@ -1085,7 +1086,7 @@ enum P_DATA
 	Float:pArmour,
 	data_MED,
 	data_MEDNUM,
-	data_SPAWN,
+	pSpawn,
 	pHospital,
  	pDemorgan,
  	pDemorganTime,
@@ -1127,9 +1128,9 @@ enum P_DATA
 	bool:data_ANIM,
 	data_WALK_TIMER,
 	data_WALK_STYLE,
-	data_3SECOND,
+	pThreeSecondTimer,
 	data_TESTER,
-	data_MINUTE,
+	pMinuteTimer,
 	data_PLAYER_TIMER_ID,
 	LoadCefInformation,
 	pAFK,
@@ -1158,7 +1159,7 @@ enum P_DATA
 	data_PUTPATR,
 	data_PUTMET,
 	pVIP,
-	data_TIME,
+	pTime,
 	pVkontakteID,
 	pMilitaryID,
 	pMedCard,
@@ -1762,8 +1763,37 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	}
 	if(playerid != INVALID_PLAYER_ID) 
 	{
-		PlayerPlaySound(playerid, 6401, 0.0, 0.0, 10.0);
-		
+		//PlayerPlaySound(playerid, 6401, 0.0, 0.0, 10.0);
+		/*if(IsPlayerInRangeOfPoint(damagedid, 100.0, 1602.1008,-1233.4459,18.9381))
+		{
+			if(GangWarStatus == 1)
+			{
+				SCMf(playerid, COLOR_GREY, "Урон заблокирован: игрок %s[%d] находится в зоне захвата территории", PI[damagedid][pName],damagedid);
+				SetPlayerHealthAC(damagedid, Health);
+			}
+			else if(PI[playerid][pOnCapture] == 1 && GangWarStatus > 1)
+			{
+				SCMf(playerid, COLOR_GREY, "Урон заблокирован: игрок %s[%d] находится в зоне захвата территории", PI[damagedid][pName],damagedid);
+				SetPlayerHealthAC(damagedid, Health);
+			}
+			return 0;
+		}
+		if(IsPlayerInRangeOfPoint(playerid, 100.0, 1602.1008,-1233.4459,18.9381))
+		{
+			if(GangWarStatus == 1)
+			{
+				SCM(playerid, COLOR_GREY, !"Урон заблокирован: вы находитесь в зоне захвата территории");
+				SetPlayerHealthAC(damagedid, Health);
+				SetPlayerArmedWeapon(playerid, 0);
+			}
+			else if(PI[playerid][pOnCapture] == 1 && GangWarStatus > 1)
+			{
+				SCM(playerid, COLOR_GREY, !"Урон заблокирован: вы находитесь в зоне захвата территории");
+				SetPlayerHealthAC(damagedid, Health);
+				SetPlayerArmedWeapon(playerid, 0);
+			}
+			return 0;
+		}*/
 		if(PI[playerid][pOnMP] == 0 && MPTeamKill == false) 
 		{
 			if(PI[playerid][pMember] == 0) return 1;
@@ -1933,7 +1963,6 @@ stock ConnectMySQL()
 	mysql_function_query(mysql, "SELECT * FROM `gangzone`",true, "LoadGZ", "");
 	mysql_function_query(mysql, "SELECT * FROM `vk_bot`",true, "LoadVKInfo", "");
 	//
-    printf("MySQL загрузился за %i ms", GetTickCount() - currenttime);
     SendRconCommand("ackslimit 10000");
 	SendRconCommand("messageholelimit 10000");
 
@@ -1941,6 +1970,10 @@ stock ConnectMySQL()
 	EnableAntiCheat(3, 0);
 	EnableAntiCheat(6, 0);
 	EnableAntiCheat(12, 0);
+	EnableAntiCheat(2, 0);
+	EnableAntiCheat(52, 0);
+
+	printf("MySQL загрузился за %i ms", GetTickCount() - currenttime);
     return true;
 }
 public OnGameModeInit()
@@ -2564,11 +2597,13 @@ public OnPlayerExitVehicle(playerid, vehicleid)
 public OnPlayerStateChange(playerid, newstate, oldstate) 
 {
     new carid = GetPlayerVehicleID(playerid);
+
 	if(newstate == PLAYER_STATE_DRIVER) 
 	{
 		if(!IsAPlane(carid) && !IsAVelik(carid)) ShowPlayerSpeedometer(playerid); 
 	}
 	if(newstate == PLAYER_STATE_ONFOOT) if(!IsAPlane(carid) && !IsAVelik(carid)) HidePlayerSpeedometer(playerid);
+
     if(GetPlayerState(playerid) == PLAYER_STATE_DRIVER) 
 	{
         if(PI[playerid][pDriveLicense] == 0 && PI[playerid][data_ASH_TEST] == 0) 
@@ -3913,7 +3948,8 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	  		ShowTargetMenu(playerid);
 		}
 	}
-	if(newkeys == 1 || PRESSED(1)) {
+	if(newkeys == 1 || PRESSED(1)) 
+	{
         new Weap[2];
         GetPlayerWeaponData(playerid, 4, Weap[0], Weap[1]);
         SetPlayerArmedWeapon(playerid, Weap[0]);
@@ -3924,10 +3960,14 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		SetPVarInt(playerid,"kdpickupbank",gettime() + 3);
 		ShowPlayerDialogf(playerid, 8999, DIALOG_STYLE_LIST, !"{ee3366}Банкомат", !"Далее", !"Закрыть", "1. Банковская карта {FFFF99}(№ %d)\n2. Оплата имущества\n3. Медицинские услуги", PI[playerid][pID]);
 	}
-    if(!pCBugging[playerid] && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT || !pCBugging[playerid] && GetPlayerState(playerid) == 1) {
-		if(PRESSED(KEY_FIRE)) {
-			switch(GetPlayerWeapon(playerid)) {
-				case WEAPON_DEAGLE, WEAPON_SHOTGUN, WEAPON_SNIPER: {
+    if(!pCBugging[playerid] && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT || !pCBugging[playerid] && GetPlayerState(playerid) == 1) 
+	{
+		if(PRESSED(KEY_FIRE)) 
+		{
+			switch(GetPlayerWeapon(playerid)) 
+			{
+				case WEAPON_DEAGLE, WEAPON_SHOTGUN, WEAPON_SNIPER: 
+				{
 					ptsLastFiredWeapon[playerid] = gettime();
 				}
 			}
@@ -6137,20 +6177,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						{FFFF99}Подсказка: у Вас есть %d / 3 шт аптечек.\n\n\
 						{3366cc}Вы можете взять не более 6 шт аптечек в час", PI[playerid][pHealPack]);
    			    }
-   			    case 1: 
-				{
-					ShowPlayerDialog(playerid, 5980, DIALOG_STYLE_TABLIST_HEADERS, !"{ee3366}Оружейный склад", "\
-					Оружие\tНужный ранг\tПатроны\n\
-					{FFFFFF}Полицейская дубинка\t\t1+\t\t1\n\
-					Полицейский жезл\t\t1+\t\t1\n\
-					Бронежилет\t2+\t\t-\n\
-					Балончик с краской\t\t2+\t\t500\n\
-					ПЛ-15\t\t2+\t\t70\n\
-					Тайзер\t\t7+\t\t70\n\
-					АКС-74У\t\t3+\t\t180\n\
-					АК-47\t\t5+\t\t180\n\
-					Снайперская винтовка\t5+\t\t20", !"Взять", !"Закрыть");
-   			    }
+   			    case 1: ShowPoliceStorage(playerid);
    			}
 		}
 		case 5981: 
@@ -6162,7 +6189,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			PI[playerid][pHealPack] += strval(inputtext);
 			PI[playerid][pHealthPackKD] += strval(inputtext);
 			UpdatePlayerDataInt(playerid, "HEALPACKSKLAD", PI[playerid][pHealthPackKD]);
-			SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял %d аптечек со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid, strval(inputtext));
+			SendFractionMessagef(PI[playerid][pMember], 0x99ccccFF, "[R] %s %s[%d] взял %d аптечек со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid, strval(inputtext));
 		}
 		case 5980: 
 		{
@@ -6207,19 +6234,19 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 6: 
 					{
-						if(PI[playerid][pRang] < 3) return SCM(playerid, COLOR_GREY,"АКС-74У доступен с 3 ранга");
+						if(PI[playerid][pRang] < 3) return SCM(playerid, COLOR_GREY, !"АКС-74У доступен с 3 ранга");
 						GiveWeapon(playerid, 29, 180);
 						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял АКС-74У со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
 					}
 					case 7: 
 					{
-						if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY,"АК-47 с 5 ранга");
+						if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY, !"АК-47 с 5 ранга");
 						GiveWeapon(playerid, 30, 180);
 						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял АК-47 со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
 					}
 					case 8: 
 					{
-						if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY,"Снайперская винтовка доступна с 5 ранга");
+						if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY, !"Снайперская винтовка доступна с 5 ранга");
 						GiveWeapon(playerid, 34, 20);
 						SendFractionMessagef(PI[playerid][pMember],0x99ccccFF, "[R] %s %s[%d] взял снайперскую винтовку со склада",rang_police[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid);
 					}
@@ -6234,7 +6261,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
    			    case 0:
    			    {
-                    if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY,"Бронежилет доступен со 2 ранга");
+                    if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"Бронежилет доступен со 2 ранга");
    			        SetPlayerArmourAC(playerid, 100);
    			    }
    			    case 1:
@@ -6247,22 +6274,22 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
    			    }
    			    case 3:
    			    {
-                    if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY,"ПЛ-15 доступен со 2 ранга");
+                    if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"ПЛ-15 доступен со 2 ранга");
    			        GiveWeapon(playerid, 24, 65);
    			    }
    			    case 4:
    			    {
-                    if(PI[playerid][pRang] < 3) return SCM(playerid, COLOR_GREY,"АКС-74У доступен с 3 ранга");
+                    if(PI[playerid][pRang] < 3) return SCM(playerid, COLOR_GREY, !"АКС-74У доступен с 3 ранга");
    			        GiveWeapon(playerid, 29, 90);
    			    }
    			    case 5:
    			    {
-                    if(PI[playerid][pRang] < 4) return SCM(playerid, COLOR_GREY,"АК-47 доступен с 4 ранга");
+                    if(PI[playerid][pRang] < 4) return SCM(playerid, COLOR_GREY, !"АК-47 доступен с 4 ранга");
    			        GiveWeapon(playerid, 30, 90);
    			    }
    			    case 6:
    			    {
-                    if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY,"Снайперская винтовка доступна с 5 ранга");
+                    if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY, !"Снайперская винтовка доступна с 5 ранга");
    			        GiveWeapon(playerid, 34, 20);
    			    }
    			}
@@ -6273,17 +6300,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
    			{
    			    case 0:
    			    {
-                    if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY,"ПЛ-15 доступен с 3 ранга");
+                    if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"ПЛ-15 доступен с 3 ранга");
    			        GiveWeapon(playerid, 24, 45);
    			    }
    			    case 1:
    			    {
-   			        if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY,"Тайзер доступен с 2 ранга");
+   			        if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"Тайзер доступен с 2 ранга");
    			        GiveWeapon(playerid, 23, 45);
    			    }
    			    case 2:
    			    {
-   			        if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY,"АКС-74У");
+   			        if(PI[playerid][pRang] < 2) return SCM(playerid, COLOR_GREY, !"АКС-74У");
    			        GiveWeapon(playerid, 29, 90);
    			    }
    			}
@@ -6295,17 +6322,17 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		case dialog_schoolclose: if(response || !response) return PI[playerid][pSchoolTestLvl] = 0;
 		case dialog_schooltest: {
   			if(!response) return 1;
-            if(response) return ShowPlayerDialog(playerid, dialog_schooltest1, DIALOG_STYLE_LIST, "{ee3366}Максимальная скорость в населенных пунктах", "1. 90 км час\n2. 60 км час\n3. 30 км час", "Выбрать", "");
+            if(response) return ShowPlayerDialog(playerid, dialog_schooltest1, DIALOG_STYLE_LIST, !"{ee3366}Максимальная скорость в населенных пунктах", !"1. 90 км час\n2. 60 км час\n3. 30 км час", "Выбрать", "");
 		}
 		case dialog_schooltest1: {
   			if(response || !response) {
 				switch(listitem) {
-		        	case 0: return ShowPlayerDialog(playerid, dialog_schooltest2, DIALOG_STYLE_LIST, "{ee3366}Когда разрешен обгон?", "1. Если обгоняемое ТС не мешает обзору и его скорость не больше 100 км час\n2. Если ТС не едем слишком медленно\n3. Если ТС не мешает проезду", "Выбрать", "");
+		        	case 0: return ShowPlayerDialog(playerid, dialog_schooltest2, DIALOG_STYLE_LIST, !"{ee3366}Когда разрешен обгон?", !"1. Если обгоняемое ТС не мешает обзору и его скорость не больше 100 км час\n2. Если ТС не едем слишком медленно\n3. Если ТС не мешает проезду", "Выбрать", "");
 	       			case 1: {
 	   					PI[playerid][pSchoolTestLvl] += 1;
-						return ShowPlayerDialog(playerid, dialog_schooltest2, DIALOG_STYLE_LIST, "{ee3366}Когда разрешен обгон?", "1. Если обгоняемое ТС не мешает обзору и его скорость не больше 100 км час\n2. Если ТС не едем слишком медленно\n3. Если ТС не мешает проезду", "Выбрать", "");
+						return ShowPlayerDialog(playerid, dialog_schooltest2, DIALOG_STYLE_LIST, !"{ee3366}Когда разрешен обгон?", !"1. Если обгоняемое ТС не мешает обзору и его скорость не больше 100 км час\n2. Если ТС не едем слишком медленно\n3. Если ТС не мешает проезду", "Выбрать", "");
 		       		}
-		        	case 2: return ShowPlayerDialog(playerid, dialog_schooltest2, DIALOG_STYLE_LIST, "{ee3366}Когда разрешен обгон?", "1. Если обгоняемое ТС не мешает обзору и его скорость не больше 100 км час\n2. Если ТС не едем слишком медленно\n3. Если ТС не мешает проезду", "Выбрать", "");
+		        	case 2: return ShowPlayerDialog(playerid, dialog_schooltest2, DIALOG_STYLE_LIST, !"{ee3366}Когда разрешен обгон?", !"1. Если обгоняемое ТС не мешает обзору и его скорость не больше 100 км час\n2. Если ТС не едем слишком медленно\n3. Если ТС не мешает проезду", "Выбрать", "");
 				}
 			}
 		}
@@ -6314,22 +6341,22 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	   			switch(listitem) {
 	        		case 0: {
 	        			PI[playerid][pSchoolTestLvl] += 1;
-						return ShowPlayerDialog(playerid, dialog_schooltest3, DIALOG_STYLE_LIST, "{ee3366}Действия при остановке Вас инспектором", "1. Уеду забыв, что это было\n2. Спрошу его удостоверение и дам свои права\n3. Спрячусь и сделаю вид, что я не был за рулем", "Выбрать", "");
+						return ShowPlayerDialog(playerid, dialog_schooltest3, DIALOG_STYLE_LIST, !"{ee3366}Действия при остановке Вас инспектором", !"1. Уеду забыв, что это было\n2. Спрошу его удостоверение и дам свои права\n3. Спрячусь и сделаю вид, что я не был за рулем", "Выбрать", "");
 	        		}
-	        		case 1: return ShowPlayerDialog(playerid, dialog_schooltest3, DIALOG_STYLE_LIST, "{ee3366}Действия при остановке Вас инспектором", "1. Уеду забыв, что это было\n2. Спрошу его удостоверение и дам свои права\n3. Спрячусь и сделаю вид, что я не был за рулем", "Выбрать", "");
-	        		case 2: return ShowPlayerDialog(playerid, dialog_schooltest3, DIALOG_STYLE_LIST, "{ee3366}Действия при остановке Вас инспектором", "1. Уеду забыв, что это было\n2. Спрошу его удостоверение и дам свои права\n3. Спрячусь и сделаю вид, что я не был за рулем", "Выбрать", "");
+	        		case 1: return ShowPlayerDialog(playerid, dialog_schooltest3, DIALOG_STYLE_LIST, !"{ee3366}Действия при остановке Вас инспектором", !"1. Уеду забыв, что это было\n2. Спрошу его удостоверение и дам свои права\n3. Спрячусь и сделаю вид, что я не был за рулем", "Выбрать", "");
+	        		case 2: return ShowPlayerDialog(playerid, dialog_schooltest3, DIALOG_STYLE_LIST, !"{ee3366}Действия при остановке Вас инспектором", !"1. Уеду забыв, что это было\n2. Спрошу его удостоверение и дам свои права\n3. Спрячусь и сделаю вид, что я не был за рулем", "Выбрать", "");
 				}
 	    	}
 		}
 		case dialog_schooltest3: {
 		    if(response || !response) {
 	   			switch(listitem) {
-	        		case 0: return ShowPlayerDialog(playerid, dialog_schooltest4, DIALOG_STYLE_LIST, "{ee3366}Разрешено ли водителю ехать будучи не трезвым", "1. Да\n2. Нет\n3.Нет правильного ответа", "Выбрать", "");
+	        		case 0: return ShowPlayerDialog(playerid, dialog_schooltest4, DIALOG_STYLE_LIST, !"{ee3366}Разрешено ли водителю ехать будучи не трезвым", !"1. Да\n2. Нет\n3.Нет правильного ответа", "Выбрать", "");
 				    case 1: {
 	    				PI[playerid][pSchoolTestLvl] += 1;
-						return ShowPlayerDialog(playerid, dialog_schooltest4, DIALOG_STYLE_LIST, "{ee3366}Разрешено ли водителю ехать будучи не трезвым", "1. Да\n2. Нет\n3.Нет правильного ответа", "Выбрать", "");
+						return ShowPlayerDialog(playerid, dialog_schooltest4, DIALOG_STYLE_LIST, !"{ee3366}Разрешено ли водителю ехать будучи не трезвым", !"1. Да\n2. Нет\n3.Нет правильного ответа", "Выбрать", "");
 	    			}
-	   	 			case 2: return ShowPlayerDialog(playerid, dialog_schooltest4, DIALOG_STYLE_LIST, "{ee3366}Разрешено ли водителю ехать будучи не трезвым", "1. Да\n2. Нет\n3.Нет правильного ответа", "Выбрать", "");
+	   	 			case 2: return ShowPlayerDialog(playerid, dialog_schooltest4, DIALOG_STYLE_LIST, !"{ee3366}Разрешено ли водителю ехать будучи не трезвым", !"1. Да\n2. Нет\n3.Нет правильного ответа", "Выбрать", "");
 				}
 			}
 		}
@@ -6498,11 +6525,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					case 5:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-						if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pMetall] > 40) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 40 кг металла");
-						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pMetall] > 80) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 80 кг металла");
-						if(strval(inputtext) > 80) return SCM(playerid, COLOR_GREY,"Нельзя взять за 1 раз больше 80 металла");
-						if(skinhead_wh[0] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно металла");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+						if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pMetall] > 40) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 40 кг металла");
+						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pMetall] > 80) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 80 кг металла");
+						if(strval(inputtext) > 80) return SCM(playerid, COLOR_GREY, !"Нельзя взять за 1 раз больше 80 металла");
+						if(skinhead_wh[0] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно металла");
 						PI[playerid][pMetall] += strval(inputtext);
 						skinhead_wh[0] -= strval(inputtext)+PI[playerid][pMetall];
 						SendFractionMessagef(PI[playerid][pMember],0x67ab00FF, "[R] %s %s[%d] взял %d металла со склада",rang_skinhead[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid,strval(inputtext));
@@ -6512,11 +6539,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 6:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-						if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pMetall] > 40) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 40 кг металла");
-						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pMetall] > 80) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 80 кг металла");
-						if(strval(inputtext) > 80) return SCM(playerid, COLOR_GREY,"Нельзя взять за 1 раз больше 80 металла");
-						if(gopota_wh[0] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно металла");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+						if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pMetall] > 40) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 40 кг металла");
+						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pMetall] > 80) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 80 кг металла");
+						if(strval(inputtext) > 80) return SCM(playerid, COLOR_GREY, !"Нельзя взять за 1 раз больше 80 металла");
+						if(gopota_wh[0] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно металла");
 						PI[playerid][pMetall] += strval(inputtext);
 						gopota_wh[0] -= strval(inputtext);
 						SendFractionMessagef(PI[playerid][pMember],0x67ab00FF, "[R] %s %s[%d] взял %d металла со склада",rang_gopota[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid,strval(inputtext));
@@ -6526,11 +6553,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 7:
 					{
-						if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-						if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pMetall] > 40) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 40 кг металла");
-						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pMetall] > 80) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 80 кг металла");
-						if(strval(inputtext) > 80) return SCM(playerid, COLOR_GREY,"Нельзя взять за 1 раз больше 80 металла");
-					    if(kavkaz_wh[0] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно металла");
+						if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+						if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pMetall] > 40) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 40 кг металла");
+						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pMetall] > 80) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 80 кг металла");
+						if(strval(inputtext) > 80) return SCM(playerid, COLOR_GREY, !"Нельзя взять за 1 раз больше 80 металла");
+					    if(kavkaz_wh[0] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно металла");
 						PI[playerid][pMetall] += strval(inputtext);
 						kavkaz_wh[0] -= strval(inputtext);
 						SendFractionMessagef(PI[playerid][pMember],0x67ab00FF, "[R] %s %s[%d] взял %d металла со склада", rang_kavkaz[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid,strval(inputtext));
@@ -6552,9 +6579,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					case 5:
 					{
-					    if(strval(inputtext)< 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(PI[playerid][pMetall] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"У Вас недостаточно металла");
-						if(strval(inputtext)+skinhead_wh[0] > 6000) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно места");
+					    if(strval(inputtext)< 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(PI[playerid][pMetall] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно металла");
+						if(strval(inputtext)+skinhead_wh[0] > 6000) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно места");
                         PI[playerid][pMetall] -= strval(inputtext);
                         PI[playerid][pProgressMetall] += strval(inputtext);
 						skinhead_wh[0] += strval(inputtext);
@@ -6565,9 +6592,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 6:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(PI[playerid][pMetall] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"У Вас недостаточно металла");
-						if(strval(inputtext)+gopota_wh[0] > 6000) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно места");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(PI[playerid][pMetall] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно металла");
+						if(strval(inputtext)+gopota_wh[0] > 6000) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно места");
                         PI[playerid][pMetall] -= strval(inputtext);
                         PI[playerid][pProgressMetall] += strval(inputtext);
 						gopota_wh[0] += strval(inputtext);
@@ -6578,9 +6605,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 7:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(PI[playerid][pMetall] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"У Вас недостаточно металла");
-						if(strval(inputtext)+kavkaz_wh[0] > 6000) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно места");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(PI[playerid][pMetall] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно металла");
+						if(strval(inputtext)+kavkaz_wh[0] > 6000) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно места");
                         PI[playerid][pMetall] -= strval(inputtext);
                         PI[playerid][pProgressMetall] += strval(inputtext);
 						kavkaz_wh[0] += strval(inputtext);
@@ -6597,21 +6624,22 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if(!response) return 1;
 			if(response)
    			{
-   			    if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY,"Склад организации доступен с 5 ранга");
+   			    if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY, !"Склад организации доступен с 5 ранга");
    			    if(PI[playerid][pMember] == 5 && skinhead_wh[3] != 0 || PI[playerid][pMember] == 6 && gopota_wh[3] != 0 || PI[playerid][pMember] == 7 && kavkaz_wh[3]) return SCM(playerid, COLOR_GREY,"Склад закрыт лидером или заместителем ОПГ");
 				
 				new gz;
 				for(new i = 0; i < totalgz; i++) if(gz_info[i][gzopg] == PI[playerid][pMember]) gz++;
 
+				if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pAmmo] > 400) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 400 патронов");
+				if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pAmmo] > 800) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 800 патронов");
+
 				switch(PI[playerid][pMember])
 				{
 					case 5:
 					{
-						if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pAmmo] > 400) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 400 патронов");
-						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pAmmo] > 800) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 800 патронов");
-						if(strval(inputtext) > 500) return SCM(playerid, COLOR_GREY,"Нельзя взять за 1 раз больше 500 патронов");
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(skinhead_wh[1] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"На складе недостаточно патронов");
+						if(strval(inputtext) > 500) return SCM(playerid, COLOR_GREY, !"Нельзя взять за 1 раз больше 500 патронов");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(skinhead_wh[1] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"На складе недостаточно патронов");
 						PI[playerid][pAmmo] += strval(inputtext);
 						skinhead_wh[1] -= strval(inputtext);
 						SendFractionMessagef(PI[playerid][pMember],0x67ab00FF, "[R] %s %s[%d] взял %d патронов со склада",rang_skinhead[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid,strval(inputtext));
@@ -6622,11 +6650,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 6:
 					{
-						if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pAmmo] > 400) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 400 патронов");
-						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pAmmo] > 800) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 800 патронов");
-						if(strval(inputtext) > 500) return SCM(playerid, COLOR_GREY,"Нельзя взять за 1 раз больше 500 патронов");
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(gopota_wh[1] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"На складе недостаточно патронов");
+						if(strval(inputtext) > 500) return SCM(playerid, COLOR_GREY, !"Нельзя взять за 1 раз больше 500 патронов");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(gopota_wh[1] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"На складе недостаточно патронов");
 						PI[playerid][pAmmo] += strval(inputtext);
 						gopota_wh[1] -= strval(inputtext);
 						SendFractionMessagef(PI[playerid][pMember],0x67ab00FF, "[R] %s %s[%d] взял %d патронов со склада",rang_gopota[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid,strval(inputtext));
@@ -6636,11 +6662,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 7:
 					{
-						if(PI[playerid][pVIP] == 0) if(strval(inputtext)+PI[playerid][pAmmo] > 400) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 400 патронов");
-						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pAmmo] > 800) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 800 патронов");
-						if(strval(inputtext) > 500) return SCM(playerid, COLOR_GREY,"Нельзя взять за 1 раз больше 500 патронов");
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(kavkaz_wh[1] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"На складе недостаточно патронов");
+						if(strval(inputtext) > 500) return SCM(playerid, COLOR_GREY, !"Нельзя взять за 1 раз больше 500 патронов");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(kavkaz_wh[1] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"На складе недостаточно патронов");
 						PI[playerid][pAmmo] += strval(inputtext);
 						kavkaz_wh[1] -= strval(inputtext);
 						SendFractionMessagef(PI[playerid][pMember],0x67ab00FF, "[R] %s %s[%d] взял %d патронов со склада", rang_kavkaz[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid,strval(inputtext));
@@ -6662,9 +6686,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					case 5:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(PI[playerid][pAmmo] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"У Вас недостаточно патронов");
-						if(strval(inputtext)+skinhead_wh[1] > 50000) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно места");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(PI[playerid][pAmmo] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно патронов");
+						if(strval(inputtext)+skinhead_wh[1] > 50000) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно места");
                         PI[playerid][pAmmo] -= strval(inputtext);
                         PI[playerid][pProgressAmmo]  += strval(inputtext);
 						skinhead_wh[1] += strval(inputtext);
@@ -6675,9 +6699,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 6:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(PI[playerid][pAmmo] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"У Вас недостаточно патронов");
-						if(strval(inputtext)+gopota_wh[1] > 50000) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно места");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(PI[playerid][pAmmo] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно патронов");
+						if(strval(inputtext)+gopota_wh[1] > 50000) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно места");
                         PI[playerid][pAmmo] -= strval(inputtext);
                         PI[playerid][pProgressAmmo]  += strval(inputtext);
 						gopota_wh[1] += strval(inputtext);
@@ -6688,9 +6712,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 7:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(PI[playerid][pAmmo] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"У Вас недостаточно патронов");
-						if(strval(inputtext)+kavkaz_wh[1] > 50000) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно места");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(PI[playerid][pAmmo] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно патронов");
+						if(strval(inputtext)+kavkaz_wh[1] > 50000) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно места");
                         PI[playerid][pAmmo] -= strval(inputtext);
                         PI[playerid][pProgressAmmo]  += strval(inputtext);
 						kavkaz_wh[1] += strval(inputtext);
@@ -6707,7 +6731,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		    if(!response) return 1;
 			if(response)
    			{
-   			    if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY,"Склад организации доступен с 5 ранга");
+   			    if(PI[playerid][pRang] < 5) return SCM(playerid, COLOR_GREY, !"Склад организации доступен с 5 ранга");
    			    if(PI[playerid][pMember] == 5 && skinhead_wh[3] != 0 || PI[playerid][pMember] == 6 && gopota_wh[3] != 0 || PI[playerid][pMember] == 7 && kavkaz_wh[3]) return SCM(playerid, COLOR_GREY,"Склад закрыт лидером или заместителем ОПГ");
 				
 				new gz;
@@ -6717,10 +6741,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					case 5:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(skinhead_wh[2] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно наркотиков");
-						if(PI[playerid][pVIP] < 1) if(strval(inputtext)+PI[playerid][pDrugs] > 1000) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 1000 наркотиков");
-						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pDrugs]  > 2000) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 2000 наркотиков");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(skinhead_wh[2] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно наркотиков");
+						if(PI[playerid][pVIP] < 1) if(strval(inputtext)+PI[playerid][pDrugs] > 1000) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 1000 наркотиков");
+						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pDrugs]  > 2000) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 2000 наркотиков");
 						PI[playerid][pDrugs] += strval(inputtext);
 						skinhead_wh[2] -= strval(inputtext);
 						SendFractionMessagef(PI[playerid][pMember],0x67ab00FF, "[R] %s %s[%d] взял %d наркотиков со склада",rang_skinhead[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid,strval(inputtext));
@@ -6731,10 +6755,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 6:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(gopota_wh[2] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно наркотиков");
-						if(PI[playerid][pVIP] < 1) if(strval(inputtext)+PI[playerid][pDrugs] > 1000) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 1000 наркотиков");
-						if(PI[playerid][pVIP] >= 0) if(strval(inputtext)+PI[playerid][pDrugs] > 2000) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 2000 наркотиков");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(gopota_wh[2] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно наркотиков");
+						if(PI[playerid][pVIP] < 1) if(strval(inputtext)+PI[playerid][pDrugs] > 1000) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 1000 наркотиков");
+						if(PI[playerid][pVIP] >= 0) if(strval(inputtext)+PI[playerid][pDrugs] > 2000) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 2000 наркотиков");
 						PI[playerid][pDrugs] += strval(inputtext);
 						gopota_wh[2] -= strval(inputtext);
 						SendFractionMessagef(PI[playerid][pMember],0x67ab00FF, "[R] %s %s[%d] взял %d наркотиков со склада",rang_gopota[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid,strval(inputtext));
@@ -6744,10 +6768,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 7:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(kavkaz_wh[2] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно наркотиков");
-						if(PI[playerid][pVIP] < 1) if(strval(inputtext)+PI[playerid][pDrugs] > 1000) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 1000 наркотиков");
-						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pDrugs] > 2000) return SCM(playerid, COLOR_GREY,"В инвентаре можно иметь максимум 2000 наркотиков");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(kavkaz_wh[2] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно наркотиков");
+						if(PI[playerid][pVIP] < 1) if(strval(inputtext)+PI[playerid][pDrugs] > 1000) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 1000 наркотиков");
+						if(PI[playerid][pVIP] > 0) if(strval(inputtext)+PI[playerid][pDrugs] > 2000) return SCM(playerid, COLOR_GREY, !"В инвентаре можно иметь максимум 2000 наркотиков");
 						PI[playerid][pDrugs] += strval(inputtext);
 						kavkaz_wh[2] -= strval(inputtext);
 						SendFractionMessagef(PI[playerid][pMember],0x67ab00FF, "[R] %s %s[%d] взял %d наркотиков со склада", rang_kavkaz[PI[playerid][pRang]-1][frName],PI[playerid][pName],playerid,strval(inputtext));
@@ -6770,9 +6794,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					case 5:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(PI[playerid][pDrugs] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"У Вас недостаточно наркотиков");
-						if(strval(inputtext)+skinhead_wh[2] > 12000) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно места");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(PI[playerid][pDrugs] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно наркотиков");
+						if(strval(inputtext)+skinhead_wh[2] > 12000) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно места");
                         PI[playerid][pDrugs] -= strval(inputtext);
                         PI[playerid][pProgressDrugs] += strval(inputtext);
 						skinhead_wh[2] += strval(inputtext);
@@ -6783,9 +6807,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 6:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(PI[playerid][pDrugs] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"У Вас недостаточно наркотиков");
-						if(strval(inputtext)+gopota_wh[2] > 12000) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно места");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(PI[playerid][pDrugs] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно наркотиков");
+						if(strval(inputtext)+gopota_wh[2] > 12000) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно места");
                         PI[playerid][pDrugs] -= strval(inputtext);
                         PI[playerid][pProgressDrugs] += strval(inputtext);
 						gopota_wh[2] += strval(inputtext);
@@ -6796,9 +6820,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					}
 					case 7:
 					{
-					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-					    if(PI[playerid][pDrugs] < strval(inputtext)) return SCM(playerid, COLOR_GREY,"У Вас недостаточно наркотиков");
-						if(strval(inputtext)+kavkaz_wh[2] > 12000) return SCM(playerid, COLOR_GREY,"На складе организации недостаточно места");
+					    if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+					    if(PI[playerid][pDrugs] < strval(inputtext)) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно наркотиков");
+						if(strval(inputtext)+kavkaz_wh[2] > 12000) return SCM(playerid, COLOR_GREY, !"На складе организации недостаточно места");
                         PI[playerid][pDrugs] -= strval(inputtext);
                         PI[playerid][pProgressDrugs] += strval(inputtext);
 						kavkaz_wh[2] += strval(inputtext);
@@ -7878,13 +7902,16 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			    }
 			}
 		}
-		case dialog_MAKEGUN_1: {
+		case dialog_MAKEGUN_1:
+		{
 		    if(!response) return 1;
-		    if(response) {
+		    if(response) 
+			{
 				if(strval(inputtext) > PI[playerid][pAmmo]) return SCM(playerid, COLOR_GREY,"У Вас недостаточно патронов");
 				if(strval(inputtext) < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
 				new gun = GetPlayerWeapon(playerid);
-				if(gun == GetPVarInt(playerid,"makegun")) {
+				if(gun == GetPVarInt(playerid,"makegun")) 
+				{
 					GiveWeapon(playerid, GetPVarInt(playerid,"makegun"), strval(inputtext));
 					PI[playerid][pAmmo] -= strval(inputtext);
 					new string[55];
@@ -7892,7 +7919,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					ProxDetector(30.0, playerid, string, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
 					SetPlayerChatBubble(playerid, string, 0xFF99CCFF, 20.0, 4000);
 				}
-				else {
+				else 
+				{
 					GiveWeapon(playerid, GetPVarInt(playerid,"makegun"), strval(inputtext));
 					PI[playerid][pAmmo] -= strval(inputtext);
 					new string[120];
@@ -10999,6 +11027,12 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			{
 				SendFractionMessagef(PI[playerid][pMember], COLOR_TOMATO, "[R] %s %s покинул организацию по собственному желанию", NameRang(playerid), PI[playerid][pName]);
 				SCMf(playerid, COLOR_TOMATO, "Вы покинули организацию '%s' по собственному желанию", Fraction_Name[PI[playerid][pMember]]);
+
+				if(PI[playerid][pOnCapture] == 1)
+				{
+					AutoKickCapture(playerid);
+					CheckCount(playerid);
+				}
 				
 				cef_emit_event(playerid, "cef:capture:visible", CEFINT(false));
 				for(new g; g <= totalgz; g++) GangZoneHideForPlayer(playerid, g);
@@ -11054,18 +11088,18 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 		            case 0: 
 					{
 					    if(PI[playerid][pMember] == 0) return SCM(playerid, COLOR_GREY, !"Вы не состоите во организации");
-                        PI[playerid][data_SPAWN] = 1;
+                        PI[playerid][pSpawn] = 1;
 					    SCM(playerid, COLOR_YELLOW, !"Место спавна изменено");
 					}
 		            case 1: 
 					{
-					    PI[playerid][data_SPAWN] = 0;
+					    PI[playerid][pSpawn] = 0;
 					    SCM(playerid, COLOR_YELLOW, !"Место спавна изменено");
 					}
 		            case 2: 
 					{
 					    if(PI[playerid][pHouse] == INVALID_HOUSE_ID && PI[playerid][pFloat] == INVALID_KV_ID) return SCM(playerid, COLOR_GREY, !"У Вас нет дома или квартиры");
-                        PI[playerid][data_SPAWN] = 2;
+                        PI[playerid][pSpawn] = 2;
 					    SCM(playerid, COLOR_YELLOW, !"Место спавна изменено");
 					}
 		        }
@@ -11354,7 +11388,7 @@ callback: LoadPlayerData(playerid)
 		cache_get_field_content(0, "business", temp), PI[playerid][pBusiness] = strval (temp);
 		cache_get_field_content(0, "house", temp), PI[playerid][pHouse] = strval (temp);
 		cache_get_field_content(0, "vip", temp), PI[playerid][pVIP] = strval (temp);
-		cache_get_field_content(0, "time", temp), PI[playerid][data_TIME] = strval (temp);
+		cache_get_field_content(0, "time", temp), PI[playerid][pTime] = strval (temp);
 		cache_get_field_content(0, "AdminStatus", temp), PI[playerid][pAdminStatus] = strval (temp);
 		cache_get_field_content(0, "CaptureKills", temp), PI[playerid][pCaptureKills] = strval (temp);
 		cache_get_field_content(0, "CaptureValue", temp), PI[playerid][pCaptureValue] = strval (temp);
@@ -11400,7 +11434,7 @@ callback: LoadPlayerData(playerid)
 		cache_get_field_content(0, "arm", temp), PI[playerid][pArmour] = strval (temp);
 		cache_get_field_content(0, "med", temp), PI[playerid][data_MED] = strval (temp);
 		cache_get_field_content(0, "mednum", temp), PI[playerid][data_MEDNUM] = strval (temp);
-		cache_get_field_content(0, "spawn", temp), PI[playerid][data_SPAWN] = strval (temp);
+		cache_get_field_content(0, "spawn", temp), PI[playerid][pSpawn] = strval (temp);
 		cache_get_field_content(0, "hospital", temp), PI[playerid][pHospital] = strval (temp);
 		cache_get_field_content(0, "pistol_skill", temp), PI[playerid][pSkillPistol] = strval (temp);
 		cache_get_field_content(0, "sdpistol_skill", temp), PI[playerid][pSkillSDPistol] = strval (temp);
@@ -11460,6 +11494,8 @@ callback: LoadPlayerData(playerid)
 		cache_get_field_content(0, "CarGift", temp), PI[playerid][pCarGift] = strval (temp);
 
 		IsPlayerLogged{playerid} = true;
+
+		if(PI[playerid][pSpawn] == 1 && PI[playerid][pMember] < 1) PI[playerid][pSpawn] = 0; 
 
 		if(PI[playerid][pAdmin] >= 1)  
 		{
@@ -11535,14 +11571,13 @@ callback: LoadPlayerData(playerid)
 }
 callback: PlayerUpdate(playerid) 
 {
-    if(IsPlayerAdmin(playerid)) return Ban(playerid);
 	if(!IsPlayerLogged{playerid}) return 1;
-
-	PI[playerid][data_3SECOND]++;
-	PI[playerid][data_MINUTE]++;
 
     new hour, minute, second;
 	gettime(hour, minute, second);
+
+	PI[playerid][pThreeSecondTimer]++;
+	PI[playerid][pMinuteTimer]++;
 
   	if(PI[playerid][pJailTime] > 0) 
 	{
@@ -11573,7 +11608,6 @@ callback: PlayerUpdate(playerid)
 			SCM(playerid, COLOR_LIGHTGREY, !"Ваш чат был разблокирован, больше не нарушайте!");
 		}
 	}
- 	if(GetPVarInt(playerid,"ac_timer") > 0) SetPVarInt(playerid, "ac_timer",GetPVarInt(playerid,"ac_timer")-1);
 	if(GetPlayerMoney(playerid) != PI[playerid][pMoney]) UpdatePlayerMoney(playerid,PI[playerid][pMoney]);
 	if(GetPlayerState(playerid) == 2) 
 	{
@@ -11581,12 +11615,10 @@ callback: PlayerUpdate(playerid)
 	    new Float:hpveh; GetVehicleHealth(carid, hpveh);
 		if(hpveh < 350) SetVehicleHealth(carid, 351.0);
 	}
-	if(PI[playerid][data_MINUTE] == 60) 
+	if(PI[playerid][pMinuteTimer] == 60) 
 	{
-	    PI[playerid][data_MINUTE] = 0;
-        if(PI[playerid][pAFK] < 1) PI[playerid][data_TIME]++;
-	    if(GetPVarInt(playerid, "ac_fly") >= 3) DeletePVar(playerid, "ac_fly");
-		for(new i = 0; i < 13; i++)
+	    PI[playerid][pMinuteTimer] = 0;
+        if(PI[playerid][pAFK] < 1) PI[playerid][pTime]++;
 	    if(PI[playerid][pWarn] != 0) 
 		{
 	        if(PI[playerid][pWarnTime] >= 1) PI[playerid][pWarnTime]--;
@@ -11598,37 +11630,23 @@ callback: PlayerUpdate(playerid)
 	        }
 	    }
 	}
- 	/*if(PI[playerid][pJail] != 0 && PI[playerid][pJailTime] <= 0) 
+ 	if(PI[playerid][pJail] != 0 && PI[playerid][pJailTime] <= 0) 
 	{
-		switch(PI[playerid][pJail]) 
-		{
-			case 1: 
-			{
-				SetPlayerPosAC(playerid, -298.9116,-1547.7133,41.0897);
-				SetPlayerVirtualWorld(playerid,0);
-				SetPlayerInterior(playerid,0);
-				SetPlayerFacingAngle(playerid, 61.5454);
-				SetCameraBehindPlayer(playerid);
-			}
-		}
-		PI[playerid][pJailTime] = 0;
-		PI[playerid][pJail] = 0;
-
-		PlayerSpawn(playerid);
-		SCM(playerid, COLOR_LIGHTGREY, !"Вы отсидели положенный срок. Больше не нарушайте!");
-	}*/
-	if(minute == 0 && payday[playerid] == false) {
+		if(!IsPlayerInRangeOfPoint(playerid, 60.0, 2066.3328,1654.8046,-45.1906)) PlayerSpawn(playerid);
+	}
+	if(minute == 0 && payday[playerid] == false) 
+	{
 		payday[playerid] = true;
 		PayDay(playerid);	
 	}
 	if(minute > 1) payday[playerid] = false;
- 	if(PI[playerid][pDemorgan] != 0 && PI[playerid][pDemorganTime] <= 0) 
+ 	/*if(PI[playerid][pDemorgan] != 0 && PI[playerid][pDemorganTime] <= 0) 
 	{
 		PI[playerid][pDemorganTime] = 0;
 		PI[playerid][pDemorgan] = 0;
 		PlayerSpawn(playerid);
 		SCM(playerid, COLOR_LIGHTGREY, !"Вы вышли из деморгана. Больше не нарушайте!");
-	}
+	}*/
 	if(PI[playerid][data_CALL] != -1) 
 	{
 		if(!IsPlayerConnected(PI[playerid][data_CALL])) 
@@ -11655,37 +11673,6 @@ callback: PlayerUpdate(playerid)
 			}
 		}
 	}
-	if(GetPlayerState(playerid) == PLAYER_STATE_ONFOOT && PI[playerid][pAFK] <= 1) 
-	{
- 		new Float: Health,Float: Armour;
-	  	new Float:Distance = GetPlayerDistanceFromPoint(playerid, oldposX[playerid], oldposY[playerid], oldposZ[playerid]);
-		GetPlayerHealth(playerid, Health);
-		if(PI[playerid][pHealthPoints] < Health) SetPlayerHealthAC(playerid, PI[playerid][pHealthPoints]);
-		else PI[playerid][pHealthPoints] = Health;
-		GetPlayerArmour(playerid, Armour);
-		if(PI[playerid][pArmour] < Armour) SetPlayerArmourAC(playerid, PI[playerid][pArmour]);
-		else PI[playerid][pArmour] = Armour;
-
-		new datagunid, dataammo;
-		for(new slotgunid = 0; slotgunid < 13; slotgunid++) 
-		{
-	 		GetPlayerWeaponData(playerid, slotgunid, datagunid, dataammo);
-			if(dataammo > PI[playerid][data_AMMO][slotgunid]) 
-			{
-			    ac_gun[playerid][slotgunid]++;
-				if(ac_gun[playerid][slotgunid] == 3) printf("[ac_gun] playerid: %s, i: %d, datagunid: %d, dataammo: %d | ammo: %d",PI[playerid][pName], slotgunid, datagunid, dataammo,PI[playerid][data_AMMO][slotgunid]);
-			}
-			else if(dataammo < PI[playerid][data_AMMO][slotgunid] && ac_gun[playerid][slotgunid] == 0) PI[playerid][data_AMMO][slotgunid] = dataammo;
-		}
-        new carid = GetPlayerSurfingVehicleID(playerid);
-		if(Distance > 45 && carid == INVALID_VEHICLE_ID) 
-		{
-  			SetPVarInt(playerid, "ac_fly",GetPVarInt(playerid, "ac_fly")+1);
-			if(GetPVarInt(playerid, "ac_fly") == 3) printf("[ac_fly] playerid: %s, distance: %d",PI[playerid][pName], Distance);
-		}
-
-		GetPlayerPos(playerid, oldposX[playerid], oldposY[playerid], oldposZ[playerid]);
-	}
 	PI[playerid][pAFK]++;
 	if(PI[playerid][pAFK] > 1 && PI[playerid][pAFK] < 60) 
 	{
@@ -11700,19 +11687,10 @@ callback: PlayerUpdate(playerid)
 		SetPlayerChatBubble(playerid, str, COLOR_TOMATO, 20.0, 1100);
 	}
 	if(PI[playerid][pAFK] == 600 && PI[playerid][pAdmin] >= 1) SendAdminsMessagef(COLOR_GREY, "<Info> Игровой мастер %s в AFK {ff6633}(10+ минут)", getName(playerid));
-/*	if(PI[playerid][pAFK] > 1800) 
+	//
+	if(PI[playerid][pThreeSecondTimer] == 3) 
 	{
-		if(PI[playerid][pAdmin] >= 1) return 1;
-		SCM(playerid, COLOR_GREY,"Превышено максимальное время паузы (30 минут)");
-		SavePlayerData(playerid);
-		TogglePlayerSpectating(playerid, false);
-		Kick(playerid);
-		return 1;
-	}
-*/
-	if(PI[playerid][data_3SECOND] == 3) 
-	{
-	    PI[playerid][data_3SECOND] = 0;
+	    PI[playerid][pThreeSecondTimer] = 0;
 	    if(PI[playerid][pHospital] == 1 && GetPlayerSpecialAction(playerid) != PLAYER_STATE_WASTED && GetPlayerSpecialAction(playerid) != PLAYER_STATE_SPAWNED) 
 		{
 			if(PlayerToPoint(100.0, playerid, 2105.4143,1459.2950,-47.5200)) 
@@ -13011,8 +12989,8 @@ stock ShowStats(playerid, forid = -1)
                         PlayerBusiness);  
 
 
-	if(forid == -1) ShowPlayerDialog(playerid, 8009, DIALOG_STYLE_MSGBOX, !"{ee3366}Статистика игрока", global_str, "Закрыть", "Назад");
-	else ShowPlayerDialog(forid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Статистика игрока", global_str, "Закрыть", "Назад");
+	if(forid == -1) ShowPlayerDialog(playerid, 8009, DIALOG_STYLE_MSGBOX, !"{ee3366}Статистика игрока", global_str, !"Закрыть", !"Назад");
+	else ShowPlayerDialog(forid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Статистика игрока", global_str, !"Закрыть", "");
 
 	return 1;
 }
@@ -13049,7 +13027,7 @@ stock ClearPlayerData(playerid)
 		PI[playerid][data_AMMO][i] = 0;
 	}
     shield[playerid] = false;
-    PI[playerid][data_TIME] = 0;
+    PI[playerid][pTime] = 0;
     PI[playerid][data_911_1] = 0;
 	PI[playerid][pID] = 0;
 	PI[playerid][data_911_2] = 0;
@@ -13072,8 +13050,8 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pLeader] = 0;
 	PI[playerid][pRang] = 0;
 	PI[playerid][data_ANIM] = false;
-	PI[playerid][data_3SECOND] = 0;
-	PI[playerid][data_MINUTE] = 0;
+	PI[playerid][pThreeSecondTimer] = 0;
+	PI[playerid][pMinuteTimer] = 0;
 	PI[playerid][pChangeSkin] = 0;
 	PI[playerid][pSelectSkin] = 0;
 	PI[playerid][pMute] = 0;
@@ -13106,7 +13084,7 @@ stock ClearPlayerData(playerid)
 	PI[playerid][pHealthPoints] = 100.0;
 	PI[playerid][pArmour] = 100.0;
 	PI[playerid][data_MED] = 0;
-	PI[playerid][data_SPAWN] = 0;
+	PI[playerid][pSpawn] = 0;
 	PI[playerid][pHospital] = 0;
 	PI[playerid][data_JOB] = 0;
 	PI[playerid][pHealPack] = 0;
@@ -13298,7 +13276,6 @@ stock SettingSpawn(playerid)
 	}
 	if(PI[playerid][pOnMP] == 1)
 	{
-		printf("%s, %f | %f | %f | %f", getName(playerid), PI[playerid][pHealthPoints], PI[playerid][pOnMPX], PI[playerid][pOnMPY], PI[playerid][pOnMPZ]);
 		SetSpawnInfoEx(playerid, skin, PI[playerid][pOnMPX], PI[playerid][pOnMPY], PI[playerid][pOnMPZ], 180.0);
 		SetPlayerVirtualWorld(playerid, 0);
 		SetPlayerInterior(playerid, 0);
@@ -13345,7 +13322,7 @@ stock SettingSpawn(playerid)
 	}
 	else
 	{
-		if(PI[playerid][data_SPAWN] == 0)
+		if(PI[playerid][pSpawn] == 0)
 		{
 			if(PI[playerid][pLevel] >= 1) 
 			{
@@ -13356,7 +13333,7 @@ stock SettingSpawn(playerid)
 				return true;
 			}
 		}
-		if(PI[playerid][data_SPAWN] == 1)
+		if(PI[playerid][pSpawn] == 1)
 		{
 			switch(PI[playerid][pMember])
 			{
@@ -13418,7 +13395,7 @@ stock SettingSpawn(playerid)
 				}
 			}
 		}
-		if(PI[playerid][data_SPAWN] == 2)
+		if(PI[playerid][pSpawn] == 2)
 		{
 			if(PI[playerid][pHouse] == INVALID_HOUSE_ID)
 			{
@@ -13447,8 +13424,8 @@ stock SettingSpawn(playerid)
 	for(new i = 0; i < 13; i++) if(PI[playerid][data_GUN][i] != 0 && PI[playerid][data_AMMO][i] != 0) GivePlayerWeapon(playerid, PI[playerid][data_GUN][i], PI[playerid][data_AMMO][i]);
 	SetSpawnInfoEx(playerid, skin, 1803.5269,2506.7034,15.8725,308.2673);
 	SetPlayerVirtualWorld(playerid, 0);
-	SetPlayerInterior(playerid,0);
-	//Freeze(playerid);
+	SetPlayerInterior(playerid, 0);
+	Freeze(playerid);
 	return true;
 }
 stock acc_int_strcat(query[], len, name[], number) {
@@ -13808,14 +13785,33 @@ CMD:dice(playerid,params[])
     if(!PlayerToPoint(30.0, playerid, 597.6772, -118.6722, 728.1455)) return SCM(playerid, COLOR_GREY, !"Нужно находиться в казино");
 	return SendRequestForPlayer(playerid, params[0], 11, params[1]);
 }
-CMD:pass(playerid,params[]) 
+CMD:pass(playerid, params[]) 
 {
-    if(sscanf(params, "u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /pass [ID игрока]");
-	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
+	if(sscanf(params, "u", params[0])) 
+	{
+		new PlayerHouse[10];
+		if(PI[playerid][pHouse] != -1) format(PlayerHouse, sizeof(PlayerHouse), "№%d", PI[playerid][pHouse]);
+		else format(PlayerHouse, sizeof(PlayerHouse), "---");
+
+		global_str[0] = EOS, f(global_str, 300, "{000000}Имя\t\t\t\t{ee3366}%s\n\
+												{000000}Лет в области\t\t\t%d\n\
+												{000000}Законнопослушность\t\t%d\n\
+												{000000}Уровень розыска\t\t%d\n\
+												{000000}Номер дома\t\t\t%d",
+												PI[playerid][pName],
+												PI[playerid][pLevel],
+												PI[playerid][pRespect],
+												PI[playerid][pWanted],
+												PlayerHouse);
+		CEF_ShowPlayerDialog(playerid, 0, DIALOG_STYLE_LIST, "{ee3366}Паспорт", global_str, "Закрыть", "");
+
+		SetPlayerChatBubble(playerid, "просматривает документы", 0xFF99CCFF, 20.0, 4000);
+
+		return 1;
+	}
+	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /pass [ид игрока]");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
-	new Float:x, Float:y, Float:z;
-	GetPlayerPos(params[0], x, y, z);
-	if(!ProxDetectorS(10.0, playerid, params[0])) return SCM(playerid, COLOR_GREY, !"Игрок находится слишком далеко");
+	if(!ProxDetectorS(10.0, playerid, params[0])) return SCM(playerid, COLOR_GREY, !"Игрок слишком далеко от Вас");
 	return SendRequestForPlayer(playerid, params[0], 3);
 }
 CMD:skill(playerid,params[]) 
@@ -13860,7 +13856,7 @@ CMD:leave(playerid,params[])
     if(PI[playerid][pVIP] < 1) return SCM(playerid, COLOR_GREY, !"Данная функция доступна только VIP игрокам");
 	if(PI[playerid][pMember] == 0) return SCM(playerid, COLOR_GREY, !"Вы не состоите в организации");
 	if(PI[playerid][pLeader] != 0) return SCM(playerid, COLOR_GREY, !"Для снятия с должности лидера по собственному желанию обратитесь к следящим");
-	ShowPlayerDialog(playerid, 7214, DIALOG_STYLE_MSGBOX, !"{ee3366}Увольнение", "Вы действительно хотите уволиться из организации по собственному желанию?\n{696969}Обратите внимание: информация о Вашем уходе будет видна в чате организации", "Да", "Нет");
+	ShowPlayerDialog(playerid, 7214, DIALOG_STYLE_MSGBOX, !"{ee3366}Увольнение", "{FFFFFF}Вы действительно хотите уволиться из организации по собственному желанию?\n{696969}Обратите внимание: информация о Вашем уходе будет видна в чате организации", "Да", "Нет");
 	return 1;
 }
 CMD:setskin(playerid,params[]) 
@@ -15149,7 +15145,7 @@ CMD:time(playerid)
 		case 11: month = "11";
 		case 12: month = "12";
 	}
-	GameTextForPlayerf(playerid, 5000, 1, "~g~%d.%s.%d~y~ %02d:%02d~n~~w~В игре ~b~%d мин~n~~w~Сервер ~b~1", Day, month,Year, hour,minuite, PI[playerid][data_TIME]);
+	GameTextForPlayerf(playerid, 5000, 1, "~g~%d.%s.%d~y~ %02d:%02d~n~~w~В игре ~b~%d мин~n~~w~Сервер ~b~1", Day, month,Year, hour,minuite, PI[playerid][pTime]);
     SetPlayerChatBubble(playerid, "Cмотрит на часы", 0xFF99CCFF, 20.0, 4000);
 	return true;
 }
@@ -15397,12 +15393,12 @@ CMD:plus(playerid)
 }
 stock IsPlayerGreenZone(playerid) 
 {
-	if(IsPlayerInRangeOfPoint(playerid, 100.0, 2085.7090,1819.6904,12.1208) && GetPlayerVirtualWorld(playerid) == 0 || // БЦРБ
-	PlayerToKvadrat(playerid, 1784, 2060.5, 1878, 2132.5) && GetPlayerVirtualWorld(playerid) == 0 || // Правительство
-	PlayerToKvadrat(playerid, 1765, 2476.5, 1846, 2536.5) && GetPlayerVirtualWorld(playerid) == 0 || // рудник
-	PlayerToKvadrat(playerid, 1851, 1837.5, 1918, 1906.5) && GetPlayerVirtualWorld(playerid) == 0 || // казино
-	PlayerToKvadrat(playerid, 1851, 1837.5, 1918, 1906.5) && GetPlayerVirtualWorld(playerid) == 0 || // спавн новичков 1
-	PlayerToKvadrat(playerid, 1771.5, 1418.1666259765625, 1871.5, 1518.1666259765625) && GetPlayerVirtualWorld(playerid) == 0) return true; // автошкола
+	if(IsPlayerInRangeOfPoint(playerid, 100.0, 2085.7090,1819.6904,12.1208) || // БЦРБ
+	PlayerToKvadrat(playerid, 1784, 2060.5, 1878, 2132.5) || // Правительство
+	PlayerToKvadrat(playerid, 1765, 2476.5, 1846, 2536.5) || // рудник
+	PlayerToKvadrat(playerid, 1851, 1837.5, 1918, 1906.5) || // казино
+	PlayerToKvadrat(playerid, 1851, 1837.5, 1918, 1906.5) || // спавн новичков 1
+	PlayerToKvadrat(playerid, 1771.5, 1418.1666259765625, 1871.5, 1518.1666259765625)) return true; // автошкола
 	return 0;
 }
 callback: PayDay(playerid)
@@ -15420,7 +15416,7 @@ callback: PayDay(playerid)
 
 		if(hour == 0 && minute == 0) 
 		{
-			PI[playerid][data_TIME] = 0;
+			PI[playerid][pTime] = 0;
 			PI[playerid][pHealthPackKD] = 0;
 			mysql_query(mysql, "UPDATE `accounts` SET time = '0' WHERE time != '0'");
 			mysql_query(mysql, "UPDATE `accounts` SET reports = '0' WHERE reports != '0'");
@@ -15436,7 +15432,7 @@ callback: PayDay(playerid)
 			SCM(playerid, -1, "____________________________");
 			return 1;
 		}
-		if(PI[playerid][data_TIME] < 20) 
+		if(PI[playerid][pTime] < 20) 
 		{
 			SCM(playerid, COLOR_GREY, !"Для получения PayDay необходимо отыграть минимум 20 минут");
 			SCM(playerid, -1, "____________________________");
@@ -16569,7 +16565,7 @@ CMD:park(playerid)
 
 	if(GetPlayerState(playerid) != 2) return SCM(playerid, COLOR_GREY, !"Вы должны быть за рулём cвоего авто!");
 	if(carid != PI[playerid][pLoadVehicleID]) return SCM(playerid, COLOR_GREY, !"Это не ваша машина!");
-	if(!IsPlayerGreenZone(playerid)) return SendClientMessage(playerid, COLOR_GREY, !"Нельзя припарковать личный транспорт в Зеленой Зона");
+	if(IsPlayerGreenZone(playerid)) return SendClientMessage(playerid, COLOR_GREY, !"Нельзя припарковать личный транспорт в Зеленой Зона");
 
 	new Float: car_x, Float: car_y, Float: car_z;
 	GetVehiclePos(carid, car_x, car_y, car_z);
@@ -16958,22 +16954,6 @@ CMD:id(playerid, params[])
     if(count == 0) return SCM(playerid, COLOR_GREY, !"Совпадений не найдено");
     return 1;
 }
-CMD:gift(playerid)
-{
-	if(PI[playerid][pCarGift] == 1) return SCM(playerid, COLOR_GREY, !"Вы уже получали временный автомобиль");
-	
-	new const RadnomGift[4] = {405, 579, 560, 540};
-	new gift_car = RandomEX(1, 4);
-
-	GivePlayerOwnable(playerid, RadnomGift[gift_car], 0, 50, 137, 137, 1, 336);
-
-
-	PI[playerid][pCarGift] = 1;
-	UpdatePlayerDataInt(playerid, "CarGift", PI[playerid][pCarGift]);
-
-	SCMf(playerid, COLOR_YELLOW, "Вы получили автомобиль {3366cc}'%s'{FFFF33} на 14 дней", VehicleNames[RadnomGift[gift_car]-400]);
-	return SendClientMessageToAllf(COLOR_HINT, "[Подарок]:{FFFFFF} Игрок {FFFF33}%s[%d]{FFFFFF} получил автомобиль {FFFF33}'%s'{FFFFFF} в на 14 дней", PI[playerid][pName], playerid, VehicleNames[RadnomGift[gift_car]-400]);
-}
 stock ShowGPS(playerid)
 {
 	ShowPlayerDialog(playerid, 4500, DIALOG_STYLE_LIST, !"{ee3366}Навигатор", !"\
@@ -17051,6 +17031,7 @@ public OnPlayerPickUpPickup(playerid, pickupid)
 
 	if(pickupid == PointCapture)
     {
+		if(!IsPlayerOPG(playerid)) return SendClientMessage(playerid, COLOR_LIGHTGREY, !"Вы не состоите в ОПГ");
 		if(PI[playerid][pOnCapture] == 1) return SendClientMessage(playerid, COLOR_LIGHTGREY, !"Вы уже зарегистрированы на участие в стреле");
 		if(GangWarStatus == 0) return SendClientMessage(playerid, COLOR_LIGHTGREY, !"В данный момент не проходит захват территории");
         if(PI[playerid][pMember] == Command[0] || PI[playerid][pMember] == Command[1])
@@ -17256,7 +17237,7 @@ callback: SavePlayerData(playerid)
 			PI[playerid][pGunLicense],
 			PI[playerid][pBusiness],
 			PI[playerid][pHouse],
-			PI[playerid][data_TIME],
+			PI[playerid][pTime],
 			PI[playerid][pMilitaryID],
 			PI[playerid][pMedCard],
 			PI[playerid][pVIP],
@@ -17280,7 +17261,7 @@ callback: SavePlayerData(playerid)
 			PI[playerid][pHealthPoints],
 			PI[playerid][pArmour],
 			PI[playerid][data_MED],
-			PI[playerid][data_SPAWN],
+			PI[playerid][pSpawn],
 			PI[playerid][pHospital],
 			PI[playerid][pSkillPistol],
 			PI[playerid][pSkillSDPistol],
@@ -17644,4 +17625,21 @@ stock ShowPoliceStorage(playerid)
 	АКС-74У\t\t3+\t\t180\n\
 	АК-47\t\t5+\t\t180\n\
 	Снайперская винтовка\t5+\t\t20", !"Взять", !"Закрыть");
+}
+CMD:gift(playerid)
+{
+	if(PI[playerid][pCarGift] == 1) return SCM(playerid, COLOR_GREY, !"Вы уже получали временный автомобиль");
+	
+	new const RadnomGift[4] = {405, 579, 560, 540};
+	new gift_car = RandomEX(1, 4);
+
+	GivePlayerOwnable(playerid, RadnomGift[gift_car], 0, 50, 137, 137, 1, 336);
+	
+	GivePlayerMoney(playerid, 20000);
+
+	PI[playerid][pCarGift] = 1;
+	UpdatePlayerDataInt(playerid, "CarGift", PI[playerid][pCarGift]);
+
+	SCMf(playerid, COLOR_YELLOW, "Вы получили автомобиль {3366cc}'%s'{FFFF33} на 14 дней", VehicleNames[RadnomGift[gift_car]-400]);
+	return SendClientMessageToAllf(COLOR_HINT, "[Подарок]:{FFFFFF} Игрок {FFFF33}%s[%d]{FFFFFF} получил автомобиль {FFFF33}'%s'{FFFFFF} в на 14 дней", PI[playerid][pName], playerid, VehicleNames[RadnomGift[gift_car]-400]);
 }
