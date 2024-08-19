@@ -464,6 +464,112 @@ stock FinishRoundPlayer(playerid)
 		SetTimerEx("NoDeathFinishRoundPlayer", 4900, false, "d", playerid);
 	}
 }
+stock RoundStart(round, name[])
+{
+	CommandKill[0] = 0;
+	CommandKill[1] = 0;
+
+	GangWarStatus = round;
+	WarTime = ROUND_TIME;
+
+	for(new i = 0; i < MAX_PLAYERS; i++)
+	{
+		if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+		{
+			cef_emit_event(i, "cef:kill:list:clear");
+			cef_emit_event(i, "cef:capture:start", CEFSTR(name), CEFINT(WarTime));
+		}
+	}
+}
+stock RoundFinish(round, name[], type)
+{
+	if(type == 0)
+	{
+		CommandKill[0] = 0;
+		CommandKill[1] = 0;
+
+		GangWarStatus = round;
+		WarTime = START_ROUND;
+
+		for(new i = 0; i < MAX_PLAYERS; i++)
+		{
+			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+			{
+				cef_emit_event(i, "cef:capture:start", CEFSTR(name), CEFINT(WarTime));
+			}
+		}
+	}
+	else
+	{
+		if(CommandRounds[0] == 5 || CommandRounds[1] == 5)
+		{
+			FinishWar();
+		}	
+		else
+		{
+			if(WarTime <= 0)
+			{
+				CommandKill[0] = 0;
+				CommandKill[1] = 0;
+
+				GangWarStatus = round;
+				WarTime = START_ROUND;
+
+				for(new i = 0; i < MAX_PLAYERS; i++)
+				{
+					if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+					{
+						cef_emit_event(i, "cef:capture:start", CEFSTR(name), CEFINT(WarTime));
+					}
+				}
+			}
+		}
+	}
+}
+stock Round(round, name[])
+{
+	if(CommandKill[0] == CommadCount[1]) 
+	{
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[0] && PI[i][pDeathOnCapture] == 0)
+			{
+				TogglePlayerControllable(i, false);
+			}
+		}
+		CommandRounds[0]++;
+	}
+	else if(CommandKill[1] == CommadCount[0]) 
+	{
+		for(new i = 0; i < MAX_PLAYERS; i++) 
+		{
+			if(PI[i][pMember] == Command[1] && PI[i][pDeathOnCapture] == 0)
+			{
+				TogglePlayerControllable(i, false);
+			}
+		}
+		CommandRounds[1]++;
+	}
+
+	for(new i = 0; i < MAX_PLAYERS; i++) 
+	{
+		if(PI[i][pMember] == Command[0] && PI[i][pOnCapture] == 1) FinishRoundPlayer(i);
+		if(PI[i][pMember] == Command[1] && PI[i][pOnCapture] == 1) FinishRoundPlayer(i);
+	}
+
+	GangWarStatus = round;
+	WarTime = FINISH_ROUND;
+
+	for(new i; i < MAX_PLAYERS; i++) 
+	{
+		if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
+		{
+			cef_emit_event(i, "cef:capture:start", CEFSTR(name), CEFINT(WarTime));
+			cef_emit_event(i, "cef:capture:gang:score", CEFINT(1), CEFINT(CommandRounds[0]));
+			cef_emit_event(i, "cef:capture:gang:score", CEFINT(2), CEFINT(CommandRounds[1]));
+		}
+	}
+}
 callback: DeathFinishRoundPlayer(playerid)
 {
 	new id = GetPlayerID(playerid);
@@ -572,112 +678,6 @@ stock capture_OnDialogResponse(playerid, dialogid, response, listitem)
 		}
     }
     return 1;
-}
-stock RoundStart(round, name[])
-{
-	CommandKill[0] = 0;
-	CommandKill[1] = 0;
-
-	GangWarStatus = round;
-	WarTime = ROUND_TIME;
-
-	for(new i = 0; i < MAX_PLAYERS; i++)
-	{
-		if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-		{
-			cef_emit_event(i, "cef:kill:list:clear");
-			cef_emit_event(i, "cef:capture:start", CEFSTR(name), CEFINT(WarTime));
-		}
-	}
-}
-stock RoundFinish(round, name[], type)
-{
-	if(type == 0)
-	{
-		CommandKill[0] = 0;
-		CommandKill[1] = 0;
-
-		GangWarStatus = round;
-		WarTime = START_ROUND;
-
-		for(new i = 0; i < MAX_PLAYERS; i++)
-		{
-			if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-			{
-				cef_emit_event(i, "cef:capture:start", CEFSTR(name), CEFINT(WarTime));
-			}
-		}
-	}
-	else
-	{
-		if(CommandRounds[0] == 5 || CommandRounds[1] == 5)
-		{
-			FinishWar();
-		}	
-		else
-		{
-			if(WarTime <= 0)
-			{
-				CommandKill[0] = 0;
-				CommandKill[1] = 0;
-
-				GangWarStatus = round;
-				WarTime = START_ROUND;
-
-				for(new i = 0; i < MAX_PLAYERS; i++)
-				{
-					if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-					{
-						cef_emit_event(i, "cef:capture:start", CEFSTR(name), CEFINT(WarTime));
-					}
-				}
-			}
-		}
-	}
-}
-stock Round(round, name[])
-{
-	if(CommandKill[0] == CommadCount[1]) 
-	{
-		for(new i = 0; i < MAX_PLAYERS; i++) 
-		{
-			if(PI[i][pMember] == Command[0] && PI[i][pDeathOnCapture] == 0)
-			{
-				TogglePlayerControllable(i, false);
-			}
-		}
-		CommandRounds[0]++;
-	}
-	else if(CommandKill[1] == CommadCount[0]) 
-	{
-		for(new i = 0; i < MAX_PLAYERS; i++) 
-		{
-			if(PI[i][pMember] == Command[1] && PI[i][pDeathOnCapture] == 0)
-			{
-				TogglePlayerControllable(i, false);
-			}
-		}
-		CommandRounds[1]++;
-	}
-
-	for(new i = 0; i < MAX_PLAYERS; i++) 
-	{
-		if(PI[i][pMember] == Command[0] && PI[i][pOnCapture] == 1) FinishRoundPlayer(i);
-		if(PI[i][pMember] == Command[1] && PI[i][pOnCapture] == 1) FinishRoundPlayer(i);
-	}
-
-	GangWarStatus = round;
-	WarTime = FINISH_ROUND;
-
-	for(new i; i < MAX_PLAYERS; i++) 
-	{
-		if(PI[i][pMember] == Command[0] || PI[i][pMember] == Command[1])
-		{
-			cef_emit_event(i, "cef:capture:start", CEFSTR(name), CEFINT(WarTime));
-			cef_emit_event(i, "cef:capture:gang:score", CEFINT(1), CEFINT(CommandRounds[0]));
-			cef_emit_event(i, "cef:capture:gang:score", CEFINT(2), CEFINT(CommandRounds[1]));
-		}
-	}
 }
 stock AutoKickCapture(playerid)
 {
