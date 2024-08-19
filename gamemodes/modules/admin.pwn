@@ -308,7 +308,7 @@ CMD:veh(playerid, params[])
 		params[1] == 512 || params[1] == 513 || params[1] == 519 || params[1] == 520 || params[1] == 553 ||
 		params[1] == 577 || params[1] == 592 || params[1] == 593) return SCM(playerid, COLOR_GREY, !"Этот транспорт запрещен разработчиками сервера");
 
-    new Float:pos[3]; GetPlayerPos(playerid, pos[0], pos[1], pos[2]);
+    new Float:pos[3]; GetPlayerPos(params[0], pos[0], pos[1], pos[2]);
     new vehc = CreateVehicle(params[1], pos[0], pos[1], pos[2], 0, params[1], params[2], -1);
 
     SetVehicleVirtualWorld(vehc, GetPlayerVirtualWorld(playerid));

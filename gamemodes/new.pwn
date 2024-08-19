@@ -1318,7 +1318,7 @@ static PedMale[5] = {14,20,21,22,24};
 static PedFeMale[6] = {10,12,13,31,38,39};
 //=============================== [ ћќƒ”Ћ№Ќјя —»—“≈ћј ] ====================================//
 #include "modules/vk.pwn"
-#include "modules/capture.pwn"
+#include "modules/NewCapture/capture.pwn"
 #include "modules/proposition.pwn"
 #include "modules/quest.pwn"
 #include "modules/blacklist.pwn"
@@ -17103,16 +17103,16 @@ stock NameCapture()
 	if(GangWarStatus == 1) CaptureStatus = "подготовка к битве";
 	if(GangWarStatus == 2) CaptureStatus = "начало раунда";
 	if(GangWarStatus == 3) CaptureStatus = "раунд 1";
-	if(GangWarStatus == 4) CaptureStatus = "завершение раунда";
+	if(GangWarStatus == 4) CaptureStatus = "завершение битвы";
 	if(GangWarStatus == 5) CaptureStatus = "начало раунда";
 	if(GangWarStatus == 6) CaptureStatus = "раунд 2";
-	if(GangWarStatus == 7) CaptureStatus = "завершение раунда";
+	if(GangWarStatus == 7) CaptureStatus = "завершение битвы";
 	if(GangWarStatus == 8) CaptureStatus = "начало раунда";
 	if(GangWarStatus == 9) CaptureStatus = "раунд 3";
-	if(GangWarStatus == 10) CaptureStatus = "завершение раунда";
+	if(GangWarStatus == 10) CaptureStatus = "завершение битвы";
 	if(GangWarStatus == 11) CaptureStatus = "начало раунда";
 	if(GangWarStatus == 12) CaptureStatus = "раунд 4";
-	if(GangWarStatus == 13) CaptureStatus = "завершение раунда";
+	if(GangWarStatus == 13) CaptureStatus = "завершение битвы";
 	if(GangWarStatus == 14) CaptureStatus = "начало раунда";
 	if(GangWarStatus == 15) CaptureStatus = "раунд 5";
 	if(GangWarStatus == 16) CaptureStatus = "завершение захвата";
