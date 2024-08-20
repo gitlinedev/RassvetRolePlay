@@ -16,6 +16,8 @@ CMD:setrang(playerid, params[])
 
     if(sscanf(params,"us[3]",  params[0], params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /setrang [ID игрока] [+/-]");
 
+    if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не найден");
+	
     if(PI[params[0]][pRankUPTime] > gettime()) return SendClientMessage(playerid, COLOR_GREY, !"Понижать/повышать можно раз в 24 часа");
     if(PI[params[0]][pRang] == 10) return SCM(playerid, COLOR_GREY, !"Вы не можете изменять ранг лидеру");
 
@@ -26,7 +28,6 @@ CMD:setrang(playerid, params[])
 
     if(PI[playerid][pRang] <= PI[params[0]][pRang]) return SCM(playerid, COLOR_GREY, !"Вы не можете управлять рангом игрока схожим с Вами");
     if(PI[params[0]][pMember] != PI[playerid][pMember]) return SCM(playerid, COLOR_GREY, !"Игрок находиться в другой организации!");
-    if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не найден");
 
     new oldrang = PI[params[0]][pRang];
 

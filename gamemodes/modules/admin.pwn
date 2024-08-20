@@ -3,6 +3,8 @@ new bool:MPStatus,
 	Float:MPCord[3],
 	MPSettings[2];
 
+new ShowCStat[MAX_PLAYERS][14];
+
 static const stock AdminName[9][6] = {
 	"Игрок",
  	"NGM",
@@ -2605,7 +2607,7 @@ CMD:capture_stat(playerid)
 
         if (GangWarInfo[i][gPlayerID] != INVALID_PLAYER_ID) 
         {
-            ShowTeam[playerid][count] = GangWarInfo[i][gPlayerID];
+            ShowCStat[playerid][count] = GangWarInfo[i][gPlayerID];
             count++;
             f(string, sizeof(string), "%s{FFFFFF}(Count %d) | {FFFF99}(%s NAME) - (%d ORG) - (%d ID){FFFFFF}\n", 
                    string, count, 

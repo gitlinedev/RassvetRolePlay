@@ -80,52 +80,52 @@ new AC_CODE_TRIGGER_TYPE[AC_MAX_CODES] = {
     AC_CODE_TRIGGER_TYPE_WARNING, // FlyHack (in vehicle)
     AC_CODE_TRIGGER_TYPE_WARNING, // SpeedHack (onfoot)
     AC_CODE_TRIGGER_TYPE_WARNING, // SpeedHack (in vehicle)
-    AC_CODE_TRIGGER_TYPE_KICK, // Health hack (in vehicle)
-    AC_CODE_TRIGGER_TYPE_KICK, // Health hack (onfoot)
-    AC_CODE_TRIGGER_TYPE_KICK, // Armour hack
-    AC_CODE_TRIGGER_TYPE_KICK, // Money hack
-    AC_CODE_TRIGGER_TYPE_KICK, // Weapon hack
-    AC_CODE_TRIGGER_TYPE_KICK, // Ammo hack (add)
-    AC_CODE_TRIGGER_TYPE_KICK, // Ammo hack (infinite)
-    AC_CODE_TRIGGER_TYPE_KICK, // Special actions hack
+    AC_CODE_TRIGGER_TYPE_WARNING, // Health hack (in vehicle)
+    AC_CODE_TRIGGER_TYPE_WARNING, // Health hack (onfoot)
+    AC_CODE_TRIGGER_TYPE_WARNING, // Armour hack
+    AC_CODE_TRIGGER_TYPE_WARNING, // Money hack
+    AC_CODE_TRIGGER_TYPE_WARNING, // Weapon hack
+    AC_CODE_TRIGGER_TYPE_WARNING, // Ammo hack (add)
+    AC_CODE_TRIGGER_TYPE_WARNING, // Ammo hack (infinite)
+    AC_CODE_TRIGGER_TYPE_WARNING, // Special actions hack
     AC_CODE_TRIGGER_TYPE_WARNING, // GodMode from bullets (onfoot)
     AC_CODE_TRIGGER_TYPE_WARNING, // GodMode from bullets (in vehicle)
-    AC_CODE_TRIGGER_TYPE_KICK, // Invisible hack
-    AC_CODE_TRIGGER_TYPE_KICK, // Lagcomp-spoof
-    AC_CODE_TRIGGER_TYPE_KICK, // Tuning hack
+    AC_CODE_TRIGGER_TYPE_WARNING, // Invisible hack
+    AC_CODE_TRIGGER_TYPE_WARNING, // Lagcomp-spoof
+    AC_CODE_TRIGGER_TYPE_WARNING, // Tuning hack
     AC_CODE_TRIGGER_TYPE_WARNING, // Parkour mod
-    AC_CODE_TRIGGER_TYPE_KICK, // Quick turn
-    AC_CODE_TRIGGER_TYPE_KICK, // Rapid fire
-    AC_CODE_TRIGGER_TYPE_KICK, // FakeSpawn
-    AC_CODE_TRIGGER_TYPE_KICK, // FakeKill
+    AC_CODE_TRIGGER_TYPE_WARNING, // Quick turn
+    AC_CODE_TRIGGER_TYPE_WARNING, // Rapid fire
+    AC_CODE_TRIGGER_TYPE_WARNING, // FakeSpawn
+    AC_CODE_TRIGGER_TYPE_WARNING, // FakeKill
     AC_CODE_TRIGGER_TYPE_WARNING, // Pro Aim
     AC_CODE_TRIGGER_TYPE_WARNING, // CJ run
     AC_CODE_TRIGGER_TYPE_WARNING, // CarShot
     AC_CODE_TRIGGER_TYPE_WARNING, // CarJack
-    AC_CODE_TRIGGER_TYPE_KICK, // UnFreeze
+    AC_CODE_TRIGGER_TYPE_WARNING, // UnFreeze
     AC_CODE_TRIGGER_TYPE_WARNING, // AFK Ghost
     AC_CODE_TRIGGER_TYPE_WARNING, // Full Aiming
-    AC_CODE_TRIGGER_TYPE_KICK, // Fake NPC
-    AC_CODE_TRIGGER_TYPE_KICK, // Reconnect
+    AC_CODE_TRIGGER_TYPE_WARNING, // Fake NPC
+    AC_CODE_TRIGGER_TYPE_WARNING, // Reconnect
     AC_CODE_TRIGGER_TYPE_WARNING, // High Ping
-    AC_CODE_TRIGGER_TYPE_KICK, // Dialog Hack
-    AC_CODE_TRIGGER_TYPE_KICK, // Sandbox
-    AC_CODE_TRIGGER_TYPE_KICK, // Invalid Version
-    AC_CODE_TRIGGER_TYPE_KICK, // Rcon hack
-    AC_CODE_TRIGGER_TYPE_KICK, // Tuning crasher
-    AC_CODE_TRIGGER_TYPE_KICK, // Invalid seat crasher
-    AC_CODE_TRIGGER_TYPE_KICK, // Dialog crasher
-    AC_CODE_TRIGGER_TYPE_KICK, // Attached object crasher
-    AC_CODE_TRIGGER_TYPE_KICK, // Weapon crasher
-    AC_CODE_TRIGGER_TYPE_KICK, // Connects to one slot
+    AC_CODE_TRIGGER_TYPE_WARNING, // Dialog Hack
+    AC_CODE_TRIGGER_TYPE_WARNING, // Sandbox
+    AC_CODE_TRIGGER_TYPE_WARNING, // Invalid Version
+    AC_CODE_TRIGGER_TYPE_WARNING, // Rcon hack
+    AC_CODE_TRIGGER_TYPE_WARNING, // Tuning crasher
+    AC_CODE_TRIGGER_TYPE_WARNING, // Invalid seat crasher
+    AC_CODE_TRIGGER_TYPE_WARNING, // Dialog crasher
+    AC_CODE_TRIGGER_TYPE_WARNING, // Attached object crasher
+    AC_CODE_TRIGGER_TYPE_WARNING, // Weapon crasher
+    AC_CODE_TRIGGER_TYPE_WARNING, // Connects to one slot
     AC_CODE_TRIGGER_TYPE_WARNING, // Flood callback functions
     AC_CODE_TRIGGER_TYPE_WARNING, // Flood change seat
-    AC_CODE_TRIGGER_TYPE_KICK, // DDos
-    AC_CODE_TRIGGER_TYPE_KICK // NOP`s
+    AC_CODE_TRIGGER_TYPE_WARNING, // DDos
+    AC_CODE_TRIGGER_TYPE_WARNING // NOP`s
 };
 callback: OnCheatDetected(playerid, const ip_address[], type, code)
 {	
-    if(PI[playerid][pPlayerDetecting] >= 5)
+    if(PI[playerid][pPlayerDetecting] >= 20)
     {
         SendClientMessagef(playerid, COLOR_BLACK, "Вы были кикнуты по подозрению в читерстве (#%03d)", code);
         Kick(playerid);
@@ -143,11 +143,11 @@ callback: OnCheatDetected(playerid, const ip_address[], type, code)
         {
             PI[playerid][pPlayerDetecting]++;
 
-            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%d | %d %s).", getName(playerid), playerid, PI[playerid][pPlayerDetecting], code, AC_CODE_NAME[code]);
+            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%d | №%d - %s).", getName(playerid), playerid, PI[playerid][pPlayerDetecting], code, AC_CODE_NAME[code]);
         }
         case AC_CODE_TRIGGER_TYPE_KICK: 
 		{
-            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Кикнут %s[%d] (#%d | %d %s).", getName(playerid), playerid, PI[playerid][pPlayerDetecting], code, AC_CODE_NAME[code]);
+            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Кикнут %s[%d] (#%d | №%d - %s).", getName(playerid), playerid, PI[playerid][pPlayerDetecting], code, AC_CODE_NAME[code]);
 			SendClientMessagef(playerid, COLOR_BLACK, "Вы были кикнуты по подозрению в читерстве (#%03d)", code);
 			Kick(playerid);
 		}

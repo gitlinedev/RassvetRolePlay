@@ -331,146 +331,132 @@ stock OtherMapping()
 	CreateObject(636, 1640.63, -1072.88, 11.29,   0.00, 0.00, -70.26);
 	CreateObject(634, 1611.59, -1065.77, 10.37,   0.00, 0.00, -98.46);
 	CreateObject(615, 1578.00, -1216.80, 14.00,   0.00, 0.00, -44.46);
-
+	CreateObject(4903, 1659.66, -1213.32, 10.69,   0.00, 0.00, 0.00);
+	CreateObject(4903, 1659.49, -1270.00, 10.69,   0.00, 0.00, 0.00);
+	CreateObject(4903, 1628.34, -1304.12, 10.20,   0.00, 0.00, -90.00);
+	CreateObject(4903, 1572.54, -1304.28, 10.75,   0.00, 0.00, -90.00);
+	CreateObject(4903, 1533.21, -1282.04, 10.86,   0.00, 0.00, 180.00);
+	CreateObject(4903, 1532.96, -1226.81, 10.86,   0.00, 0.00, 180.00);
+	CreateObject(615, 1546.88, -1210.16, 13.92,   0.00, 0.00, 21.72);
+	CreateObject(634, 1568.55, -1197.32, 13.21,   0.00, 0.00, 14.52);
+	CreateObject(615, 1559.33, -1183.16, 13.92,   0.00, 0.00, -19.50);
+	CreateObject(615, 1639.80, -1181.58, 13.92,   0.00, 0.00, -76.14);
+	CreateObject(615, 1649.11, -1239.40, 13.90,   0.00, 0.00, -97.50);
+	CreateObject(634, 1606.26, -1180.97, 12.66,   0.00, 0.00, 129.66);
+	CreateObject(634, 1630.65, -1286.61, 13.68,   0.00, 0.00, 61.02);
+	CreateObject(615, 1570.17, -1271.76, 13.92,   0.00, 0.00, -46.62);
+	CreateObject(634, 1578.53, -1241.83, 13.21,   0.00, 0.00, 64.32);
+	CreateObject(4903, 1472.38, -1119.21, 7.03,   0.00, 0.00, 301.92);
+	CreateObject(4903, 1518.56, -1086.80, 7.03,   0.00, 0.00, 304.50);
+	CreateObject(4903, 1573.31, -1055.40, 7.03,   0.00, 0.00, 289.80);
+	CreateObject(4903, 1661.62, -1036.90, 7.03,   0.00, 0.00, 277.98);
+	CreateObject(4903, 1711.12, -1028.58, 7.03,   0.00, 0.00, 277.98);
+	CreateObject(615, 1596.14, -1244.20, 13.92,   0.00, 0.00, 69.66);
 
 	new capture;
+	capture = CreateObject(19313, 1606.36, -1233.34, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1606.33, -1219.37, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1612.90, -1219.34, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1612.99, -1233.44, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1619.44, -1219.29, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1619.41, -1233.32, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1612.96, -1247.44, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1619.46, -1247.38, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1626.07, -1247.38, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1618.12, -1257.00, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1624.55, -1257.00, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1630.03, -1257.09, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1630.05, -1243.11, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1630.18, -1229.09, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1626.06, -1242.44, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1625.94, -1228.48, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1630.12, -1227.77, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
+	capture = CreateObject(19313, 1626.19, -1227.72, 17.62,   90.00, 0.00, 90.00);
+	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
+	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
 	capture = CreateObject(19313, 1612.48, -1239.28, 22.65,   0.00, 0.00, 0.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1623.68, -1239.37, 22.65,   0.00, 0.00, 0.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1623.63, -1237.01, 22.65,   0.00, 0.00, 0.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1612.48, -1236.98, 22.65,   0.00, 0.00, 0.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1605.42, -1229.96, 22.65,   0.00, 0.00, 90.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1605.39, -1219.51, 22.65,   0.00, 0.00, 90.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1621.36, -1219.55, 22.01,   0.00, 0.00, 90.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1630.68, -1229.94, 22.71,   0.00, 0.00, 90.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1626.32, -1223.25, 22.71,   0.00, 0.00, 0.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1626.09, -1220.68, 22.01,   0.00, 0.00, 0.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1609.93, -1255.45, 22.02,   0.00, 0.00, 0.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1614.72, -1256.77, 22.02,   0.00, 0.00, 90.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1630.70, -1256.53, 22.77,   0.00, 0.00, 90.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1630.60, -1246.42, 22.77,   0.00, 0.00, 90.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1605.47, -1246.28, 22.77,   0.00, 0.00, 90.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
 	capture = CreateObject(19313, 1609.62, -1252.90, 22.74,   0.00, 0.00, 0.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1610.33, -1223.89, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1617.13, -1228.73, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1629.84, -1227.81, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1629.91, -1241.84, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1623.42, -1241.84, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1623.20, -1256.84, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1629.80, -1256.80, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1616.27, -1250.52, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1606.46, -1248.28, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1611.69, -1236.38, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1606.63, -1219.54, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1616.94, -1219.20, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1617.38, -1238.52, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1623.59, -1227.64, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1612.88, -1250.47, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1606.44, -1236.40, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1606.38, -1231.94, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1613.03, -1219.46, 16.52,   90.00, 0.00, 90.00);
-	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
-	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
-	//
-	capture = CreateObject(19313, 1616.68, -1256.84, 16.52,   90.00, 0.00, 90.00);
+	capture = CreateObject(19313, 1606.40, -1247.36, 17.62,   90.00, 0.00, 90.00);
 	SetObjectMaterial(capture, 0, 1875, "podval", "alpha_hide", 0x00000000);
 	SetObjectMaterial(capture, 1, 1875, "podval", "alpha_hide", 0x00000000);
 

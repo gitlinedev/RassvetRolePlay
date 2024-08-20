@@ -34,7 +34,7 @@ new
 #include nex-ac
 
 #undef MAX_PLAYERS
-#define MAX_PLAYERS 500
+const MAX_PLAYERS = 100;
 
 #include Pawn.CMD
 #include streamer
@@ -1733,25 +1733,8 @@ stock GivePlayerArmour(playerid,Float:Armour, Float:Armplayer)
 public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart) return 1;
 public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart) 
 {
-    if(PI[playerid][pMember] == 3) 
-	{
-		if(weaponid == 23 || weaponid == 3)
-		{
-			new Float:health, Float:x, Float:y, Float:z;
-			GetPlayerHealth(damagedid,health);
-			GetPlayerPos(damagedid, x, y, z); ClearAnimations(damagedid);
+	PlayerPlaySound(playerid, 6401, 0.0, 0.0, 0.0);
 
-			SCMf(playerid,  COLOR_BLACKBLUE, "Вы успешно оглушили игрока: %s", PI[damagedid][pName]);
-			SCMf(damagedid, COLOR_BLACKBLUE, "Сотрудник Полиции %s оглушил вас на 15 секунд", PI[playerid][pName]);
-
-			TogglePlayerControllable(damagedid, 0);
-			SetTimerEx("TazerEffect", 15*1000, false, "d", damagedid);
-
-			ApplyAnimation(damagedid, "PED", "COWER", 4.0, 1, 0, 0, 0, 0);
-
-			SetPlayerHealth(damagedid, health+amount);
-		}
-	}
 	new Float:Health, Float:hpcar, CarID = INVALID_VEHICLE_ID;
 	GetPlayerHealth(damagedid, Health);
 
@@ -1762,37 +1745,25 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
 	}
 	if(playerid != INVALID_PLAYER_ID) 
 	{
-		//PlayerPlaySound(playerid, 6401, 0.0, 0.0, 10.0);
-		/*if(IsPlayerInRangeOfPoint(damagedid, 100.0, 1602.1008,-1233.4459,18.9381))
+		if(PI[playerid][pMember] == 3) 
 		{
-			if(GangWarStatus == 1)
+			if(weaponid == 23 || weaponid == 3)
 			{
-				SCMf(playerid, COLOR_GREY, "Урон заблокирован: игрок %s[%d] находится в зоне захвата территории", PI[damagedid][pName],damagedid);
-				SetPlayerHealthAC(damagedid, Health);
+				new Float:health, Float:x, Float:y, Float:z;
+				GetPlayerHealth(damagedid,health);
+				GetPlayerPos(damagedid, x, y, z); ClearAnimations(damagedid);
+
+				SCMf(playerid,  COLOR_BLACKBLUE, "Вы успешно оглушили игрока: %s", PI[damagedid][pName]);
+				SCMf(damagedid, COLOR_BLACKBLUE, "Сотрудник Полиции %s оглушил вас на 15 секунд", PI[playerid][pName]);
+
+				TogglePlayerControllable(damagedid, 0);
+				SetTimerEx("TazerEffect", 15*1000, false, "d", damagedid);
+
+				ApplyAnimation(damagedid, "PED", "COWER", 4.0, 1, 0, 0, 0, 0);
+
+				SetPlayerHealth(damagedid, health+amount);
 			}
-			else if(PI[playerid][pOnCapture] == 1 && GangWarStatus > 1)
-			{
-				SCMf(playerid, COLOR_GREY, "Урон заблокирован: игрок %s[%d] находится в зоне захвата территории", PI[damagedid][pName],damagedid);
-				SetPlayerHealthAC(damagedid, Health);
-			}
-			return 0;
 		}
-		if(IsPlayerInRangeOfPoint(playerid, 100.0, 1602.1008,-1233.4459,18.9381))
-		{
-			if(GangWarStatus == 1)
-			{
-				SCM(playerid, COLOR_GREY, !"Урон заблокирован: вы находитесь в зоне захвата территории");
-				SetPlayerHealthAC(damagedid, Health);
-				SetPlayerArmedWeapon(playerid, 0);
-			}
-			else if(PI[playerid][pOnCapture] == 1 && GangWarStatus > 1)
-			{
-				SCM(playerid, COLOR_GREY, !"Урон заблокирован: вы находитесь в зоне захвата территории");
-				SetPlayerHealthAC(damagedid, Health);
-				SetPlayerArmedWeapon(playerid, 0);
-			}
-			return 0;
-		}*/
 		if(PI[playerid][pOnMP] == 0 && MPTeamKill == false) 
 		{
 			if(PI[playerid][pMember] == 0) return 1;
@@ -1933,7 +1904,7 @@ stock ConnectMySQL()
 {
     new currenttime = GetTickCount();
 
-	new sql = 0;
+	new sql = 1;
 	if(!sql) mysql = mysql_connect("127.0.0.1", "gs269723", "gs269723", "6CKII67VlSAR"); // основа (0)
 	else mysql = mysql_connect("127.0.0.1", "gs87610", "gs87610", "cs0gy97c"); // тест (1)
 
@@ -4508,7 +4479,7 @@ public OnPlayerUpdate(playerid)
             if(!IsPlayerInRangeOfPoint(playerid, 2.0, pos_x, pos_y, pos_z)) pPickupID[playerid] = 0;
         }
     }
-	if(PI[playerid][pAFK] > 60)
+	if(PI[playerid][pAFK] > 120)
 	{
 		AutoKickCapture(playerid);
 	}
@@ -17062,7 +17033,7 @@ public OnPlayerPickUpPickup(playerid, pickupid)
 			CEF_ShowPlayerDialogNew(playerid, 4901, "Стрела",\
 				"Вы действительно хотите участвовать в битве за территорию?\n\n",\
 				"Вы будете исключены из списка участников,\nесли покините зону стрелы,\
-				пробудете в AFK\nболее 1 минуты или выйдите из игры", "Вступить", "Отмена");
+				пробудете в AFK\nболее 2 минут или выйдите из игры", "Вступить", "Отмена");
         }
     }
 	SetPVarInt(playerid,"PickUPKD",gettime() + 7);
