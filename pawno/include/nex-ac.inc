@@ -8087,6 +8087,7 @@ public OnVehicleDamageStatusUpdate(vehicleid, playerid)
 	#endif
 #endif
 
+/*
 #if defined OnPlayerEnterDynamicArea
 	#if defined STREAMER_ENABLE_TAGS
 		public OnPlayerEnterDynamicArea(playerid, STREAMER_TAG_AREA:areaid)
@@ -8146,6 +8147,7 @@ public OnVehicleDamageStatusUpdate(vehicleid, playerid)
 		#endif
 	#endif
 #endif
+*/
 
 #if defined PAWNRAKNET_INC_
 	public OnIncomingPacket(playerid, packetid, BitStream:bs)

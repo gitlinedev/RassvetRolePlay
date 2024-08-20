@@ -788,7 +788,6 @@ new NPC_ALL[30],
 	FollowBy[MAX_PLAYERS],
 	TimerForPlayer[MAX_PLAYERS],
 	WeatherServer,
-	bool:pCBugging[MAX_PLAYERS],
 	ptsLastFiredWeapon[MAX_PLAYERS],
 	dalnoboy_trayler[MAX_PLAYERS],
 	dalnoboy_car[MAX_PLAYERS],
@@ -797,7 +796,7 @@ new NPC_ALL[30],
 	Text3D:vehicletext,
 	vehicle_static[99],
 	WarZone,
-	WarZoneCube,
+	WarZonaKV,
 	SkinPost,
 	SkinPostTimer,
 	GopotaPost,
@@ -1972,6 +1971,7 @@ stock ConnectMySQL()
 	EnableAntiCheat(12, 0);
 	EnableAntiCheat(2, 0);
 	EnableAntiCheat(52, 0);
+	EnableAntiCheat(48, 0);
 
 	printf("MySQL загрузился за %i ms", GetTickCount() - currenttime);
     return true;
@@ -2001,7 +2001,7 @@ public OnGameModeInit()
 	RunTimer = SetTimer("RunCheck", 10, 1);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	ArmyStorageZone = CreateDynamicCircle(-2569.5022, 450.7665, 5.0, -1, -1, -1);
-	WarZoneCube = CreateDynamicCube(1540.5142, -1188.6774, 1.9030, 1647.0428, -1296.2592, 45.9030, 0, 0, -1);
+	WarZonaKV = CreateDynamicRectangle(1541.1404, -1189.9668, 1645.7816, -1294.4950, -1, -1, -1);
 	//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 	SetNameTagDrawDistance(30.0);
 	LimitPlayerMarkerRadius(70.0);
@@ -2141,6 +2141,16 @@ public OnPlayerConnect(playerid)
 	RemoveBuild(playerid);
 	return 1;
 }
+callback: GetPlayerDataMysql(playerid) 
+{
+	if(cache_get_row_count(mysql) > 0) {
+		PI[playerid][pID] = cache_get_row_int(0, 0, mysql);
+	}
+	else {
+		PI[playerid][pID] = -1;
+	}
+	return CheckStatus(playerid);
+}
 stock CheckStatus(playerid)
 {
 	SetPlayerPos(playerid, 1884.4066,2060.7212,15.9926);
@@ -2154,16 +2164,6 @@ stock CheckStatus(playerid)
 	mysql_string[0] = EOS, mf(mysql, mysql_string, 76, "SELECT * FROM `banlist` WHERE `name` = '%e' LIMIT 1", getName(playerid));
     mysql_tquery(mysql, mysql_string, "CheckBan", "d", playerid);
 	return 1;
-}
-callback: GetPlayerDataMysql(playerid) 
-{
-	if(cache_get_row_count(mysql) > 0) {
-		PI[playerid][pID] = cache_get_row_int(0, 0, mysql);
-	}
-	else {
-		PI[playerid][pID] = -1;
-	}
-	return LoadVoiceChat(playerid);
 }
 public OnPlayerEnterDynamicArea(playerid, areaid) 
 {
@@ -2288,19 +2288,6 @@ public OnPlayerDeath(playerid, killerid, reason)
 	PI[playerid][pMaskWorn] = 0;
     PI[playerid][pSchoolTestLvl] = 0;
 
-	if(!PI[playerid][pJail] && !PI[playerid][pDemorgan] && PI[playerid][pDeathOnCapture] == 0)
-	{
-		if(PI[playerid][pOnMP] == 0)
-		{
-			if(PI[playerid][pMember] == 2) 
-			{
-				SendClientMessagef(playerid, COLOR_GREEN, !"Ваш персонаж погиб. Сейчас вас ожидает процесс восстановления в казарме.");
-				PlayerHospital(playerid);
-			}
-			else PlayerHospital(playerid);
-			TogglePlayerControllable(playerid, true);
-		}
-	}
     if(playerid != 65535 && killerid != 65535) 
 	{
 		if(IsPlayerCops(killerid) && PI[playerid][pWanted] != 0) 
@@ -2395,6 +2382,20 @@ public OnPlayerDeath(playerid, killerid, reason)
 				SCMf(killerid, COLOR_TOMATO, "Ваш уровень розыска повышен за убийство игрока %s[%d]",PI[playerid][pName], playerid);
 				if(PI[killerid][pRespect] > -100) PI[killerid][pRespect]--;
 			}
+		}
+	}
+	if(!PI[playerid][pJail] && !PI[playerid][pDemorgan] && PI[playerid][pDeathOnCapture] == 0)
+	{
+		if(PI[playerid][pOnMP] == 0)
+		{
+			SendPlayerCenterNotify(playerid, 1, "Вы попали в больницу", 5);
+			if(PI[playerid][pMember] == 2) 
+			{
+				SendClientMessagef(playerid, COLOR_GREEN, !"Ваш персонаж погиб. Сейчас вас ожидает процесс восстановления в казарме.");
+				PlayerHospital(playerid);
+			}
+			else PlayerHospital(playerid);
+			TogglePlayerControllable(playerid, true);
 		}
 	}
 	if(PI[playerid][pDeathOnCapture] == 0) 
@@ -3706,7 +3707,8 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 		if(PI[playerid][pMember] != 2) return SCM(playerid, COLOR_GREY, !"У Вас нет доступа к армейскому магазину");
 		ShowArmyShop(playerid);
 	}
-	if(pickupid == MVDGarageVhod) {
+	if(pickupid == MVDGarageVhod) 
+	{
 	    if(PI[playerid][pMember] != 3) return SCM(playerid, COLOR_GREY, !"Вы не являетесь сотрудником Полиции");
  		SetPlayerVirtualWorld(playerid, 2);
 	    SetPlayerInterior(playerid, 1);
@@ -3715,11 +3717,12 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 		SetCameraBehindPlayer(playerid);
 		return Freeze(playerid);
 	}
-	if(pickupid == MVDGarageVihod) {
+	if(pickupid == MVDGarageVihod) 
+	{
  		SetPlayerVirtualWorld(playerid, 0);
 	    SetPlayerInterior(playerid, 0);
-	    SetPlayerPos(playerid, 2438.2107,-1799.6512,21.9369);
-		SetPlayerFacingAngle(playerid, 88.3939);
+	    SetPlayerPos(playerid, 2434.2869,-1796.9921,21.9369);
+		SetPlayerFacingAngle(playerid, 87.4696);
 		SetCameraBehindPlayer(playerid);
 		return Freeze(playerid);
 	}
@@ -3820,9 +3823,10 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 		return Freeze(playerid);
 	}
 	// МВД #2
-    if(pickupid == VhodUchastokMVD0) {
-        SetPlayerVirtualWorld(playerid, -1);
-        SetPlayerInterior(playerid, -1);
+    if(pickupid == VhodUchastokMVD0) 
+	{
+        SetPlayerVirtualWorld(playerid, 1);
+        SetPlayerInterior(playerid, 1);
         SetPlayerPos(playerid, 126.3267,1853.6423,-31.9775);
         SetPlayerFacingAngle(playerid, 353.6208);
         SetCameraBehindPlayer(playerid);
@@ -3955,7 +3959,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		SetPVarInt(playerid,"kdpickupbank",gettime() + 3);
 		ShowPlayerDialogf(playerid, 8999, DIALOG_STYLE_LIST, !"{ee3366}Банкомат", !"Далее", !"Закрыть", "1. Банковская карта {FFFF99}(№ %d)\n2. Оплата имущества\n3. Медицинские услуги", PI[playerid][pID]);
 	}
-    if(!pCBugging[playerid] && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT || !pCBugging[playerid] && GetPlayerState(playerid) == 1) 
+    if(GetPlayerState(playerid) == PLAYER_STATE_ONFOOT || GetPlayerState(playerid) == 1) 
 	{
 		if(PRESSED(KEY_FIRE)) 
 		{
@@ -3971,7 +3975,6 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		{
 			if((gettime() - ptsLastFiredWeapon[playerid]) < 1) 
 			{
-				pCBugging[playerid] = true;
 				SendAdminsMessagef(COLOR_ADMINCHAT, "[Warning] Игрок %s[%d] возможно использовал +C", getName(playerid), playerid);
 				SetPlayerArmedWeapon(playerid, 0);
 			}
@@ -4125,11 +4128,11 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	 	    if(IsPlayerInRangeOfPoint(playerid, 7.0, -165.3361,625.0273,-50.1706)) 
 			{
 				new vehicle = GetPlayerVehicleID(playerid);
-	 	        SetVehiclePos(vehicle, 2436.7822,-1794.5037,21.9369);
+	 	        SetVehiclePos(vehicle, 2433.0945,-1792.3523,22.5890);
 	 	        LinkVehicleToInterior(vehicle, 0);
 	 	        SetVehicleVirtualWorld(vehicle, 0);
-	 	        SetVehicleZAngle(vehicle, 90.7041);
-	 	        SetPlayerPosAC(playerid, 2436.7822,-1794.5037,21.9369);
+	 	        SetVehicleZAngle(vehicle, 89.4656);
+	 	        SetPlayerPosAC(playerid, 2433.0945,-1792.3523,22.5890);
          		SetPlayerVirtualWorld(playerid, 0);
 	    		SetPlayerInterior(playerid, 0);
 	    		PutPlayerInVehicle(playerid, vehicle, 0);
@@ -4559,6 +4562,8 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	kv_OnDialogResponse(playerid, dialogid, response, listitem);
 	gm_OnDialogResponse(playerid, dialogid, response, listitem);
 	org_OnDialogResponse(playerid, dialogid, response);
+	police_OnDialogResponse(playerid, dialogid, response, listitem);
+
 
 	switch(dialogid) 
 	{
@@ -5241,6 +5246,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 									/members - члены организации online\n\
 									/su - выдать розыск\n\
 									/clear - обнулировать розыск\n\
+									/search - обыскать игрока\n\
 									/cuff - надеть наручники\n\
 									/uncuff - снять наручники\n\
 									/incar - посадить игрока в машину\n\
@@ -11589,12 +11595,24 @@ callback: PlayerUpdate(playerid)
   	if(PI[playerid][pJailTime] > 0) 
 	{
 		PI[playerid][pJailTime]--;
-		if(PI[playerid][pJailTime] <= 0) PlayerSpawn(playerid);
+		if(PI[playerid][pJailTime] <= 0) 
+		{
+			PI[playerid][pJail] = 0;
+			UpdatePlayerDataInt(playerid, "jail", PI[playerid][pJail]);
+			UpdatePlayerDataInt(playerid, "jailtime", PI[playerid][pJailTime]);
+			PlayerSpawn(playerid);
+		}
 	}
 	if(PI[playerid][pDemorganTime] > 0) 
 	{
 		PI[playerid][pDemorganTime]--;
-		if(PI[playerid][pDemorganTime] <= 0) PlayerSpawn(playerid);
+		if(PI[playerid][pDemorganTime] <= 0) 
+		{
+			PI[playerid][pDemorgan] = 0;
+			UpdatePlayerDataInt(playerid, "demorgan", PI[playerid][pDemorgan]);
+			UpdatePlayerDataInt(playerid, "demorgan_time", PI[playerid][pDemorganTime]);
+			PlayerSpawn(playerid);
+		}
 	}
 	if(PI[playerid][pVmuteTime] > 0 && PI[playerid][pVmute] == 1) 
 	{
@@ -11647,13 +11665,6 @@ callback: PlayerUpdate(playerid)
 		PayDay(playerid);	
 	}
 	if(minute > 1) payday[playerid] = false;
- 	/*if(PI[playerid][pDemorgan] != 0 && PI[playerid][pDemorganTime] <= 0) 
-	{
-		PI[playerid][pDemorganTime] = 0;
-		PI[playerid][pDemorgan] = 0;
-		PlayerSpawn(playerid);
-		SCM(playerid, COLOR_LIGHTGREY, !"Вы вышли из деморгана. Больше не нарушайте!");
-	}*/
 	if(PI[playerid][data_CALL] != -1) 
 	{
 		if(!IsPlayerConnected(PI[playerid][data_CALL])) 
@@ -14007,7 +14018,7 @@ callback: LoadMembers(playerid)
     {
         if (!IsPlayerConnected(i)) continue;
 
-        if (PI[i][pMember] == PI[playerid][pMember]) 
+        if (PI[i][pMember] == PI[playerid][pMember] && PI[playerid][pAdmin] <= 0) 
         {
             online_count++;
 
@@ -15075,24 +15086,24 @@ CMD:anim(playerid)
 }
 CMD:givegun(playerid, params[]) 
 {
-	if(!IsPlayerOPG(playerid))  return SCM(playerid, COLOR_GREY,"Вы не состоите в ОПГ");
+	if(!IsPlayerOPG(playerid))  return SCM(playerid, COLOR_GREY, !"Вы не состоите в ОПГ");
  	if(sscanf(params, "ud", params[0], params[1])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /givegun [ID игрока] [кол-во]");
-    if(PI[params[0]][pWeaponLock] > 0) return SCM(playerid, COLOR_GREY,"У данного игрока блокировка оружия");
-	if(playerid == params[0]) return SCM(playerid, COLOR_GREY,"Нельзя передавать самому себе");
-    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY,"Данного ID нет на сервере");
-	if(PI[params[0]][pMember] != PI[playerid][pMember]) return SCM(playerid, COLOR_GREY,"Данный игрок не состоит в вашей организации");
-	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY,"Данный игрок не прошел авторизацию");
-	if(params[1] < 1) return SCM(playerid, COLOR_GREY,"Минимальное значение патрон 1");
-	if(PI[params[0]][pLevel] < 2) return SCM(playerid, COLOR_GREY,"У игрока нет 2-го уровня");
+    if(PI[params[0]][pWeaponLock] > 0) return SCM(playerid, COLOR_GREY, !"У данного игрока блокировка оружия");
+	if(playerid == params[0]) return SCM(playerid, COLOR_GREY, !"Нельзя передавать самому себе");
+    if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Данного ID нет на сервере");
+	if(PI[params[0]][pMember] != PI[playerid][pMember]) return SCM(playerid, COLOR_GREY, !"Данный игрок не состоит в вашей организации");
+	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Данный игрок не прошел авторизацию");
+	if(params[1] < 1) return SCM(playerid, COLOR_GREY, !"Минимальное значение патрон 1");
+	if(PI[params[0]][pLevel] < 2) return SCM(playerid, COLOR_GREY, !"У игрока нет 2-го уровня");
 	new Float:x,Float:y,Float:z;
 	GetPlayerPos(playerid, x,y,z);
-    if(!PlayerToPoint(5.0, params[0], x,y,z)) return SCM(playerid, COLOR_GREY,"Нужно находиться возле игрока");
+    if(!PlayerToPoint(5.0, params[0], x,y,z)) return SCM(playerid, COLOR_GREY, !"Нужно находиться возле игрока");
 	new gun = GetPlayerWeapon(playerid);
 	new gunslot = getWeaponIdSlot(gun);
-	if(gun == 38 && gun == 34 && gun == 35 && gun == 36 && gun == 37 && gun == 39 && gun == 40) return SCM(playerid, COLOR_GREY,"Нельзя передать данное оружие");
-	if(params[1] < 1) return SCM(playerid, COLOR_GREY,"Недопустимое значение");
-	if(PI[playerid][data_GUN][gunslot] == 0 || gunslot == 0) return SCM(playerid, COLOR_GREY,"Чтобы передать оружие, нужно взять его в руки");
-	if(PI[playerid][data_AMMO][gunslot] < params[1]) return SCM(playerid, COLOR_GREY, "У Вас нет такого количества патронов");
+	if(gun == 38 && gun == 34 && gun == 35 && gun == 36 && gun == 37 && gun == 39 && gun == 40) return SCM(playerid, COLOR_GREY, !"Нельзя передать данное оружие");
+	if(params[1] < 1) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
+	if(PI[playerid][data_GUN][gunslot] == 0 || gunslot == 0) return SCM(playerid, COLOR_GREY, !"Чтобы передать оружие, нужно взять его в руки");
+	if(PI[playerid][data_AMMO][gunslot] < params[1]) return SCM(playerid, COLOR_GREY, !"У Вас нет такого количества патронов");
 	return SendRequestForPlayer(playerid, params[0], 15, params[1]);
 }
 stock PlayerGetsChatBan(playerid, text[]) 
@@ -15547,7 +15558,7 @@ public OnPlayerLeaveDynamicArea(playerid, areaid)
 		KillTimer(TimetTheftCartridges[playerid]);
 		DisablePlayerCheckpoint(playerid);
 	}
-	if(areaid == WarZoneCube)
+	if(areaid == WarZonaKV)
 	{
 		if(PI[playerid][pOnCapture] == 1 && GangWarStatus >= 1)
 		{
@@ -16437,6 +16448,7 @@ stock SetSpawnInfoEx(playerid, skin, Float:x, Float:y, Float:z, Float:a)
 }
 callback: PlayerSpawn(playerid)
 {
+	printf("%s PlayerSpawn", getName(playerid));
     if(IsPlayerInAnyVehicle(playerid))
 	{
 	    new Float:X, Float:Y, Float:Z;
@@ -17196,6 +17208,12 @@ callback: SavePlayerData(playerid)
 	if(IsPlayerLogged{playerid} && IsPlayerConnected(playerid))
 	{
 		//printf("Player %s saved", getName(playerid));
+
+		/*for(new i = 0; i < 13; i++)  
+		{
+			if(PI[playerid][data_GUN][i] != 0 && PI[playerid][data_AMMO][i] != 0) GivePlayerWeapon(playerid, PI[playerid][data_GUN][i], PI[playerid][data_AMMO][i]);
+		}*/
+
 
 		GetPlayerHealth(playerid, PI[playerid][pHealthPoints]);
 		GetPlayerArmour(playerid, PI[playerid][pArmour]);

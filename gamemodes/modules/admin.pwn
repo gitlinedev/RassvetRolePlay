@@ -254,7 +254,7 @@ CMD:skin(playerid, params[])
 }
 CMD:gethere(playerid,params[]) 
 {
-    if(CheckAccess(playerid, 2, 1)) return 1;
+    if(CheckAccess(playerid, 2)) return 1;
     if(sscanf(params, "u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /gethere [ID игрока]");
     if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
     if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Вы не можете телепортировать себя");
@@ -280,7 +280,7 @@ CMD:gethere(playerid,params[])
 alias:goto("g");
 CMD:goto(playerid, params[]) 
 {
-    if(CheckAccess(playerid, 1, 1)) return 1;
+    if(CheckAccess(playerid, 1)) return 1;
     if(sscanf(params, "u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /goto [ID игрока]");
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -314,7 +314,7 @@ CMD:veh(playerid, params[])
 		params[1] == 577 || params[1] == 592 || params[1] == 593) return SCM(playerid, COLOR_GREY, !"Этот транспорт запрещен разработчиками сервера");
 
     new Float:pos[3]; GetPlayerPos(params[0], pos[0], pos[1], pos[2]);
-    new vehc = CreateVehicle(params[1], pos[0], pos[1], pos[2], 0, params[1], params[2], -1);
+    new vehc = CreateVehicle(params[1], pos[0], pos[1], pos[2], 0, params[2], params[3], -1);
 
     SetVehicleVirtualWorld(vehc, GetPlayerVirtualWorld(playerid));
 	PutPlayerInVehicle(params[0], vehc, 0);
@@ -796,7 +796,7 @@ CMD:setleader(playerid,params[])
 }
 CMD:tp(playerid) 
 {
-    if(CheckAccess(playerid, 1, 1)) return 1;
+    if(CheckAccess(playerid, 1)) return 1;
 	return ShowPlayerDialog(playerid, 4385, DIALOG_STYLE_LIST, "{ee3366}Телепортация", "\
 	{FFFF99}г. Лыткарино \n\
 	{FFFF99}пгт. Бусаево\n\
@@ -2598,10 +2598,10 @@ CMD:capture_stat(playerid)
 
 	new string[1048] = "", count = 0;
 
-    for (new i = 0; i < MAX_PLAYERS; i++)
+    for (new i = 0; i < sizeof(GangWarInfo); i++)
     {
         if (!IsPlayerConnected(i)) continue;
-		if (GangWarInfo[i][gMember] == -1) continue;
+		if (GangWarInfo[i][gMember] == 0) continue;
 
         if (GangWarInfo[i][gPlayerID] != INVALID_PLAYER_ID) 
         {

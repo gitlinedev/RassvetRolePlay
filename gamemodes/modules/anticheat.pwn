@@ -118,8 +118,8 @@ new AC_CODE_TRIGGER_TYPE[AC_MAX_CODES] = {
     AC_CODE_TRIGGER_TYPE_KICK, // Attached object crasher
     AC_CODE_TRIGGER_TYPE_KICK, // Weapon crasher
     AC_CODE_TRIGGER_TYPE_KICK, // Connects to one slot
-    AC_CODE_TRIGGER_TYPE_KICK, // Flood callback functions
-    AC_CODE_TRIGGER_TYPE_KICK, // Flood change seat
+    AC_CODE_TRIGGER_TYPE_WARNING, // Flood callback functions
+    AC_CODE_TRIGGER_TYPE_WARNING, // Flood change seat
     AC_CODE_TRIGGER_TYPE_KICK, // DDos
     AC_CODE_TRIGGER_TYPE_KICK // NOP`s
 };
@@ -134,17 +134,20 @@ callback: OnCheatDetected(playerid, const ip_address[], type, code)
     
     if(PI[playerid][pAdmin] >= 1) return 1;
 
+    if(!IsPlayerConnected(playerid)) return 1;
+    if(!IsPlayerLogged{playerid}) return 1;
+
     switch AC_CODE_TRIGGER_TYPE[code] do
     {
         case AC_CODE_TRIGGER_TYPE_WARNING:
         {
             PI[playerid][pPlayerDetecting]++;
 
-            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%d/%d %s).", getName(playerid), playerid, PI[playerid][pLevel], code, PI[playerid][pPlayerDetecting], AC_CODE_NAME[code]);
+            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%d | %d %s).", getName(playerid), playerid, PI[playerid][pPlayerDetecting], code, AC_CODE_NAME[code]);
         }
         case AC_CODE_TRIGGER_TYPE_KICK: 
 		{
-            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Кикнут %s[%d] (#%d/%d %s).", getName(playerid), playerid, PI[playerid][pLevel], code, PI[playerid][pPlayerDetecting], AC_CODE_NAME[code]);
+            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Кикнут %s[%d] (#%d | %d %s).", getName(playerid), playerid, PI[playerid][pPlayerDetecting], code, AC_CODE_NAME[code]);
 			SendClientMessagef(playerid, COLOR_BLACK, "Вы были кикнуты по подозрению в читерстве (#%03d)", code);
 			Kick(playerid);
 		}

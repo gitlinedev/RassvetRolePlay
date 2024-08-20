@@ -214,8 +214,8 @@ stock OtherMapping()
     EnterArmyShop = CreateDynamicPickup(1318, 23, -2609.1516,356.5091,12.1697, 0);
     MeriyaGarageVhod = CreateDynamicPickup(1318, 23, 1874.6547,-2208.8955,11.2510, -1);
     MeriyaGarageVihod = CreateDynamicPickup(1318, 23, -168.2390,626.4500,-50.1706, 1);
-    Create3DTextLabel("{FFD700}Парковка\n{FFFFFF}Полиция", -1,2441.2083,-1798.4343,21.9369, 20.0, 0);
-    MVDGarageVhod = CreateDynamicPickup(1318, 23, 2441.2083,-1798.4343,21.9369, -1);
+    Create3DTextLabel("{FFD700}Парковка\n{FFFFFF}Полиция", -1,2438.3860,-1796.9519,21.9369, 20.0, 0);
+    MVDGarageVhod = CreateDynamicPickup(1318, 23, 2438.3860,-1796.9519,21.9369, -1);
     MVDGarageVihod = CreateDynamicPickup(1318, 23, -168.2390,626.4500,-50.1706, 2);
     Create3DTextLabel("{FFD700}Въезд", -1,2147.6340,1810.1619,12.2200, 20.0, 0);
     CRBGarageVhod = CreateDynamicPickup(1318, 23, 2143.4570,1809.5634,12.2200, -1);

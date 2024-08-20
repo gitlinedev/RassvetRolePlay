@@ -78,10 +78,7 @@ stock gm_OnDialogResponse(playerid, dialogid, response, listitem)
 						flip - починить машину\n\
 						sp - следить за игроком\n\
 						spawn - заспавнить игрока\n\
-						goto - телепортироваться к игроку\n\
 						a - админ чат\n\
-						tp (F2) - меню телепортации\n\
-						gethere - телепортировать игрока к себе\n\
 						slap - подкинуть игрока\n\
 						ans - ответить игроку", !"Закрыть", !"");
 					}

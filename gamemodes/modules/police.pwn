@@ -96,37 +96,40 @@ CMD:search(playerid, params[])
 {
     new Float: X, Float: Y, Float: Z; GetPlayerPos(playerid, X, Y, Z);
     if(!IsPlayerInRangeOfPoint(playerid, 1.5, X, Y, Z)) return SCM(playerid, COLOR_GREY, !"Игрок далеко от вас");
-    if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-   	if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Вы не можете обыскать самого себя");
-    if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /chest [ID игрока]");
-    SetPlayerChatBubble(playerid, "Обыскивает игрока!", 0xFF99CCFF, 20.0, 4000);
-    new str[145];
-   	format(str,sizeof(str),"%s надел резиновые перчатки резким движением руки",getName(playerid));
- 	ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
- 	format(str,sizeof(str),"Резиновые перчатки на руках (%s)",getName(playerid));
- 	ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
-	format(str,sizeof(str),"Процесс (%s)",getName(playerid));
- 	ProxDetector(30.0, playerid, str,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF,0xFF99CCFF);
- 	SCMf(playerid, -1, "___________________________________________", PI[params[0]]);
-	SCMf(playerid, -1, "Вы успешно обыскали гражданина %s:", getName(params[0]));
-	SCMf(playerid, -1, "Патрон в кармане: {ff0000}%d{08008d}", PI[params[0]][pAmmo]);
-	SCMf(playerid, -1, "Нарктоиков в кармане: {ff0000}%d{08008d}", PI[params[0]][pDrugs]);
-	SCMf(playerid, -1, "Металла: {ff0000}%d",PI[params[0]][pMetall]);
-	ApplyAnimation(playerid,"COP_AMBIENT","Coplook_watch",4.1,0,0,0,0,0);
-	SCMf(playerid, -1, "___________________________________________", PI[params[0]]);
-   	format(str,sizeof(str),"Полицейский %s произвёл обыск у гражданина %s",getName(playerid),getName(params[0]));
-    return 1;
-}
-CMD:remove(playerid, params[])
-{
-    new Float: X, Float: Y, Float: Z; GetPlayerPos(playerid, X, Y, Z);
-    if(!IsPlayerInRangeOfPoint(playerid, 1.5, X, Y, Z)) return SCM(playerid, COLOR_GREY, !"Игрок далеко от вас");
 	if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Вы не можете изъять у самого себя");
     if(!IsPlayerCops(playerid)) return SCM(playerid, COLOR_GREY, !"Данная команда Вам недоступна");
-    if(sscanf(params,"u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /remove [ID игрока]");
-    PI[params[0]][pAmmo] = 0;
-    PI[params[0]][pDrugs] = 0;
-    PI[params[0]][data_AMMO] = 0;
+    if(sscanf(params,"u", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /search [ID игрока]");
+
+    new BanGuns[6], weapon_id, ammo;
+    for (new i; i <= 12; i++)
+    {
+        GetPlayerWeaponData(params[0], i, weapon_id, ammo);
+        if (weapon_id == 0) continue;
+        if(weapon_id == 20 || weapon_id == 21 || weapon_id == 22 || weapon_id == 23 || weapon_id == 24 || weapon_id == 25 || weapon_id == 26 || weapon_id == 27 || weapon_id == 28 || weapon_id == 29 || weapon_id == 30 || weapon_id == 31 || weapon_id == 32 || weapon_id == 33 || weapon_id == 34) 
+        {
+            BanGuns = "есть";
+        }
+        else BanGuns = "нет";
+    }
+
+    ShowPlayerDialogf(playerid, 2340, DIALOG_STYLE_TABLIST_HEADERS, !"{ee3366}Обыск игрока", !"Далее", !"Закрыть", "\
+        Название\tКоличество\n\
+        1. Наличные деньги\t\t%d руб\n\
+        2. Водительские права\t\t%s\n\
+        3. Лицензия на оружие\t\t%s\n\
+        4. Запрещенное оружие\t\t%s\n\
+        5. Запрещенные вещества\t\t%d ед.\n", 
+        PI[params[0]][pMoney], 
+        PI[params[0]][pDriveLicense] ? ("{4eaa77}есть{FFFFFF}") : ("{ce6c4f}нет{FFFFFF}"),
+        PI[params[0]][pGunLicense] ? ("{4eaa77}есть{FFFFFF}") : ("{ce6c4f}нет{FFFFFF}"),
+        BanGuns,
+        PI[params[0]][pDrugs]);
+
+    SetPVarInt(playerid, "PoliceSearch", params[0]);
+
+    global_str[0] = EOS, f(global_str, 150, "%s %s произвел обыск %s", NameRang(playerid), getName(playerid), getName(params[0]));
+	ProxDetector(30.0, playerid, global_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
+	SetPlayerChatBubble(playerid, global_str, 0xFF99CCFF, 20.0, 4000);
     return 1;
 }
 CMD:clear(playerid,params[]) 
@@ -139,10 +142,12 @@ CMD:clear(playerid,params[])
     if(PI[params[0]][pWanted] == 0) return SCM(playerid, COLOR_GREY, !"У игрока нет розыска");
 	if(!PlayerToPoint(30.0, playerid, 127.5578,1863.0262,-31.9775)) return SCM(playerid, COLOR_GREY, !"Чтобы снять розыск игрока Вы и игрока должны находится в ДЧ");
 	if(!PlayerToPoint(30.0, params[0], 127.5578,1863.0262,-31.9775)) return SCM(playerid, COLOR_GREY, !"Чтобы снять розыск игрока Вы и игрока должны находится в ДЧ");
+
 	PI[params[0]][pWanted] = 0;
-	SetPlayerWantedLevel(params[0],PI[params[0]][pWanted]);
-	SendFractionMessagef(PI[playerid][pMember], COLOR_YELLOW, "%s закрыл уголовное дело %s",getName(playerid),getName(params[0]));
-	return SCMf(params[0], 0x0099ccFF, "%s закрыл ваше уголовное дело",getName(playerid));
+	SetPlayerWantedLevel(params[0], PI[params[0]][pWanted]);
+
+	SendFractionMessagef(PI[playerid][pMember], COLOR_YELLOW, "%s закрыл уголовное дело %s", getName(playerid), getName(params[0]));
+	return SCMf(params[0], COLOR_BLACKBLUE, "%s закрыл ваше уголовное дело", getName(playerid));
 }
 CMD:cuff(playerid,params[]) 
 {
@@ -394,6 +399,75 @@ callback: FollowToPlayer(playerid)
         TogglePlayerControllable(playerid, 1);
         SetPlayerToFacePlayer(playerid, FollowBy[playerid]);
         ApplyAnimation(playerid, "ped", "WALK_civi", 6.0, 1, 1, 1, 1, 0, 1);
+    }
+    return 1;
+}
+stock police_OnDialogResponse(playerid, dialogid, response, listitem)
+{
+    switch(dialogid)
+    {
+        case 2340:
+        {
+            if(!response) return DeletePVar(playerid, "PoliceSearch");
+	        if(response) 
+			{
+                new id = GetPVarInt(playerid, "PoliceSearch");
+
+                switch(listitem)
+                {
+                    case 0: return 1;
+                    case 1:
+                    {
+                        if(PI[id][pDriveLicense] == 0) return SCM(playerid, COLOR_LIGHTGREY, !"У игрока нет лицензии на вождение транспорта");
+                        PI[id][pDriveLicense] = 0;
+                        SCMf(playerid, COLOR_BLACKBLUE, "Вы изъяли лицензию на вождение у игрока %s", getName(id));
+                        SCMf(id, COLOR_BLACKBLUE, "%s %s изъял у Вас лицензию на вождение", NameRang(playerid), getName(playerid));
+                    }
+                    case 2:
+                    {
+                        if(PI[id][pGunLicense] == 0) return SCM(playerid, COLOR_LIGHTGREY, !"У игрока нет лицензии на ношение оружия");
+                        PI[id][pGunLicense] = 0;
+                        SCMf(playerid, COLOR_BLACKBLUE, "Вы изъяли лицензию на ношение оружия у игрока %s", getName(id));
+                        SCMf(id, COLOR_BLACKBLUE, "%s %s изъял у Вас лицензию на ношение оружия", NameRang(playerid), getName(playerid));
+                    }
+                    case 3:
+                    {
+                        new bangun = 0, weapon_id, ammo;
+                        new const forbiddenWeapons[] = {20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34};
+
+                        for (new i = 0; i <= 12; i++)
+                        {
+                            GetPlayerWeaponData(id, i, weapon_id, ammo);
+                            if (weapon_id == 0) continue;
+
+                            for (new j = 0; j < sizeof(forbiddenWeapons); j++)
+                            {
+                                if (weapon_id == forbiddenWeapons[j])
+                                {
+                                    bangun = 1;
+                                    break;
+                                }
+                            }
+                            if (bangun) break; 
+                        }
+
+                        if (bangun == 0) return SCM(playerid, COLOR_LIGHTGREY, !"У игрока нет запрещённого оружия");
+
+                        SCMf(playerid, COLOR_BLACKBLUE, "Вы изъяли запрещённое оружие у игрока %s", getName(id));
+                        SCMf(id, COLOR_BLACKBLUE, "%s %s изъял у Вас запрещённое оружие", NameRang(playerid), getName(playerid));
+
+                        ResetWeaponAll(id);
+                    }
+                    case 4:
+                    {
+                        if(PI[id][pDrugs] == 0) return SCM(playerid, COLOR_LIGHTGREY, !"У игрока нет веществ");
+                        SCMf(playerid, COLOR_BLACKBLUE, "Вы изъяли %d ед. веществ у игрока %s", PI[playerid][pDrugs], getName(id));
+                        SCMf(id, COLOR_BLACKBLUE, "%s %s изъял у Вас %d ед. веществ", NameRang(playerid), getName(playerid), PI[playerid][pDrugs]);
+                        PI[id][pDrugs] = 0;
+                    }
+                }
+            }
+        }
     }
     return 1;
 }

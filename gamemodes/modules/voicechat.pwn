@@ -93,15 +93,3 @@ stock GivePlayerRadio(playerid)
         }
     }
 }
-
-stock LoadVoiceChat(playerid)
-{
-    /*else if ((lstream[playerid] = SvCreateDLStreamAtPlayer(40.0, SV_INFINITY, playerid, 0xff0000ff, "")))
-    {
-		if (gstream) SvAttachListenerToStream(gstream, playerid);
-        SvAddKey(playerid, 0x58);
-		SvAddKey(playerid, 0x5A);
-    }*/
-    CheckStatus(playerid);
-	return 1;
-}
