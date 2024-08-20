@@ -131,6 +131,9 @@ callback: OnCheatDetected(playerid, const ip_address[], type, code)
         Kick(playerid);
         return 1;
     }
+    
+    if(PI[playerid][pAdmin] >= 1) return 1;
+
     switch AC_CODE_TRIGGER_TYPE[code] do
     {
         case AC_CODE_TRIGGER_TYPE_WARNING:

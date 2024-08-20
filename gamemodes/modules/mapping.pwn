@@ -35,6 +35,7 @@ stock LoadMappingModule()
 	#include <Mapping/int_vchstab>
 	#include <Mapping/int_vchstolovaya>
 	#include <Mapping/int_voenkom>	
+	#include <Mapping/new_vw_mapping>	
     OtherMapping();
 }
 

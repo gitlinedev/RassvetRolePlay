@@ -789,7 +789,6 @@ new NPC_ALL[30],
 	TimerForPlayer[MAX_PLAYERS],
 	WeatherServer,
 	bool:pCBugging[MAX_PLAYERS],
-	ptmCBugFreezeOver[MAX_PLAYERS],
 	ptsLastFiredWeapon[MAX_PLAYERS],
 	dalnoboy_trayler[MAX_PLAYERS],
 	dalnoboy_car[MAX_PLAYERS],
@@ -3858,12 +3857,6 @@ public OnPlayerPickUpDynamicPickup(playerid, pickupid)
 	}
 	return 1;
 }
-callback: CBugFreezeOver(playerid) 
-{
-	TogglePlayerControllable(playerid, true);
-	pCBugging[playerid] = false;
-	return 1;
-}
 public OnPlayerSelectedMenuRow(playerid, row) 
 {
     if(GetPlayerMenu(playerid) == SelectSkin) 
@@ -3968,7 +3961,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		{
 			switch(GetPlayerWeapon(playerid)) 
 			{
-				case WEAPON_DEAGLE, WEAPON_SHOTGUN, WEAPON_SNIPER: 
+				case WEAPON_DEAGLE, WEAPON_SHOTGUN, WEAPON_SNIPER, WEAPON_COLT45, WEAPON_SILENCED: 
 				{
 					ptsLastFiredWeapon[playerid] = gettime();
 				}
@@ -3978,10 +3971,9 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 		{
 			if((gettime() - ptsLastFiredWeapon[playerid]) < 1) 
 			{
-				TogglePlayerControllable(playerid, false);
 				pCBugging[playerid] = true;
-				KillTimer(ptmCBugFreezeOver[playerid]);  
-				ptmCBugFreezeOver[playerid] = SetTimerEx("CBugFreezeOver", 950, false, "i", playerid);
+				SendAdminsMessagef(COLOR_ADMINCHAT, "[Warning] Игрок %s[%d] возможно использовал +C", getName(playerid), playerid);
+				SetPlayerArmedWeapon(playerid, 0);
 			}
 		}
 	}
@@ -8583,7 +8575,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				SetPlayerPosAC(playerid, MPCord[0], MPCord[1], MPCord[2]);
 				SetPlayerInterior(playerid, MPSettings[1]);
 				SetPlayerVirtualWorld(playerid, MPSettings[0]);
-				
+
 				SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, 100*10);
 				SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, 100*10);
 				SetPlayerSkillLevel(playerid, WEAPONSKILL_DESERT_EAGLE, 100*10);
