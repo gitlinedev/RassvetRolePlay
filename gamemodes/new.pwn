@@ -13260,13 +13260,11 @@ stock SettingSpawn(playerid)
 	if(GetPVarInt(playerid, "SpecBool") == 1) 
 	{
 	    DeletePVar(playerid, "SpecBool");
-		SetPlayerPosAC(playerid, GetPVarFloat(playerid,"SpecX"), GetPVarFloat(playerid,"SpecY"), GetPVarFloat(playerid,"SpecZ"));
-		SetPlayerFacingAngle(playerid, GetPVarFloat(playerid,"SpecFA"));
-		SetPlayerInterior(playerid,GetPVarInt(playerid,"SpecInt"));
-		SetPlayerVirtualWorld(playerid,GetPVarInt(playerid,"SpecWorld"));
-		SetPlayerVirtualWorld(playerid,0);
-		SetPlayerInterior(playerid,0);
-		SetSpawnInfoEx(playerid, skin, -256.0461, 469.3669, -29.6109, 180.0);
+		DeletePVar(playerid, "SpecID");
+
+		SetPlayerVirtualWorld(playerid, 1);
+		SetPlayerInterior(playerid, 0);
+		SetSpawnInfoEx(playerid, skin, 2095.7141, 1560.8864, -46.5100, 180.0);
 		return true;
 	}
 	if(PI[playerid][pDeathOnCapture] == 1)
@@ -16045,21 +16043,21 @@ public void:OnPlayerKeyDown(player, key)
 	}
 	if(key == 17) 
 	{
-		if(GetPVarInt(player, "SpecBool") == 1 && GetPVarInt(player, "specid") != INVALID_PLAYER_ID)  
+		if(GetPVarInt(player, "SpecBool") == 1 && GetPVarInt(player, "SpecID") != INVALID_PLAYER_ID)  
 		{
-			if(IsPlayerInAnyVehicle(GetPVarInt(player, "specid"))) 
+			if(IsPlayerInAnyVehicle(GetPVarInt(player, "SpecID"))) 
 			{
-				new carid = GetPlayerVehicleID(GetPVarInt(player, "specid"));
+				new carid = GetPlayerVehicleID(GetPVarInt(player, "SpecID"));
 				PlayerSpectateVehicle(player, carid);
 			}
-			else PlayerSpectatePlayer(player,GetPVarInt(player, "specid"));
+			else PlayerSpectatePlayer(player,GetPVarInt(player, "SpecID"));
 		}
 	}
 	if(key == 20) 
 	{
-		if(GetPVarInt(player, "SpecBool") == 1 && GetPVarInt(player, "specid") != INVALID_PLAYER_ID) 
+		if(GetPVarInt(player, "SpecBool") == 1 && GetPVarInt(player, "SpecID") != INVALID_PLAYER_ID) 
 		{
-			callcmd::checkoff(player, PI[GetPVarInt(player, "specid")][pName]);
+			callcmd::checkoff(player, PI[GetPVarInt(player, "SpecID")][pName]);
 		}
 	}
 	if(key == 17)

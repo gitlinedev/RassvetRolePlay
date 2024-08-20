@@ -105,8 +105,8 @@ CMD:admins(playerid)
 	{
 		if !PI[i][pAdmin] *then continue;
 
-		if(GetPVarInt(i, "FlyMode") != 0) format(str_1, sizeof(str_1), "%s[%d] - %s - /re %d- [AFK: %d]. Выговоры [%d/3] (Репорты: %d)", getName(i), i, AdminName[PI[i][pAdmin]], GetPVarInt(i,"specid"), PI[i][pAFK], PI[i][pAdminWarn], PI[playerid][pAdminReports]);
-		else format(str_1, sizeof(str_1), "%s[%d] - %s - [AFK: %d]. Выговоры [%d/3] (Репорты: %d)", getName(i), i, AdminName[PI[i][pAdmin]], PI[i][pAFK], PI[i][pAdminWarn], PI[playerid][pAdminReports]);
+		if(GetPVarInt(i, "FlyMode") != 0) format(str_1, sizeof(str_1), "%s[%d] - %s - /re %d- [AFK: %d]. Выговоры [%d/3] (Репорты: %d)", getName(i), i, AdminName[PI[i][pAdmin]], GetPVarInt(i,"SpecID"), PI[i][pAFK], PI[i][pAdminWarn], PI[i][pAdminReports]);
+		else format(str_1, sizeof(str_1), "%s[%d] - %s - [AFK: %d]. Выговоры [%d/3] (Репорты: %d)", getName(i), i, AdminName[PI[i][pAdmin]], PI[i][pAFK], PI[i][pAdminWarn], PI[i][pAdminReports]);
 		SCM(playerid, COLOR_JOBYELLOW, str_1);
 
 	}
@@ -2492,6 +2492,8 @@ CMD:sp(playerid,params[])
 		if(GetPVarInt(playerid, "SpecBool") != 1) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /sp [ID игрока]");
 		TogglePlayerSpectating(playerid, false);
 		SetPlayerPos(playerid, 2095.7141, 1560.8864, -46.5100);
+		DeletePVar(playerid, "SpecBool");
+		DeletePVar(playerid, "SpecID");
 		return 1;
 	} 
 
@@ -2510,7 +2512,7 @@ CMD:sp(playerid,params[])
 	SCM(playerid, COLOR_HINT, "[Подсказка] {FFFFFF}Статистика игрока: {FFFF33}клавиша CAPSLOCK");*/
 
 	new inter, world, Float:X, Float:Y, Float:Z, Float:FA;
-	SetPVarInt(playerid,"specid", params[0]);
+	SetPVarInt(playerid, "SpecID", params[0]);
 
 	if(GetPVarInt(playerid, "SpecBool") == 0) 
 	{

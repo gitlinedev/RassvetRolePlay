@@ -79,8 +79,8 @@ CMD:moders(playerid)
 	{
 		if !PI[i][pModer] *then continue;
 
-		if(GetPVarInt(i, "FlyMode") != 0) format(str_1, sizeof(str_1), "%s[%d] - %s - /re %d- [AFK: %d]. Выговоры [%d/3]", getName(i), i, ModerName[PI[i][pModer]], GetPVarInt(i,"specid"), PI[i][pAFK], PI[i][pModerWarn]);
-		else format(str_1, sizeof(str_1), "%s[%d] - %s - [AFK: %d]. Выговоры [%d/3]", getName(i), i, ModerName[PI[i][pModer]], PI[i][pAFK], PI[i][pModerWarn]);
+		if(GetPVarInt(i, "SpecBool") != 0) format(str_1, sizeof(str_1), "%s[%d] - %s - /re %d- [AFK: %d]. Выговоры [%d/3] (Репорты: %d)", getName(i), i, ModerName[PI[i][pModer]], GetPVarInt(i,"SpecID"), PI[i][pAFK], PI[i][pModerWarn], PI[i][pAdminReports]);
+		else format(str_1, sizeof(str_1), "%s[%d] - %s - [AFK: %d]. Выговоры [%d/3] (Репорты: %d)", getName(i), i, ModerName[PI[i][pModer]], PI[i][pAFK], PI[i][pModerWarn], PI[i][pAdminReports]);
 		SCM(playerid, COLOR_JOBYELLOW, str_1);
 
 	}
