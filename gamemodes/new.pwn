@@ -29,6 +29,10 @@ new
 
 #include <a_samp>
 
+#define DEBUG
+#include nex-ac_en.lang
+#include nex-ac
+
 #undef MAX_PLAYERS
 #define MAX_PLAYERS 500
 
@@ -45,7 +49,6 @@ new
 #include foreach
 #include cef
 #include a_http
-#include nex-ac
 
 #define SCM SendClientMessage
 #define SCMf SendClientMessagef
@@ -908,9 +911,6 @@ new NPC_ALL[30],
 	Text:AutoSalon_Button[3],
 	Text:AutoSalon_ButtonColor[2],
 	Text:AutoSalon_Color[48],
-	bool:MPStatus,
-	bool:MPTeamKill,
-	Float:gomp_pos[3],
 	help_spawn,
 	engine,
 	lights_text,
@@ -1122,6 +1122,7 @@ enum P_DATA
 	pCaptureKills,
 	pCaptureValue,
 	pPlayerDetecting,
+	pPlayerSendReport,
 	pAdminStatus,
 	pChangeSkin,
 	pSelectSkin,
@@ -1934,7 +1935,7 @@ stock ConnectMySQL()
 {
     new currenttime = GetTickCount();
 
-	new sql = 1;
+	new sql = 0;
 	if(!sql) mysql = mysql_connect("127.0.0.1", "gs269723", "gs269723", "6CKII67VlSAR"); // основа (0)
 	else mysql = mysql_connect("127.0.0.1", "gs87610", "gs87610", "cs0gy97c"); // тест (1)
 
@@ -3913,6 +3914,7 @@ public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 	nosov_OnPlayerKeyStateChange(playerid, newkeys);
 	kv_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
 	nc_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
+	newac_OnPlayerKeyStateChange(playerid, newkeys);
 
 	if(PRESSED(KEY_WALK)) 
 	{
@@ -8242,9 +8244,11 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
    			if(response)
    			{
    			    if(PI[playerid][pMute] != 0) return SCM(playerid, COLOR_GREY,"У Вас мут");
-  				if(strlen(inputtext) < 1 || strlen(inputtext) > 100) return SCM(playerid, COLOR_GREY,"Не менее 1 и не более 100 символов"),ReportDialog(playerid);
-   				SendAdminsMessagef(0xFFFF99FF, "Вопрос от %s[%d]:{FFFFFF} %s",PI[playerid][pName],playerid,inputtext);
-				SCMf(playerid,0xFFFF99FF, "Вопрос от %s[%d]:{FFFFFF} %s",PI[playerid][pName],playerid,inputtext);
+  				if(strlen(inputtext) < 1 || strlen(inputtext) > 100) return SCM(playerid, COLOR_GREY,"Не менее 1 и не более 100 символов"), ReportDialog(playerid);
+   				SendAdminsMessagef(0xFFFF99FF, "Вопрос от %s[%d]:{FFFFFF} %s", PI[playerid][pName], playerid, inputtext);
+				SCMf(playerid,0xFFFF99FF, "Вопрос от %s[%d]:{FFFFFF} %s", PI[playerid][pName], playerid, inputtext);
+
+				PI[playerid][pPlayerSendReport] = 1;
 			}
     	}
 		case 1251:
@@ -8252,27 +8256,34 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
   		    if(!response) return ShowMainMenu(playerid);
    			if(response)
    			{
-  				if(strlen(inputtext) < 1 || strlen(inputtext) > 100) return SCM(playerid, COLOR_GREY,"Не менее 1 и не более 100 символов"),ReportDialog(playerid);
-	   			SendAdminsMessagef(0xFF8877FF, "Жалоба от %s[%d]:{FFFFFF} %s",PI[playerid][pName],playerid,inputtext);
-				SCMf(playerid,0xFF8877FF, "Жалоба от %s[%d]:{FFFFFF} %s",PI[playerid][pName],playerid,inputtext);
+  				if(strlen(inputtext) < 1 || strlen(inputtext) > 100) return SCM(playerid, COLOR_GREY,"Не менее 1 и не более 100 символов"), ReportDialog(playerid);
+	   			SendAdminsMessagef(0xFF8877FF, "Жалоба от %s[%d]:{FFFFFF} %s", PI[playerid][pName], playerid, inputtext);
+				SCMf(playerid,0xFF8877FF, "Жалоба от %s[%d]:{FFFFFF} %s", PI[playerid][pName], playerid, inputtext);
 				SCM(playerid, 0xFF8877FF, "Вы можете заблокировать голосовой чат игрока {FFFF99}O{FF8877}");
+
+				PI[playerid][pPlayerSendReport] = 1;
 			}
     	}
-		case dialog_REPORT: {
+		case dialog_REPORT: 
+		{
             if(!response) return ShowMainMenu(playerid);
-			if(response) {
-			    switch(listitem) {
-			        case 0: {
-						ShowPlayerDialog(playerid, 1250, DIALOG_STYLE_INPUT, "{ee3366}Вопрос или жалоба", "\
+			if(response) 
+			{
+			    switch(listitem) 
+				{
+			        case 0: 
+					{
+						ShowPlayerDialog(playerid, 1250, DIALOG_STYLE_INPUT, !"{ee3366}Вопрос или жалоба", !"\
 						{FFFFFF}Введите сообщение для игровых мастеров. Пишите кратко и по делу.\n\
 						Перед тем, как задать вопрос, проверьте, нет ли ответа в меню помощи - {ee3366}/help\n\
-						{696969}Обратите внимание: за оффтоп Вы можете получить блокировку чата", "Далее", "Отмена");
+						{696969}Обратите внимание: за оффтоп Вы можете получить блокировку чата", !"Далее", !"Отмена");
 			        }
-			        case 1: {
-						ShowPlayerDialog(playerid, 1251, DIALOG_STYLE_INPUT, "{ee3366}Вопрос или жалоба", "\
+			        case 1: 
+					{
+						ShowPlayerDialog(playerid, 1251, DIALOG_STYLE_INPUT, !"{ee3366}Вопрос или жалоба", !"\
 						{FFFFFF}Введите сообщение для игровых мастеров. Пишите кратко и по делу.\n\
 						Перед тем, как задать вопрос, проверьте, нет ли ответа в меню помощи - {ee3366}/help\n\
-						{696969}Обратите внимание: за оффтоп Вы можете получить блокировку чата", "Далее", "Отмена");
+						{696969}Обратите внимание: за оффтоп Вы можете получить блокировку чата", !"Далее", !"Отмена");
 			        }
 			    }
 			}
@@ -8448,7 +8459,10 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				{
 					case 0: 
 					{
-						GetPlayerPos(playerid, gomp_pos[0],gomp_pos[1],gomp_pos[2]);
+						GetPlayerPos(playerid, MPCord[0], MPCord[1], MPCord[2]);
+						MPSettings[0] = GetPlayerVirtualWorld(playerid);
+						MPSettings[1] = GetPlayerInterior(playerid);
+
 						MPStatus = true;
 						SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] изменил точку телепорта на мероприятие", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], PI[playerid][pName], playerid);
 						callcmd::editmp(playerid);
@@ -8562,16 +8576,14 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			if(!response) return 1;
 			if(response) 
 			{
-				new Float:x, Float:y, Float:z;
-				GetPlayerPos(playerid, x, y, z);
-				PI[playerid][pOnMPX] = x;
-				PI[playerid][pOnMPY] = y;
-				PI[playerid][pOnMPZ] = z;
-				PI[playerid][pOnMP] = 1;
-				SetPlayerPosAC(playerid, gomp_pos[0],gomp_pos[1],gomp_pos[2]);
-				SetPlayerInterior(playerid, 0);
-				SetPlayerVirtualWorld(playerid, 0);
+				GetPlayerPos(playerid, PI[playerid][pOnMPX], PI[playerid][pOnMPY], PI[playerid][pOnMPZ]);
 
+				PI[playerid][pOnMP] = 1;
+
+				SetPlayerPosAC(playerid, MPCord[0], MPCord[1], MPCord[2]);
+				SetPlayerInterior(playerid, MPSettings[1]);
+				SetPlayerVirtualWorld(playerid, MPSettings[0]);
+				
 				SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL, 100*10);
 				SetPlayerSkillLevel(playerid, WEAPONSKILL_PISTOL_SILENCED, 100*10);
 				SetPlayerSkillLevel(playerid, WEAPONSKILL_DESERT_EAGLE, 100*10);
@@ -8593,6 +8605,9 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			    DeletePVar(playerid, "ac_fly");
 
 				SetPlayerSkills(playerid);
+
+				new skin = GetSkinOfPlayer(playerid);
+				SetPlayerSkin(playerid, skin);
 			}
 		}
  		case dialog_ADMCOMMAND:
@@ -12539,14 +12554,17 @@ stock PutPlayerInVehicleAC(playerid,car,set) {
 	PutPlayerInVehicle(playerid,car,set);
 	return 1;
 }
-stock ReportDialog(playerid) {
-	if(PI[playerid][pMute] != 0) return SCM(playerid, COLOR_GREY,"У Вас мут");
-	if(GetPVarInt(playerid,"Counting_Report") > gettime()) return SCM(playerid, COLOR_GREY,"Эту команду можно использовать 1 раз в 2 минуты");
-	SetPVarInt(playerid,"Counting_Report",gettime() + 120);
-	return ShowPlayerDialog(playerid,dialog_REPORT,DIALOG_STYLE_LIST,"{ee3366}Выберите тип","1. Вопрос или помощь\n2. Жалоба на игрока","Далее","Назад");
+stock ReportDialog(playerid) 
+{
+	if(PI[playerid][pMute] != 0) return SCM(playerid, COLOR_GREY, !"У Вас блокировка текстового чата");
+	if(GetPVarInt(playerid,"Counting_Report") > gettime()) return SCM(playerid, COLOR_GREY, !"Эту команду можно использовать 1 раз в минуту");
+	SetPVarInt(playerid,"Counting_Report",gettime() + 60);
+	return ShowPlayerDialog(playerid, dialog_REPORT, DIALOG_STYLE_LIST, !"{ee3366}Выберите тип", !"1. Вопрос или помощь\n2. Жалоба на игрока", !"Далее", !"Назад");
 }
-stock SendDBMessage(color, text[]) {
- 	for(new i = 0; i < MAX_PLAYERS; i++) {
+stock SendDBMessage(color, text[]) 
+{
+ 	for(new i = 0; i < MAX_PLAYERS; i++) 
+	{
 	    if(!IsPlayerConnected(i)) continue;
 		if(GetPVarInt(i, "job_db") != 0) SCM(i, color, text);
 	}
@@ -12999,11 +13017,9 @@ stock ClearPlayerData(playerid)
 	nc_ClearPlayerData(playerid);
 
 	PI[playerid][pTempJob] = 0; 
-
 	PI[playerid][pCinematicMode] = 0;
-
+	PI[playerid][pPlayerSendReport] = 0;
 	PI[playerid][pTempMember] = -1;
-
 	PI[playerid][pRentMoto] = INVALID_VEHICLE_ID;
 
 	PI[playerid][PTempJobValue_1] = 0; 
@@ -13687,21 +13703,26 @@ CMD:pay(playerid,params[])
 	if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]}) return SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
 	if(playerid == params[0]) return SCM(playerid, COLOR_GREY, !"Нельзя передать деньги самому себе");
-    if(GetPVarInt(playerid,"Counting_pay") > gettime()) return SCM(playerid, COLOR_GREY, !"Команду можно использовать раз в 15 секунд");
-    SetPVarInt(playerid,"Counting_pay",gettime() + 15);
+    if(GetPVarInt(playerid, "Counting_pay") > gettime()) return SCM(playerid, COLOR_GREY, !"Команду можно использовать раз в 15 секунд");
 	if(!ProxDetectorS(3.0, playerid, params[0])) return SCM(playerid, COLOR_GREY, !"Данный игрок от Вас");
+
 	if(params[1] <= 0) return SCM(playerid, COLOR_GREY, !"Недопустимое значение");
 	if(params[1] > 3000) return SCM(playerid, COLOR_GREY, !"Разрешено передавать не более 3000 рублей за один раз");
 	if(GetPlayerMoneyID(playerid) < params[1]) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
-	GivePlayerMoneyLog(playerid,-params[1]);
-	GivePlayerMoneyLog(params[0],params[1]);
-	new str2[70],str1[70],pay[20],pay1[20];
-	format(str2,sizeof(str2),"Передача денег %s[%d]",getName(params[0]),params[0]);
-	format(str1,sizeof(str1),"Получено денег от %s[%d]",getName(playerid),playerid);
-	format(pay,sizeof(pay),"-%dР",params[1]);
-	format(pay1,sizeof(pay1),"+%dР",params[1]);
-	cef_emit_event(playerid, "show-notify-no-img", CEFSTR(str2), CEFSTR("fb4949"), CEFSTR(pay));
-	cef_emit_event(params[0], "show-notify-no-img", CEFSTR(str1), CEFSTR("418055"), CEFSTR(pay1));
+
+	GivePlayerMoneyLog(playerid, -params[1]);
+	GivePlayerMoneyLog(params[0], params[1]);
+
+	new summe[15];
+	cef_text[0] = EOS, f(cef_text, 52, "Передача денег %s[%d]", getName(params[0]), params[0]);
+	summe[0] = EOS, f(summe, sizeof(summe), "-%dР", params[1]);
+	SendPlayerRadarNotify(playerid, 45, "red", cef_text, summe, 5);
+
+	cef_text[0] = EOS, f(cef_text, 57, "Получено денег от %s[%d]", getName(playerid), playerid);
+	summe[0] = EOS, f(summe, sizeof(summe), "+%dР", params[1]);
+	SendPlayerRadarNotify(params[0], 46, "green", cef_text, summe, 5);
+
+	SetPVarInt(playerid, "Counting_pay", gettime() + 15);
 	return 1;
 }
 CMD:eject(playerid,params[]) 
@@ -17330,9 +17351,8 @@ callback: SavePlayerData(playerid)
 }
 CMD:leaders(playerid, params[]) 
 {
-    new query[85];
-    format(query, sizeof(query), "SELECT * FROM `accounts` WHERE `rank` >= 9 ORDER BY `member` ASC, `rank` DESC;");
-    mysql_tquery(mysql, query, "ShowLeaders", "i", playerid);
+    mysql_string[0] = EOS, f(mysql_string, 95, "SELECT * FROM `accounts` WHERE `Admin` = 0 AND `rank` >= 9 ORDER BY `member` ASC, `rank` DESC;");
+    mysql_tquery(mysql, mysql_string, "ShowLeaders", "i", playerid);
     return 1;
 }
 

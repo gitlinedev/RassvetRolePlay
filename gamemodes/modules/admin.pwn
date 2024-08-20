@@ -1,3 +1,8 @@
+new bool:MPStatus,
+	bool:MPTeamKill,
+	Float:MPCord[3],
+	MPSettings[2];
+
 static const stock AdminName[9][6] = {
 	"Игрок",
  	"NGM",
@@ -100,8 +105,8 @@ CMD:admins(playerid)
 	{
 		if !PI[i][pAdmin] *then continue;
 
-		if(GetPVarInt(i, "FlyMode") != 0) format(str_1, sizeof(str_1), "%s[%d] - %s - /re %d- [AFK: %d]. Выговоры [%d/3]", getName(i), i, AdminName[PI[i][pAdmin]], GetPVarInt(i,"specid"), PI[i][pAFK], PI[i][pAdminWarn]);
-		else format(str_1, sizeof(str_1), "%s[%d] - %s - [AFK: %d]. Выговоры [%d/3]", getName(i), i, AdminName[PI[i][pAdmin]], PI[i][pAFK], PI[i][pAdminWarn]);
+		if(GetPVarInt(i, "FlyMode") != 0) format(str_1, sizeof(str_1), "%s[%d] - %s - /re %d- [AFK: %d]. Выговоры [%d/3] (Репорты: %d)", getName(i), i, AdminName[PI[i][pAdmin]], GetPVarInt(i,"specid"), PI[i][pAFK], PI[i][pAdminWarn], PI[playerid][pAdminReports]);
+		else format(str_1, sizeof(str_1), "%s[%d] - %s - [AFK: %d]. Выговоры [%d/3] (Репорты: %d)", getName(i), i, AdminName[PI[i][pAdmin]], PI[i][pAFK], PI[i][pAdminWarn], PI[playerid][pAdminReports]);
 		SCM(playerid, COLOR_JOBYELLOW, str_1);
 
 	}
@@ -1430,21 +1435,27 @@ CMD:cc(playerid)
 CMD:banip(playerid, params[]) 
 {
     if(CheckAccess(playerid, 6)) return 1;
-  	if(sscanf(params, "s[16]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /banip [ip]");
-  	new string[24];
-  	format(string, sizeof(string), "banip %s", params[0]);
-  	SendRconCommand(string);
-  	SCMf(playerid, COLOR_TOMATO, "IP-адресс ('%d') заблокирован", params[0]);
+  	if(sscanf(params, "s[16]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /banip [IP]");
+	
+	new banip[23];
+	format(banip, sizeof(banip), "banip %s", params[0]);
+	SendRconCommand(banip);
+	SendRconCommand("reloadbans");
+
+  	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] заблокировал IP адресс -> %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid, params[0]);
 	return 1;
 }
 CMD:unbanip(playerid, params[]) 
 {
     if(CheckAccess(playerid, 7)) return 1;
   	if(sscanf(params, "s[16]", params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /unbanip [ip]");
-  	new string[24];
-  	format(string, sizeof(string), "unbanip %s", params[0]);
-  	SendRconCommand(string);
-  	SCMf(playerid, COLOR_TOMATO, "IP-адресс ('%d') разблокирован", params[0]);
+
+	new unbanip[25];
+	format(unbanip, sizeof(unbanip), "unbanip %s", params[0]);
+	SendRconCommand(unbanip);
+	SendRconCommand("reloadbans");
+
+  	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s #%d] %s[%d] разблокировал IP адресс -> %s", AdminName[PI[playerid][pAdmin]], PI[playerid][pAdminNumber], getName(playerid),playerid, params[0]);
 	return 1;
 }
 CMD:ahp(playerid, params[]) 
@@ -1725,7 +1736,10 @@ CMD:setmp(playerid)
     if(CheckAccess(playerid, 4)) return 1;
 	if(MPStatus == false) 
 	{
-		GetPlayerPos(playerid, gomp_pos[0], gomp_pos[1], gomp_pos[2]);
+		MPSettings[0] = GetPlayerVirtualWorld(playerid);
+		MPSettings[1] = GetPlayerInterior(playerid);
+
+		GetPlayerPos(playerid, MPCord[0], MPCord[1], MPCord[2]);
 
         MPStatus = true;
 		MPTeamKill = false;
@@ -2336,8 +2350,10 @@ CMD:ans(playerid,params[])
 
 	SendAdminsMessagef(COLOR_ADMINCHAT, "[%s] %s[%d] написал игроку %s[%d]:{FFFFFF} %s", senderName, PI[playerid][pName], playerid, getName(params[0]), params[0], params[1]);
 
-	if(PI[params[0]][pAdmin] <= 0) 
+	if(PI[params[0]][pAdmin] <= 0 && PI[params[0]][pPlayerSendReport] == 1) 
 	{
+		PI[params[0]][pPlayerSendReport] = 0;
+
 		PI[playerid][pAdminReports]++;
 		UpdatePlayerDataInt(playerid, "AdminReports", PI[playerid][pAdminReports]);
 	}

@@ -8,6 +8,7 @@ stock ShowBankMoney(playerid)
 }
 stock ShowTransferBankMoney(playerid)
 {
+    if(PI[playerid][pLevel] < 2) return SCM(playerid, COLOR_LIGHTGREY, !"Переводы доступны со 2 уровня");
     ShowPlayerDialog(playerid, 7969, DIALOG_STYLE_INPUT, !"{ee3366}Перевод на другой счёт", !"\
     {FFFFFF}Укажите номер банковского счёта и сумму перевода\n\
     через запятую. Комиссия при переводе составит {3377cc}2%\n\n\
@@ -18,6 +19,7 @@ stock ShowTransferBankMoney(playerid)
 }
 stock ShowTransferBankomatMoney(playerid)
 {
+    if(PI[playerid][pLevel] < 2) return SCM(playerid, COLOR_LIGHTGREY, !"Переводы доступны со 2 уровня");
     ShowPlayerDialog(playerid, 7969, DIALOG_STYLE_INPUT, !"{ee3366}Перевод на другой счёт", !"\
     {FFFFFF}Укажите номер банковского счёта и сумму перевода\n\
     через запятую. Комиссия при переводе составит {3377cc}2%\n\n\

@@ -9306,9 +9306,9 @@ static ac_KickWithCode(playerid, ip_address[], type, code, code2 = 0)
 		else printf(SUSPICION_1, playerid, code, ac_strtmp);
 	#endif
 	#if defined OnCheatDetected
-		OnCheatDetected(playerid, code);
+		OnCheatDetected(playerid, ip_address, type, code);
 	#else
-		ac_OnCheatDetected(playerid, code);
+		ac_OnCheatDetected(playerid, ip_address, type, code);
 	#endif
 	return 0;
 }

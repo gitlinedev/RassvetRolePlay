@@ -123,29 +123,45 @@ new AC_CODE_TRIGGER_TYPE[AC_MAX_CODES] = {
     AC_CODE_TRIGGER_TYPE_KICK, // DDos
     AC_CODE_TRIGGER_TYPE_KICK // NOP`s
 };
-stock OnCheatDetected(playerid, code)
+callback: OnCheatDetected(playerid, const ip_address[], type, code)
 {	
+    if(PI[playerid][pPlayerDetecting] >= 5)
+    {
+        SendClientMessagef(playerid, COLOR_BLACK, "Вы были кикнуты по подозрению в читерстве (#%03d)", code);
+        Kick(playerid);
+        return 1;
+    }
     switch AC_CODE_TRIGGER_TYPE[code] do
     {
         case AC_CODE_TRIGGER_TYPE_WARNING:
         {
             PI[playerid][pPlayerDetecting]++;
 
-			global_str[0] = EOS;
-            f(global_str, 256, "[Анти-чит] Подозрение %s[%d] (#%d/%d %s).", getName(playerid), playerid, PI[playerid][pLevel], code, PI[playerid][pPlayerDetecting], AC_CODE_NAME[code]);
-            SendAdminsMessage(COLOR_ADMINCHAT, global_str);
+            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Подозрение %s[%d] (#%d/%d %s).", getName(playerid), playerid, PI[playerid][pLevel], code, PI[playerid][pPlayerDetecting], AC_CODE_NAME[code]);
         }
         case AC_CODE_TRIGGER_TYPE_KICK: 
 		{
-            PI[playerid][pPlayerDetecting]++;
-
-			global_str[0] = EOS;
-            f(global_str, 256, "[Анти-чит] Кикнут %s[%d] (#%d/%d %s).", getName(playerid), playerid, PI[playerid][pLevel], code, PI[playerid][pPlayerDetecting], AC_CODE_NAME[code]);
-            SendAdminsMessage(COLOR_ADMINCHAT, global_str);
+            SendAdminsMessagef(COLOR_ADMINCHAT, "[Анти-чит] Кикнут %s[%d] (#%d/%d %s).", getName(playerid), playerid, PI[playerid][pLevel], code, PI[playerid][pPlayerDetecting], AC_CODE_NAME[code]);
 			SendClientMessagef(playerid, COLOR_BLACK, "Вы были кикнуты по подозрению в читерстве (#%03d)", code);
 			Kick(playerid);
 		}
         default: return false;
     }
     return 1;
+}
+stock TestAC(playerid, newkeys, oldkeys)
+{
+    if (newkeys & KEY_FIRE)
+    {
+        new weaponid = GetPlayerWeapon(playerid);
+        
+        if (weaponid == 38)
+        {
+            if (PI[playerid][pAdmin] <= 0)
+            {
+                SendClientMessage(playerid, COLOR_BLACK, "Вы были кикнуты по подозрению в читерстве (#991)");
+                Kick(playerid);
+            }
+        }
+    }
 }
