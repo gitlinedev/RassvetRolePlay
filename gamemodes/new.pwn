@@ -1904,7 +1904,7 @@ stock ConnectMySQL()
 {
     new currenttime = GetTickCount();
 
-	new sql = 1;
+	new sql = 0;
 	if(!sql) mysql = mysql_connect("127.0.0.1", "gs269723", "gs269723", "6CKII67VlSAR"); // основа (0)
 	else mysql = mysql_connect("127.0.0.1", "gs87610", "gs87610", "cs0gy97c"); // тест (1)
 
