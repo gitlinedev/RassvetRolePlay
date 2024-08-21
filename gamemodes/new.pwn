@@ -4891,7 +4891,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(GetPVarInt(playerid,"kdsaveplayer") > gettime()) return SCM(playerid, COLOR_GREENNEW, !"{FFFF00}[Anti-Lag]{00aa33} сохранять сервер можно только раз в 10 секунд");
 						SaveServer();
 						SCM(playerid, COLOR_GREENNEW, !"Вы сохранили весь сервер");
-						SetPVarInt(playerid,"kdsaveplayer",gettime() + 10);
+						SetPVarInt(playerid, "kdsaveplayer",gettime() + 10);
 					}
 					case 2: SendRconCommand("hostname "NAMESERVER" | Открытие сервера");
 					case 3: SendRconCommand("hostname "NAMESERVER" | Первый сервер / Обновление");
@@ -5433,7 +5433,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				new Profit = Sum*20/100;
 				new B = GetPVarInt(playerid, "business");
 				BizInfo[B][bMoney] += Profit;
-				UpdateBusinessData(B);
+				UpdateBusiness(B);
 
 				SCMf(playerid, COLOR_GREENNEW, "Вы успешно купили {fe9a7e}'%s'{00aa33} за {fe9a7e}%d руб",\
 								VehicleNames[DealershipCars[PI[playerid][pChangerAutoSalon]][asModel]-400],
@@ -5485,7 +5485,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				new Profit = Sum*20/100;
 				new B = GetPVarInt(playerid, "business");
 				BizInfo[B][bMoney] += Profit;
-				UpdateBusinessData(B);
+				UpdateBusiness(B);
 
 				SCMf(playerid, COLOR_GREENNEW, "Вы успешно купили {fe9a7e}'%s'{00aa33} за {fe9a7e}%d донат-поинтов", 
 												VehicleNames[DealershipCars[PI[playerid][pChangerAutoSalon]][asModel]-400],
@@ -5572,7 +5572,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                 BizInfo[b][bMoney] += patr*kofi;
 				GivePlayerMoneyLog(playerid, -patr*kofi);
 				GiveWeapon(playerid, ggun, patr);
-				UpdateBusinessData(b);
+				UpdateBusiness(b);
 			}
 		}
 		case 9111: 
@@ -6829,7 +6829,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 					CarInfo[car][cFuel] += strval(inputtext);
 
 					GivePlayerMoneyLog(playerid,-cena);
-					UpdateBusinessData(b);
+					UpdateBusiness(b);
 				}
 			}
 		}
@@ -6849,7 +6849,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 				BizInfo[b][bProduct] -= 10;
 				BizInfo[b][bMoney] += cena;
 				GivePlayerMoneyLog(playerid,-cena);
-				UpdateBusinessData(b);
+				UpdateBusiness(b);
 				PI[playerid][pCanisters] = 1;
 				SCM(playerid, COLOR_GREEN, "[Информация]: {FFFFFF}Поздравляю! Теперь у вас есть канистра с бензином. Для заправки автомобиля используйте команду /fuel.");
 			}
@@ -6868,7 +6868,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
 				BizInfo[b][bMoney] += cena;
 				GivePlayerMoneyLog(playerid,-cena);
-				UpdateBusinessData(b);
+				UpdateBusiness(b);
 				PI[playerid][pFixPack] = 1;
 				SCM(playerid, COLOR_GREEN, "Вы приобрели ремонтный комплект. Для его использования введите команду: /fix.");
 			}
@@ -7278,7 +7278,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						GivePlayerMoneyLog(playerid,-cena);
 						BizInfo[b][bMoney] += cena;
 						BizInfo[b][bProduct] -= 1;
-                        UpdateBusinessData(b);
+                        UpdateBusiness(b);
 						global_str[0] = EOS, f(global_str, 39, "%s выпил спранк",PI[playerid][pName]);
 						PlayerPlaySound(playerid, 32200, 0.0, 0.0, 0.0);
 					    ProxDetector(10.0, playerid, global_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
@@ -7291,7 +7291,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						GivePlayerMoneyLog(playerid,-cena);
 						BizInfo[b][bMoney] += cena;
 						BizInfo[b][bProduct] -= 1;
-                        UpdateBusinessData(b);
+                        UpdateBusiness(b);
 						global_str[0] = EOS, f(global_str, 39, "%s выпил кофе",PI[playerid][pName]);
 						PlayerPlaySound(playerid, 32200, 0.0, 0.0, 0.0);
 					    ProxDetector(10.0, playerid, global_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
@@ -7311,7 +7311,7 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						SetPlayerHealthAC(playerid, hp+30);
 						if(PI[playerid][pSatiety] <= 70) PI[playerid][pSatiety] += 30;
 						else PI[playerid][pSatiety] = 100;
-                        UpdateBusinessData(b);
+                        UpdateBusiness(b);
 						global_str[0] = EOS, f(global_str, 39, "%s съела бургер",PI[playerid][pName]);
 						PlayerPlaySound(playerid, 32200, 0.0, 0.0, 0.0);
 					    ProxDetector(10.0, playerid, global_str, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF, 0xFF99CCFF);
@@ -11741,8 +11741,8 @@ callback: CheckNameDonate(playerid, inputtext[])
 		{
 			new b = GetBusinessIndexByID(PI[playerid][pBusiness]);
 			strmid(BizInfo[b][bOwner], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-			UpdateBusinessData(b);
-			SaveBusinessData(b);
+			UpdateBusiness(b);
+			SaveBusiness(b);
 		}
 		if(PI[playerid][pFloat] != INVALID_KV_ID) 
 		{
@@ -11803,8 +11803,8 @@ callback: CheckName(playerid, inputtext[])
 		{
 			new b = GetBusinessIndexByID(PI[playerid][pBusiness]);
 			strmid(BizInfo[b][bOwner], PI[playerid][pName], 0, strlen(PI[playerid][pName]), MAX_PLAYER_NAME);
-			UpdateBusinessData(b);
-			SaveBusinessData(b);
+			UpdateBusiness(b);
+			SaveBusiness(b);
 		}
 		if(PI[playerid][pFloat] != INVALID_KV_ID) 
 		{
@@ -11938,8 +11938,8 @@ callback: SecondTimer()
 					if(BizInfo[b][bOwned] == 0) continue;
 					if(BizInfo[b][bDays] == 0) continue;
 					BizInfo[b][bProduct]--;
-					UpdateBusinessData(b);
-					SaveBusinessData(b);
+					UpdateBusiness(b);
+					SaveBusiness(b);
 				}
 			}
 			case 35: 
@@ -11953,7 +11953,7 @@ callback: SecondTimer()
 			    new time = GetTickCount();
 			    for(new k = 0; k < TotalKV; k++) SaveKVData(k);
 			    for(new h = 0; h < TotalHouses; h++) SaveHouseData(h);
-			    for(new b = 0; b < TotalBusiness; b++) SaveBusinessData(b);
+			    for(new b = 0; b < TotalBusiness; b++) SaveBusiness(b);
 			    SaveWarehouse();
 			    printf("[server_log] save all. Time: %d ms.",GetTickCount()-time );
 			}
@@ -12221,7 +12221,7 @@ public OnPlayerClickTextDraw(playerid, Text:clickedid)
 					{
 						BizInfo[b][bProduct] -= 1;
 						BizInfo[b][bMoney] += CenaSkin;
-						UpdateBusinessData(b);
+						UpdateBusiness(b);
 					}
 				}
 				else
@@ -12252,7 +12252,7 @@ public OnPlayerClickTextDraw(playerid, Text:clickedid)
 					if(BizInfo[b][bOwned] != 0) {
 						BizInfo[b][bProduct] -= 1;
 						BizInfo[b][bMoney] += CenaSkin;
-						UpdateBusinessData(b);
+						UpdateBusiness(b);
 					}
 				}
 				return 1;
@@ -12680,7 +12680,7 @@ stock RestartCFG()
     			strmid(BizInfo[b][bOwner], "none", 0, strlen(BizInfo[b][bOwner]), 24);
     			BizInfo[b][bOwned] = 0;
 			}
-			SaveBusinessData(b);
+			SaveBusiness(b);
 		}
 	}*/
  	SaveWarehouse();
@@ -13983,44 +13983,48 @@ callback: LoadMembers(playerid)
     cache_get_data(rows, fields);
 
     global_str[0] = EOS;
-    new afk_status[32], warn_status[32], str_group[30];
+    new afk_status[32], warn_status[32], str_group[30], smile[15];
 
     for (new i = 0; i < MAX_PLAYERS; i++) 
     {
-        if (!IsPlayerConnected(i)) continue;
+        if (!IsPlayerConnected(i) || PI[i][pMember] != PI[playerid][pMember] || PI[i][pAdmin] != 0) continue;
 
-        if (PI[i][pMember] == PI[playerid][pMember] && PI[playerid][pAdmin] <= 0) 
-        {
-            online_count++;
+        online_count++;
 
-            if (PI[i][pAFK] > 2) 
-                format(afk_status, sizeof(afk_status), "{FF6347}[AFK](%d/3)", PI[i][pAFK]);
-            else 
-                afk_status[0] = EOS;
+        afk_status[0] = EOS;
+        warn_status[0] = EOS;
+        smile[0] = EOS;
 
-            if (PI[i][pTwarn] != 0) 
-                format(warn_status, sizeof(warn_status), "{FF8000}(%d/3)", PI[i][pTwarn]);
-            else 
-                format(warn_status, sizeof(warn_status), "{33d267}(0/3)");
+        if (PI[i][pAFK] > 2) 
+            format(afk_status, sizeof(afk_status), "[AFK]");
 
-			if(PI[i][pGroupID] == -1)
-				format(str_group, sizeof(str_group), "нет");
-			else 
-				format(str_group, sizeof(str_group), "%s", PI[i][pGroupName]);
+        format(warn_status, sizeof(warn_status), "%d из 3", PI[i][pTwarn]);
 
-            format(global_str, sizeof(global_str), "%s%s[%d]%s%s\t%d\t%s\t%d\n", 
-                   global_str, PI[i][pName], i, afk_status, warn_status, 
-                   PI[i][pRang], str_group, PI[i][pNumber]);
-        }
+        if (PI[i][pGroupID] == -1)
+            format(str_group, sizeof(str_group), "нет");
+        else 
+            format(str_group, sizeof(str_group), "%s", PI[i][pGroupName]);
+
+        if (PI[i][pRang] == 10) 
+            format(smile, sizeof(smile), "&#x1F451;");
+        else if (PI[i][pRang] == 9) 
+            format(smile, sizeof(smile), "&#x2B50;");
+        else if (PI[i][pCaptureManager] == 1) 
+            format(smile, sizeof(smile), "&#x1F52B;");
+
+        format(global_str, sizeof(global_str), "%s%s[%d]\t%s[%d]%s\t%s\t%s%s\n", 
+               global_str, PI[i][pName], i, NameRang(i), PI[i][pRang], smile, str_group, warn_status, afk_status);
     }
+
     SCMf(playerid, 0x3366ccFF, "Участников организации: %d чел, онлайн: %d чел", rows, online_count);
 
     new str_1[1048*2];
-    format(str_1, sizeof(str_1), "Имя и выговоры\tРанг\tГруппа\tТелефон\n%s", global_str);
+    format(str_1, sizeof(str_1), "ИМЯ\tРАНГ\tГРУППА\tВЫГОВОРЫ\n%s", global_str);
     CEF_ShowPlayerDialog(playerid, 0, DIALOG_STYLE_TABLIST_HEADERS, "{ee3366}Члены организации онлайн", str_1, "Закрыть", "");
 
     return 1;
 }
+
 CMD:members(playerid) 
 {
     if(PI[playerid][pMember] == 0) return  SCM(playerid, COLOR_GREY, !"Вы не состоите во организации");
@@ -16457,8 +16461,8 @@ stock SaveServer()
 	printf("SaveKVData сохранился за %i ms", GetTickCount() - currenttime);
 
 	currenttime = GetTickCount();
-	for(new i ;i < LoadedBiz; i++) SaveBusinessData(i);
-	printf("SaveBusinessData сохранился за %i ms", GetTickCount() - currenttime);
+	for(new i ;i < LoadedBiz; i++) SaveBusiness(i);
+	printf("SaveBusiness сохранился за %i ms", GetTickCount() - currenttime);
 
 	return 1;
 }
@@ -17113,13 +17117,13 @@ stock NameCapture()
 
 	return CaptureStatus;
 }
-stock SaveBusinessData(b) 
+callback: SaveBusiness(b) 
 {
     mysql_string[0] = EOS;
     
-    format(mysql_string, 512, "\
-		UPDATE `business` SET `owner` = '%e', `owned` = %d, `name` = '%e', `prod` = %d, `DayRent` = %d, `clients` = %d, `lock` = %d,\
-		`cena` = %d, `price_prod` = %d, `bank` = %d, `SealedDays` = %d WHERE `id` = %d LIMIT 1",
+    format(mysql_string, 512, "UPDATE `business` SET `owner` = '%s', `owned` = %d,\
+						`name` = '%s', `prod` = %d, `DayRent` = %d, `clients` = %d, `lock` = %d,\
+						`cena` = %d, `price_prod` = %d, `bank` = %d, `SealedDays` = %d WHERE `id` = %d LIMIT 1",
         BizInfo[b][bOwner],
         BizInfo[b][bOwned],
         BizInfo[b][bName],

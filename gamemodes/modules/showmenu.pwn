@@ -64,7 +64,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 
                 PI[playerid][pPhone] = 1;
 
-				UpdateBusinessData(b);
+				UpdateBusiness(b);
 				cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка мобильного телефона"), CEFSTR("fb4949"), CEFSTR("-5500P"));
 				ShowPlayerDialog(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Покупка мобильного телефона", "{FFFFFF}Поздравляем!\nВы купили телефон {3366cc}bPhone XX{FFFFFF}\nНе забудьте приобрести SIM-карту", "Закрыть", "Назад");
 				SCM(playerid, 0x00AA33FF, !"Чтобы открыть меню телефона используйте {FF9977}клавишу P");
@@ -174,7 +174,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(GetPlayerMoneyID(playerid) < FLOWERS) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 						GivePlayerMoneyLog(playerid, -FLOWERS);
 						GiveWeapon(playerid, 14, 1);
-					    UpdateBusinessData(b);
+					    UpdateBusiness(b);
 						new cef[10]; f(cef, 10, "-%dР", FLOWERS);
                         cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка цветов"), CEFSTR("fb4949"), CEFSTR(cef));
 						SCM(playerid, 0x00AA33FF, !"Вы купили букет цветов. Чтобы подарить используйте {FF9977}/flowers");
@@ -187,7 +187,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						GivePlayerMoneyLog(playerid,-HEALPACK);
 						PI[playerid][pHealPack]++;
 						UpdatePlayerDataInt(playerid, "healthchest", PI[playerid][pHealPack]);
-					    UpdateBusinessData(b);
+					    UpdateBusiness(b);
                         new cef[10]; f(cef, 10, "-%dР", HEALPACK);
 						cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка мед. аптечки (/healme)"), CEFSTR("fb4949"), CEFSTR(cef));
 						SCMf(playerid, 0x00AA33FF, "Вы купили мед. аптечку{FF9977} (%d из 3){00AA33} за {FF9977}%d рублей", PI[playerid][pHealPack], HEALPACK);
@@ -199,7 +199,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(GetPlayerMoneyID(playerid) < PHOTO) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 						GivePlayerMoneyLog(playerid,-PHOTO);
 						GiveWeapon(playerid, 43, 20);
-					    UpdateBusinessData(b);
+					    UpdateBusiness(b);
                         new cef[10]; f(cef, 10, "-%dР", PHOTO);
 						cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка фотоапарата"), CEFSTR("fb4949"), CEFSTR(cef));
 						SCM(playerid, 0x00AA33FF, !"Вы купили фотоапарат.");
@@ -210,7 +210,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(GetPlayerMoneyID(playerid) < BALLON) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 						GivePlayerMoneyLog(playerid,-BALLON);
 						GiveWeapon(playerid, 41, 1000);
-					    UpdateBusinessData(b);
+					    UpdateBusiness(b);
                         new cef[10]; f(cef, 10, "-%dР", BALLON);
 						cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка балончика с краской"), CEFSTR("fb4949"), CEFSTR(cef));
 						SCM(playerid, 0x00AA33FF, !"Вы купили балончик с краской.");
@@ -222,7 +222,7 @@ stock shop_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 						if(GetPlayerMoneyID(playerid) < MASK) return SCM(playerid, COLOR_GREY, !"У Вас недостаточно денег на руках");
 						GivePlayerMoneyLog(playerid,-MASK);
 						PI[playerid][pMask]++;
-					    UpdateBusinessData(b);
+					    UpdateBusiness(b);
                         new cef[10]; f(cef, 10, "-%dР", MASK);
 						cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка маски"), CEFSTR("fb4949"), CEFSTR(cef));
 						SCMf(playerid, 0x00AA33FF, "Вы купили маску за {FF9977}%d руб{00AA33}. Чтобы надеть её используйте {FF9977}/mask", MASK);
@@ -277,7 +277,7 @@ callback: CheckSimCard(playerid)
 		UpdatePlayerDataInt(playerid, "number", PI[playerid][pNumber]);
 		cef_emit_event(playerid, "show-notify-no-img", CEFSTR("Покупка сим-карты"), CEFSTR("fb4949"), CEFSTR("-300P"));
 		ShowPlayerDialogf(playerid, 0, DIALOG_STYLE_MSGBOX, !"{ee3366}Покупка SIM-карты", "Закрыть", "Назад", "{FFFFFF}Поздравляем!\nВы купили SIM-карту c номером {3377cc}%d", GetPVarInt(playerid,"simcard"));
-		UpdateBusinessData(b);
+		UpdateBusiness(b);
 	}
 	return 1;
 }

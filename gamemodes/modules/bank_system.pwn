@@ -449,7 +449,7 @@ stock bank_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
                     {FFFFFF}Комиссия: \t\t{ff6633}%d руб\n\
                     {FFFFFF}Снято: \t\t{3366cc}%d руб", OldBizMoney, BizInfo[b][bMoney], strval(inputtext)/100*6, strval(inputtext));
 
-				SaveBusinessData(b);
+				SaveBusiness(b);
 			}
         }
     }

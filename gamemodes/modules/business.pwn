@@ -84,8 +84,8 @@ CMD:buybusiness(playerid)
 			{FFFFFF}Не забывайте вовремя платить за него, в противном случае он будет опечатан!\n\n\
 			{FFFF99}Если в бизнесе не будет продуктов в течение 5-7 дней, он будет опечатан.", "Выбрать", "Отмена");
 
-            UpdateBusinessData(b);
-            SaveBusinessData(b);
+            SaveBusiness(b);
+            UpdateBusiness(b);
            	SavePlayerData(playerid);
            	break;
         }
@@ -103,7 +103,7 @@ stock SetBusinessUpdate()
 			mysql_queryf(mysql, "UPDATE `"BUSINESS_TABLE"` SET `clients` = '0', `bank` = '%d' WHERE `id` = '%d'", false, BizInfo[b][bMoney], b);
 			mysql_queryf(mysql, "INSERT INTO `"BUSINESS_STATS"` (`bussines_id`, `people`, `type`, `money`, `data`) VALUES ('%d','%d','0','%d', CURRENT_TIMESTAMP)", false, b, BizInfo[b][bClient], fin);
 			BizInfo[b][bClient] = 0;
-			SaveBusinessData(b);
+			SaveBusiness(b);
 		}
         if(BizInfo[b][bSealedDays] >= 0)
         {
@@ -140,8 +140,8 @@ stock SetBusinessUpdate()
                 }
 			 	strmid(BizInfo[b][bOwner], "None", 0, strlen(BizInfo[b][bOwner]), 24);
 
-				UpdateBusinessData(b);
-				SaveBusinessData(b);
+                SaveBusiness(b);
+				UpdateBusiness(b);
             }
         }
         else
@@ -153,8 +153,8 @@ stock SetBusinessUpdate()
 				{
 					new sDays = RandomEX(2,4);
 					BizInfo[b][bSealedDays] = sDays;
-					SaveBusinessData(b);
-					UpdateBusinessData(b);
+					SaveBusiness(b);
+					UpdateBusiness(b);
 				}
 			}
         }
@@ -162,7 +162,7 @@ stock SetBusinessUpdate()
 	BusinessUpdate = 0;
 	return 1;
 }
-stock UpdateBusinessData(b) 
+stock UpdateBusiness(b) 
 {
     if(BizInfo[b][data_TYPE] == 1) 
 	{
@@ -233,7 +233,7 @@ stock UpdateBusinessData(b)
 }
 callback: LoadBusiness() 
 {
-    new rows, fields, temp[256],time = GetTickCount();
+    new rows, fields, temp[256], time = GetTickCount();
     cache_get_data(rows, fields);
 	LoadedBiz = cache_get_row_count(mysql);
     
@@ -430,7 +430,7 @@ stock business_OnDialogResponse(playerid, dialogid, response, listitem, inputtex
 					case 6: 
                     {
 					    new bIndex = GetBusinessIndexByID(PI[playerid][pBusiness]);
-			            ShowPlayerDialogf(playerid, 2354, DIALOG_STYLE_MSGBOX, !"{ee3366}Продажа бизнеса", "Продать", "Отмена", "Вы желаете продать свой бизнес за {FFFF99}%d рублей{FFFFFF}?", BizInfo[bIndex][bPrice]/2);
+			            ShowPlayerDialogf(playerid, 2354, DIALOG_STYLE_MSGBOX, !"{ee3366}Продажа бизнеса", "Продать", "Отмена", "{FFFFFF}Вы желаете продать свой бизнес за {FFFF99}%d рублей{FFFFFF}?", BizInfo[bIndex][bPrice]/2);
 					}
 				}
 			}
@@ -448,8 +448,8 @@ stock business_OnDialogResponse(playerid, dialogid, response, listitem, inputtex
 			 	strmid(BizInfo[bIndex][bOwner], "None", 0, strlen(BizInfo[bIndex][bOwner]), 24);
 				GivePlayerMoneyLog(playerid,BizInfo[bIndex][bPrice]/2);
 			 	SCMf(playerid, 0xc89522AA, "Вы продали бизнес государству за %d рублей", BizInfo[bIndex][bPrice]/2);
-				UpdateBusinessData(bIndex);
-				SaveBusinessData(bIndex);
+                SaveBusiness(bIndex);
+				UpdateBusiness(bIndex);
 			  	SavePlayerData(playerid);
    			}
 		}
@@ -477,8 +477,8 @@ stock business_OnDialogResponse(playerid, dialogid, response, listitem, inputtex
 
 				 	SCMf(playerid, COLOR_GREENNEW, "Вы купили {fe9a7e}%d шт.{00aa33} продуктов. Всего продуктов: {fe9a7e}%d шт.{00aa33}", ProductValue, BizInfo[bIndex][bProduct]);
 
-					UpdateBusinessData(bIndex);
-					SaveBusinessData(bIndex);
+                    SaveBusiness(bIndex);
+					UpdateBusiness(bIndex);
 					return 1;
 				}
 				else SCM(playerid, COLOR_GREY, !"Произошла ошибка..");

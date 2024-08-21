@@ -256,7 +256,7 @@ CMD:skin(playerid, params[])
 }
 CMD:gethere(playerid,params[]) 
 {
-    if(CheckAccess(playerid, 2)) return 1;
+    if(CheckAccess(playerid, 2, 1)) return 1;
     if(sscanf(params, "u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /gethere [ID игрока]");
     if(!IsPlayerConnected(params[0])) return SCM(playerid, COLOR_GREY, !"Игрок не в сети");
     if(params[0] == playerid) return SCM(playerid, COLOR_GREY, !"Вы не можете телепортировать себя");
@@ -282,7 +282,7 @@ CMD:gethere(playerid,params[])
 alias:goto("g");
 CMD:goto(playerid, params[]) 
 {
-    if(CheckAccess(playerid, 1)) return 1;
+    if(CheckAccess(playerid, 1, 1)) return 1;
     if(sscanf(params, "u",params[0])) return SCM(playerid, COLOR_LIGHTGREY, !"Используйте: /goto [ID игрока]");
     if(!IsPlayerConnected(params[0]))return  SCM(playerid, COLOR_GREY, !"Игрок не в сети");
 	if(!IsPlayerLogged{params[0]})return  SCM(playerid, COLOR_GREY, !"Игрок не авторизован");
@@ -798,7 +798,7 @@ CMD:setleader(playerid,params[])
 }
 CMD:tp(playerid) 
 {
-    if(CheckAccess(playerid, 1)) return 1;
+    if(CheckAccess(playerid, 1, 1)) return 1;
 	return ShowPlayerDialog(playerid, 4385, DIALOG_STYLE_LIST, "{ee3366}Телепортация", "\
 	{FFFF99}г. Лыткарино \n\
 	{FFFF99}пгт. Бусаево\n\
@@ -1124,10 +1124,10 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
             {
                 switch(listitem)
                 {
-					case 0: SetPlayerPos(playerid, -2496.6514,187.7827,55.7560);
-                    case 1: SetPlayerPos(playerid, -506.5684,-1417.5021,56.2231+4);
-                    case 2: SetPlayerPos(playerid, 2303.4346,-1722.0289,36.8250);
-                    case 3: SetPlayerPos(playerid, 1880.3647,1180.8679,38.8619);
+					case 0: if(PI[playerid][pAdmin] >= 1) SetPlayerPos(playerid, -2496.6514,187.7827,55.7560);
+                    case 1: if(PI[playerid][pAdmin] >= 1) SetPlayerPos(playerid, -506.5684,-1417.5021,56.2231+4);
+                    case 2: if(PI[playerid][pAdmin] >= 1) SetPlayerPos(playerid, 2303.4346,-1722.0289,36.8250);
+                    case 3: if(PI[playerid][pAdmin] >= 1) SetPlayerPos(playerid, 1880.3647,1180.8679,38.8619);
                     case 4: SetPlayerPos(playerid, 2386.1399,-938.3940,14.3443);
                     case 5: SetPlayerPos(playerid, 1429.7269,2343.9487,22.1195+2); // скин
                     case 6: SetPlayerPos(playerid, 2224.7097,-2611.0547,31.8857+2);
@@ -1142,12 +1142,12 @@ stock admins_OnDialogResponse(playerid, dialogid, response, listitem)
                     case 15: SetPlayerPos(playerid, 1880.3647,1180.8679,38.8619+2);
 					case 16: SetPlayerPos(playerid, 2500.6553,-716.2165,28.3000+2);
 					case 17: SetPlayerPos(playerid, 1474.5935,2045.2124,24.0309+2);
-					case 18: SetPlayerPos(playerid, 1581.1870,-1199.6599,14.9259+2);
-					case 19: SetPlayerPos(playerid, 2095.6086,1560.5791,-46.5100);
-					case 20: SetPlayerPos(playerid, -2634.9954,-2385.7825,14.0381);
+					case 18: if(PI[playerid][pAdmin] >= 1) SetPlayerPos(playerid, 1581.1870,-1199.6599,14.9259+2);
+					case 19: if(PI[playerid][pAdmin] >= 1) SetPlayerPos(playerid, 2095.6086,1560.5791,-46.5100);
+					case 20: if(PI[playerid][pAdmin] >= 1) SetPlayerPos(playerid, -2634.9954,-2385.7825,14.0381);
                 }
-				SetPlayerVirtualWorld(playerid,0);
-				SetPlayerInterior(playerid,0);
+				SetPlayerVirtualWorld(playerid, 0);
+				SetPlayerInterior(playerid, 0);
 				SetPlayerHealthAC(playerid, 200);
             }
         }
@@ -2531,8 +2531,8 @@ CMD:sp(playerid,params[])
 		SetPVarInt(playerid, "SpecInt", inter);
 		SetPVarInt(playerid, "SpecWorld", world);
 	}
-	SetPlayerInterior(playerid,GetPlayerInterior(params[0]));
-	SetPlayerVirtualWorld(playerid,GetPlayerVirtualWorld(params[0]));
+	SetPlayerInterior(playerid, GetPlayerInterior(params[0]));
+	SetPlayerVirtualWorld(playerid, GetPlayerVirtualWorld(params[0]));
 	TogglePlayerSpectating(playerid, true);
 	if(IsPlayerInAnyVehicle(params[0])) 
 	{
@@ -2563,7 +2563,6 @@ CMD:givedonate(playerid,params[])
 CMD:apanel(playerid) 
 {
     if(CheckAccess(playerid, 8)) return 1;
-	SCM(playerid, COLOR_GREY, "[Anti-sliv] все действия сохраняются в базе-данных, и в системе 'вк-логгер'");
 	return ShowApanel(playerid);
 }
 stock ShowApanel(playerid)

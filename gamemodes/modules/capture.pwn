@@ -1195,7 +1195,7 @@ CMD:cteam(playerid, params[])
 }
 CMD:clead(playerid, params[]) 
 {
-    if (PI[playerid][pRang] <= 10) 
+    if (PI[playerid][pRang] < 10) 
         return SCM(playerid, COLOR_GREY, !"ƒанна€ команда доступна лидерам организаций");
 
     new targetid;
