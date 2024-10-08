@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CDN</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/ico" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Circle-icons-dev.svg/1024px-Circle-icons-dev.svg.png"/>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Ubuntu', sans-serif;
+      height: 100vh;
+      min-height: 600px;
+      display: flex;
+      flex-direction: column;
+      color: #344A5E;
+    }
+    .central-content {
+      display: flex;
+      flex-grow: 1;
+      flex-shrink: 0;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .bottom-content {
+      height: 116px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .caption {
+      margin-top: 15px;
+      text-align: center;
+    }
+    .big-text {
+      font-weight: 500;
+      font-size: 18px;
+    }
+    .small-text {
+      font-size: 14px;
+    }
+    .ref {
+      font-size: 14px;
+      color: #0279C0;
+      text-decoration: none;
+    }
+    .ref:hover {
+      text-decoration: underline;
+    }
+    .pic {
+      margin-bottom: 15px;
+    }
+    .b-text_lang_ru {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="central-content">
+    <div class="big-text caption b-text_lang_en">Greetings!</div>
+    <div class="big-text caption b-text_lang_ru">Приветствуем!</div>
+    <div class="small-text caption b-text_lang_en">Access is restricted.</div>
+    <div class="small-text caption b-text_lang_ru">Доступ ограничен.</div>
+  </div>
+  <div class="bottom-content">
+  </div>
+
+  <script type="text/javascript">
+    var platformLanguage = navigator && (
+      navigator.language ||
+	navigator.browserLanguage ||
+	navigator.systemLanguage ||
+	navigator.userLanguage ||
+	null ),
+      elemsRU, elemsEN;
+    if (platformLanguage.match("ru") && document.getElementsByClassName) {
+      elemsRU = document.getElementsByClassName("b-text_lang_ru");
+      elemsEN = document.getElementsByClassName("b-text_lang_en");
+      var l = elemsEN.length;
+      while(l--) {
+	elemsEN[l].style.display = "none";
+      }
+      l = elemsRU.length;
+      while(l--) {
+	elemsRU[l].style.display = "block";
+      }
+      document.title = "Access is restricted.";
+    }
+  </script>
+</body>
+</html>

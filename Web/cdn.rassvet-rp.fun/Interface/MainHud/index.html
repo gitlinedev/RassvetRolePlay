@@ -1,0 +1,215 @@
+﻿<head>
+    <title>CEF STUDIO INTERFACE</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/hud.css">
+    <link rel="stylesheet" href="css/notifications.css">
+    <link rel="stylesheet" type="text/css" href="css/fonts/stylesheet.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha1/css/bootstrap.min.css">
+</head>
+<style>
+body { margin: 0; padding: 0; overflow: hidden; user-select: none; background: transparent; }
+</style>
+<body>
+    <div class="hud-cefstudio" v-if="active" v-cloak>
+        <div class="logotype-block">
+            <img class="logotype" src="images/logo2.png" />
+            <p class="servername">{{ server }}</p>
+            <p class="roleplay">ROLE PLAY</p>
+        </div>
+        <div class="line" style="margin-top: 8.5vh; margin-right: 3vh;"></div>
+        <div class="weapon-block">
+            <img class="weapon" :src="gun">
+            <span v-if="!gun.includes('images/gun/0.png') && !gun.includes('images/gun/1.png') && !gun.includes('images/gun/2.png') && !gun.includes('images/gun/3.png') && !gun.includes('images/gun/4.png') && !gun.includes('images/gun/5.png') && !gun.includes('images/gun/6.png') && !gun.includes('images/gun/7.png') && !gun.includes('images/gun/8.png') && !gun.includes('images/gun/10.png') && !gun.includes('images/gun/15.png') && !gun.includes('images/gun/46.png')" class="ammo">{{ ammo }}</span>
+            <img v-else class="infinity" src="images/infinity.png">
+        </div>
+        <div class="progress-bar-block" :style="{'margin-top': armour > 0 ? '0' : '1.2922330097087378vh'}">
+            <div class="progress-bars"><div class="progress-health" v-bind:style="{ width: health + '%' }"></div></div>
+            <div v-if="armour > 0" class="progress-bars"><div class="progress-armour" v-bind:style="{ width: armour + '%' }"></div></div>
+            <div class="progress-bars"><div class="progress-run" v-bind:style="{ width: run + '%' }"></div></div>
+            <div class="progress-value">
+                <div class="value">{{ health }}</div>
+                <div v-if="armour > 0" class="value">{{ armour }}</div>
+                <div class="value">{{ run }}</div>
+            </div>
+        </div>
+        <div class="money-block">
+            <div class="line" style="margin-top: 1.8vh;"></div>
+            <div id="cash" class="money">500000 <img src="images/money.png" /></div>
+        </div>
+        <div v-show="suspect !== 0" class="suspect-block">
+            <div class="text">В розыске</div>
+            <div class="star">
+                <img v-for="star in 6" :src="star <= suspect ? 'images/star.active.svg' : 'images/star.noactive.svg'" />
+            </div>
+        </div>
+        <div class="kill-list">
+            <div v-for="(kill, index) in lastFiveKills" :key="index" class="kill">
+                <div class="killer" v-html="replaceColors(kill.killer)"></div>
+                <img :src="`images/gun/${kill.weapon}.png`" />
+                <div class="killed" v-html="replaceColors(kill.killed)"></div>
+            </div>
+        </div>
+        <div class="hud-server-datetime">
+            <div class="hud-server-time">
+                <img src="images/time.png" width="20">
+                <div id="server-time">22:35.08</div>
+            </div>
+            <div class="hud-server-time">
+                <img src="images/date.png" width="20">
+                <div id="server-date">10.01.2024</div>
+            </div>
+        </div>
+        <audio id="1pik" src="audio/1pik.MP3"></audio>
+        <audio id="2pik" src="audio/2pik.MP3"></audio>
+        <div class="capture-container" v-show="isCaptureVisible">
+            <div class="gang">
+                <div class="counter">{{ captureGang[0].score }}<p>{{ captureGang[0].name }}</p></div>
+            </div>
+            <div class="center-block">
+                <div class="timer">{{ formattedCaptureTime  }}</div>
+                <div class="round">{{ captureRound }}</div>
+            </div>
+            <div class="gang">
+                <div class="counter" style="direction: rtl;">{{ captureGang[1].score }}<p>{{ captureGang[1].name }}</p></div>
+            </div>
+        </div>
+    </div>
+    <div class="speedometer-cefstudio" v-if="active" v-cloak>
+        <img class="speedometer-bg" src="images/speed-bg.png" />
+        <svg class="speed-meter" width="33vh" height="40vh" viewBox="0 0 280 60" fill="none">
+            <path stroke-width="6" fill="none" d="M60.340,185.660 C18.553,143.874 18.553,76.126 60.340,34.340 C102.126,-7.447 169.874,-7.447 211.660,34.340 C253.446,76.126 253.446,143.874 211.660,185.660 " />
+            <path id="speed" stroke="#f23856" stroke-width="6" fill="none" d="M60.340,185.660 C18.553,143.874 18.553,76.126 60.340,34.340 C102.126,-7.447 169.874,-7.447 211.660,34.340 C253.446,76.126 253.446,143.874 211.660,185.660" style="stroke-dasharray: 624.295, 504.295; stroke-dashoffset: 504.295;" />
+        </svg>
+        <div class="speed-block">
+            <div class="speed">{{ speed }}</div>
+            <div class="gear-block">
+                <div class="gear" :class="{ active: gear === 'P' }">P</div>
+                <div class="gear" :class="{ active: gear === 'D' }">D</div>
+                <div class="gear" :class="{ active: gear === 'R' }">R</div>
+            </div>
+        </div>
+        <div class="indicator-block">
+            <img v-if="engine" class="indicator-icon" src="images/speedometer/engine_on.png" style="width: 2.9vh; height: 1.9vh;" />
+            <img v-else class="indicator-icon" src="images/speedometer/engine.png" style="width: 2.9vh; height: 1.9vh;" />
+            <img v-if="lights" class="indicator-icon" src="images/speedometer/lights_on.png" style="width: 2.5vh; height: 1.5vh; top: 0.3vh; left: 0.1vh;" />
+            <img v-else class="indicator-icon" src="images/speedometer/lights.png" style="width: 2.5vh; height: 1.5vh; top: 0.3vh; left: 0.1vh;" />
+            <img v-if="doors" class="indicator-icon" src="images/speedometer/lock_on.png" style="width: 2.5vh; height: 1.6vh; top: 0.15vh;" />
+            <img v-else class="indicator-icon" src="images/speedometer/lock.png" style="width: 2.5vh; height: 1.6vh; top: 0.15vh;" />
+            <img v-if="key" class="indicator-icon" src="images/speedometer/key_on.png" style="width: 2.5vh; height: 1.7vh; top: 0.1vh;" />
+            <img v-else class="indicator-icon" src="images/speedometer/key.png" style="width: 2.5vh; height: 1.7vh; top: 0.1vh;" />
+        </div>
+        <svg class="progress-fuel" viewBox="0 0 100 320" fill="none" xmlns="http://www.w3.org/2000/svg" transform="rotate(-13.5)">
+            <path d="M41.8301 312C17.8305 276.5 -4.2306 204.241 13.3311 134C24.832 88 51.8336 39 95.832 5" stroke="#141414cb" stroke-opacity="0.5" stroke-width="8" />
+            <path id="fuel" d="M41.8301 312C17.8305 276.5 -4.2306 204.241 13.3311 134C24.832 88 51.8336 39 95.832 5" stroke="#f23856" stroke-width="8" style="stroke-dasharray: 500; stroke-dashoffset: 500;" />
+        </svg>
+        <div class="fuel-block">
+            <div class="fuel">{{ fuel }} л</div>
+            <img class="icon-fuel" src="images/fuel.svg" />
+        </div>
+        <svg class="progress-health" viewBox="0 0 100 320" fill="none" xmlns="http://www.w3.org/2000/svg" transform="scale(-1, 1) rotate(-13.5)">
+            <path d="M41.8301 312C17.8305 276.5 -4.2306 204.241 13.3311 134C24.832 88 51.8336 39 95.832 5" stroke="#141414cb" stroke-opacity="0.5" stroke-width="8" />
+            <path id="health" d="M41.8301 312C17.8305 276.5 -4.2306 204.241 13.3311 134C24.832 88 51.8336 39 95.832 5" stroke="#f23856" stroke-width="8" style="stroke-dasharray: 500; stroke-dashoffset: 500;" />
+        </svg>
+        <div class="health-block">
+            <img class="icon-health" src="images/gears.png" />
+            <div class="health">{{ health }} %</div>
+        </div>
+    </div>
+    <div id="notifications-container" class="notifications-container">
+        <div class="offer-notification" v-cloak>
+            <div v-for="(notification, index) in notifications" :key="notification.id" ref="notifications" class="notifications" :style="top">
+                <div class="info-block">
+                    <div class="message">{{ notification.message }}</div>
+                    <div class="timer-container">
+                        <svg class="timer" viewBox="0 0 100 100">
+                            <circle class="timer-path-background" cx="50" cy="50" r="45"></circle>
+                            <circle class="timer-path" cx="50" cy="50" r="45" :style="{'stroke-dasharray': `${notification.progress} 282.6`}"></circle>
+                            <text class="timer-text" x="50" y="50">{{ notification.timeLeft }}</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="button-block">
+                    <div class="button">
+                        <div class="key green">Y</div>
+                        {{ notification.button1 }}
+                    </div>
+                    <div class="button" style="margin-left: 4vh;">
+                        <div class="key red">N</div>
+                        {{ notification.button2 }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="hud-notifications" v-cloak>
+            <div v-for="(notification, index) in notifications" :key="notification.id" ref="notifications" :class="notificationClass(notification.type)" class="notifications">
+                <div class="content">
+                    <div class="message" v-html="notification.message"></div>
+                    <img v-show="notification.type === 'passive'" src="images/passiv.png" />
+                    <div v-show="notification.type === 'mute'" class="time">{{ notification.timer }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="radar-notifications" v-cloak>
+            <div v-for="(notification, index) in notifications" :key="index" ref="notifications" :class="notificationClass(notification.type)" class="notifications">
+                <div class="content">
+                    <div class="img-block" :class="notificationImage(notification.type)">
+                        <img v-show="notification.type === 'lock-green'" src="images/notify4.png" />
+                        <img v-show="notification.type === 'lock-red'" src="images/notify5.png" />
+                    </div>
+                    <div class="message" :class="{ 'm2': notification.type === 'lock-green' || notification.type === 'lock-red'}" v-html="notification.message"></div>
+                    <div v-show="notification.type === 'red' || notification.type === 'green' || notification.type === 'artichoke'" class="time">{{ notification.description }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="welcome-notifications" v-cloak>
+            <div v-for="(notification, index) in notifications" :key="index" ref="notifications" class="notifications">
+                <div class="content">
+                    <div class="header" v-html="notification.header"></div>
+                    <div class="message">{{ notification.message }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="helpkey-notifications" v-cloak>
+            <div v-for="(notification, index) in notifications" :key="notification.id" ref="notifications" class="notifications">
+                <div class="content">
+                    <div class="key">{{ notification.key }}</div>
+                    <div class="message">- {{ notification.message }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="center-notifications" v-cloak>
+            <div v-for="(notification, index) in notifications" :key="notification.id" ref="notifications" class="notifications">
+                <div class="content">
+                    <img class="icon" :src="`images/icon${notification.type}.png`" />
+                    <div class="message" :class="`type-${notification.type}`">{{ notification.message }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="select-clothes" class="select-clothes">
+        <div class="content">
+            <div class="button-block">
+                <div class="button" onclick="selectClothes(1);">
+                    <img src="images/arrow-left.svg">
+                    Предыдущий
+                </div>
+                <div class="button" onclick="selectClothes(2);">
+                    Выбор
+                    <img src="images/checkmark.svg" style="width: 3.023715846994536vh; margin-left: 0.3vh">
+                </div>
+                <div class="button" onclick="selectClothes(3);">
+                    Следующиий
+                    <img src="images/arrow-right.svg">
+                </div>
+            </div>
+            <div class="random" onclick="selectClothes(4);">
+                Случайный
+                <img src="images/random.svg">
+            </div>
+        </div>
+    </div>
+</body>
+<script src="script/vue.js"></script>
+<script src="script/hud.js"></script>
+<script src="script/notifications.js"></script>
+<script language="JavaScript"></script>

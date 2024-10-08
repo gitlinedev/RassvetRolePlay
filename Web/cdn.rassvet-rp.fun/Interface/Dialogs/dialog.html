@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="utf-8">
+	<title>BY CEF STUDIO</title>
+	<link rel="stylesheet" href="css/dialog.css">
+	<link rel="stylesheet" type="text/css" href="css/fonts/stylesheet.css">
+</head>
+<body>
+	<div class="dialog-cef-studio" v-if="dialogId !== -1" v-cloak>
+		<div class="header" v-html="dialogHeader"></div>
+		<div class="dialog-text">
+			<div class="text" v-if="dialogType === 0 || dialogType === 1 || dialogType === 3" v-html="dialogText"></div>
+			<div class="text" v-if="dialogType === 6" v-html="dialogText"></div>
+			<div class="information" v-if="dialogType === 6">
+				<div class="icon">
+					<img src="images/icon6.png" />
+				</div>
+				<div class="content">
+					<div class="message" v-html="dialogInfo"></div>
+				</div>
+			</div>
+			<div class="dialog-item-block" v-if="dialogType === 2">
+				<div class="list-items">
+					<div v-for="(item, index) in dialogItems" :key="index" @click="toggleSelectedItem(index)" :class="{ 'dialog-item': true, 'white-back': listitem === index, 'active': listitem === index }" v-html="item"></div>
+				</div>
+			</div>
+			<div v-if="dialogType === 4" class="dialog-tablist">
+				<div class="tablist-content">
+					<div class="tablist-items">
+						<div v-for="(item, index) in dialogItems" :key="'item-' + index" :class="{ 'tab-item': true, 'active-item': listitem === index }" @click="toggleSelectedItem(index)" v-html="item"></div>
+					</div>
+				</div>
+			</div>
+			<div v-if="dialogType === 5" class="dialog-tablist-headers">
+				<div class="tablist-content">
+					<div class="tablist-items">
+						<div v-for="(item, itemIndex) in dialogItems" :key="'item-' + itemIndex"
+							 :class="{'tab-item': itemIndex !== 0, 'first-tab-item' : itemIndex === 0, 'active-item': listitem === itemIndex && itemIndex !== 0}"
+							 @click="dialogType === 5 && toggleSelectedItem(itemIndex)"
+							 v-html="item">
+							<div class="dialogItemHeader" v-html="item.split('\t')[0]"></div>
+							<div class="dialogItemValue" v-html="item.split('\t').slice(1).join('\t')"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<input v-if="dialogType === 1 || dialogType === 3" v-model="inputText" :type="dialogType === 3 ? 'password' : 'text'" placeholder="Введите текст в это поле" ref="input" v-focus>
+		</div>
+		<div class="click-buttons">
+			<div class="click-button" :class="{ 'rounded-button': !button2 }" @click="response = 1; callcackDialogResponse();">{{ button1 }}</div>
+			<div v-if="button2 !== ''" class="click-button red-button" @click="response = 0; callcackDialogResponse();">{{ button2 }}</div>
+		</div>
+	</div>
+	<script src="script/vue.js"></script>
+	<script src="script/dialog.js"></script>
+	<script language="JavaScript"></script>
+</body>
+</html>
